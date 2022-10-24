@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # secrets
-secrets.json
+src/secrets.json

@@ -23,7 +23,7 @@ MEDIA_URL = '/media/'
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_BASE_FILE = Path(os.path.join(BASE_DIR.parent, 'secrets.json'))
+SECRET_BASE_FILE = Path(os.path.join(BASE_DIR, 'secrets.json'))
 if SECRET_BASE_FILE.exists():
     secrets = json.loads(open(SECRET_BASE_FILE).read())
     for key, value in secrets.items():
