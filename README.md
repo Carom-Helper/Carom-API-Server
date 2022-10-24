@@ -50,3 +50,9 @@ make build
 ```bash
 make run
 ```
+
+# How to stop Docker container
+```bash
+# Ctrl + c
+make rm
+```
