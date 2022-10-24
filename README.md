@@ -35,6 +35,13 @@ python DetectObjectPipe.py
 ```
 
 # How to Set  Development Environment with Docker
+1. Add USR in Makefile
+```Makefile
+USR={#ADD Your name (ex - jylee}
+PORT_NUM=3213
+SRC_NAME=caromapi
+```
+2. Docker build
 ```bash
 make build
 ```
