@@ -5,6 +5,7 @@ This project uses Django REST API and Pythorch. It provides an API that tells yo
 ```bash
 git clone https://github.com/Carom-Helper/Carom-API-Server.git
 git submodule update --init --recursive
+cd src
 ```
 ##### Next Step. Set ROOT/src/secrets.json
 ```json
@@ -21,12 +22,24 @@ conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11
 
 # How to initialize ENV with Anaconda(or PIP)
 ```bash
-cd src
 pip install -r requirements.txt
 ```
 
-# How to run width Anaconda(or PIP)
+# How to run with Anaconda(or PIP)
 ```bash
-cd src
 python manage.py runserver
+```
+```bash
+cd detection/detect
+python DetectObjectPipe.py
+```
+
+# How to Set  Development Environment with Docker
+```bash
+make build
+```
+
+# How to run with Docker
+```bash
+make run
 ```
