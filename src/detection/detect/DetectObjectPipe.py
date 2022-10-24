@@ -6,6 +6,7 @@ import argparse
 import os
 import time
 
+CAROM_BASE_DIR=Path(__file__).resolve().parent.parent.parent
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0].__str__()
 WEIGHT_DIR = None
@@ -298,7 +299,7 @@ def test(src, device):
                              im=im, im0s=im0s, vid_cap=vid_cap, s=s)
         detectObjectPipe1.push_src(input)
     
-    bag_split.print_all()
+    bag_split.print()
 
 def runascapp(src, device):
     ### Pipe 생성 & 연결 ###
@@ -349,13 +350,13 @@ def test_singleton():
     #print(id(cpu.model))
 
 def runner(args):
-    #test(args.src, args.device)
-    runascapp(args.src, args.device)
+    test(args.src, args.device)
+    #runascapp(args.src, args.device)
     #test_singleton()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', default="C:/Users/vbmrk/Desktop/bird/v3/origin/Crown Haitai_PBA_CHAMPIONSHIP_2021-2022_Quarter _Kang Donggung_1 set 3 innings 10th shot")
+    parser.add_argument('--src', default= (CAROM_BASE_DIR / "media" / "test"))
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     args = parser.parse_args()
     runner(args) 
