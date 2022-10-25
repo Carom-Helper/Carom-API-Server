@@ -16,12 +16,12 @@ cd src
 # How to Set Development Environment with Anaconda(or PIP)
 https://pytorch.org/get-started/locally/
 ```bash
-conda create -n carom-api python=3.8.2
+conda create -n carom-api python=3.8.2 -y
 conda activate carom-api
 # GPU - CONDA
 conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11.1 -c pytorch -c conda-forge -y
 # CPU - CONDA
-# conda install pytorch torchvision torchaudio cpuonly -c pytorch
+# conda install pytorch torchvision torchaudio cpuonly -c pytorch -y
 ```
 
 # How to initialize ENV with Anaconda(or PIP)
