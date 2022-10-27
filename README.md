@@ -5,28 +5,60 @@ This project uses Django REST API and Pythorch. It provides an API that tells yo
 ```bash
 git clone https://github.com/Carom-Helper/Carom-API-Server.git
 git submodule update --init --recursive
+cd src
 ```
-##### Next Step. Set ROOT/src/secrets.json
+##### Next Step. Set {$ROOT}/src/secrets.json
 ```json
 # example
 {"SECRET_KEY":"django-insecure-d*upt!(-*)wA#3^cdc-e9ac3s4s8afd9d4m=_2(!a+2v&@1avs2s4v="}
 ```
 
 # How to Set Development Environment with Anaconda(or PIP)
+https://pytorch.org/get-started/locally/
 ```bash
-conda create -n carom-api python=3.8.2
+conda create -n carom-api python=3.8.2 -y
 conda activate carom-api
+# GPU - CONDA
 conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11.1 -c pytorch -c conda-forge -y
+# CPU - CONDA
+# conda install pytorch torchvision torchaudio cpuonly -c pytorch -y
 ```
 
 # How to initialize ENV with Anaconda(or PIP)
 ```bash
-cd src
 pip install -r requirements.txt
 ```
 
-# How to run width Anaconda(or PIP)
+# How to run with Anaconda(or PIP)
 ```bash
-cd src
+# Check if the django works well
 python manage.py runserver
+```
+```bash
+# Check if the pytorch works well
+cd detection/detect
+python DetectObjectPipe.py
+```
+
+# How to Set  Development Environment with Docker
+1. Add USR in Makefile
+```Makefile
+USR={#ADD Your name (ex - jylee}
+PORT_NUM=3213
+SRC_NAME=caromapi
+```
+2. Docker build
+```bash
+make build
+```
+
+# How to run with Docker
+```bash
+make run
+```
+
+# How to stop Docker container
+```bash
+# Ctrl + c
+make rm
 ```
