@@ -48,7 +48,6 @@ markdown>=3.4.1
 django-cors-headers==3.13.0
 pandas
 Pillow
-opencv-python
 
 # django admin extensions --------------------
 
