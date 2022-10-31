@@ -13,10 +13,33 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# django base
 from django.contrib import admin
 from django.urls import path, include
-from .views import hello
+from .views import CoordViewSet, ProjectionViewSet, RequestAPIView
 
+#define ViewSet
+coord_list = CoordViewSet.as_view({
+    'get' : 'list',
+})
+coord_detail = CoordViewSet.as_view({
+    'get' : 'retrieve',
+    'delete' : 'destroy'
+})
+
+projection_list = ProjectionViewSet.as_view({
+    'get' : 'list',
+})
+projection_detail = ProjectionViewSet.as_view({
+    'get' : 'retrieve',
+    'delete' : 'destroy'
+})
+
+#defin url pattern
 urlpatterns = [
-    path("carom", hello),
+    path("balls-coord/<int:carom_id>/<str:usr>", RequestAPIView.as_view()),
+    path("balls-coord/result/", coord_list),
+    path("balls-coord/result/<int:id>/", coord_detail),
+    path("projection-img/", projection_list),
+    path("projection-img/<int:id>/", projection_detail),
 ]
