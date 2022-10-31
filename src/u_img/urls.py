@@ -20,28 +20,25 @@ from .views import CaromViewSet
 
 #define ViewSet
 carom_list = CaromViewSet.as_view({
-    'get' : 'list'
+    'get' : 'list',
 })
 
 carom_detail = CaromViewSet.as_view({
-    'get' : 'retrieve'
+    'get' : 'retrieve',
+    'delete' : 'destroy'
 })
 
 carom_update = CaromViewSet.as_view({
-    'get' : 'list'
+    'get' : 'list',
+    'post' : 'create',
 })
 
 #defin url pattern
 urlpatterns = [
     path("carom/", carom_list),
-    path("carom/<int:pk>/", carom_detail),
+    path("carom/<int:id>/", carom_detail),
     path("carom/<str:url>/", carom_update),
 ]
 
 
 
-# django media
-from django.views.static import serve
-from django.conf import settings
-from django.conf.urls.static import static
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

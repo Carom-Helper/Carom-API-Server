@@ -1,4 +1,4 @@
-from detection.models import projection_method
+from u_img.models import projection_method
 
 print("==== Start ====")
 

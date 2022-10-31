@@ -22,3 +22,12 @@ urlpatterns = [
     path("api/detection/", include('detection.urls')),
     path("api/recommend/", include('recommend.urls')),
 ]
+
+
+# django media
+from django.views.static import serve
+from django.conf import settings
+from django.conf.urls.static import static
+
+# django media
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
