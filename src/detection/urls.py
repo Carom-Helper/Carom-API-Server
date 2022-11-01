@@ -43,3 +43,11 @@ urlpatterns = [
     path("projection-img/", projection_list),
     path("projection-img/<int:id>/", projection_detail),
 ]
+
+# django media
+from django.views.static import serve
+from django.conf import settings
+from django.conf.urls.static import static
+
+# django media
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

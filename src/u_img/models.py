@@ -14,6 +14,14 @@ class projection_method(Model):
     value = models.PositiveSmallIntegerField(verbose_name="VALUE", null=True)
 
 class carom(Model):
+    WORK_STATE = [
+        ('N', "None"),
+        ('A', "Accepted"),
+        ('P', "Progress"),
+        ('D', "Done"),
+    ]
+    
     img = models.ImageField(upload_to="carom/%Y/%m/%d/", verbose_name="Image")
     method = models.ForeignKey(to="projection_method", on_delete=CASCADE, verbose_name="Type")
     table_size = models.DecimalField(verbose_name="Persent", max_digits=4, decimal_places=1)
+    detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N")

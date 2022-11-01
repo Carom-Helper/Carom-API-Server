@@ -1,3 +1,4 @@
+# python manage.py shell_plus --print-sql
 from u_img.models import projection_method
 
 print("==== Start ====")

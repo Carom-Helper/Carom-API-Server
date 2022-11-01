@@ -5,6 +5,7 @@ class CoordSerializer(serializers.ModelSerializer):
     class Meta:
         model = balls_coord
         fields = '__all__'
+    
         
 class ProjectionSerializer(serializers.ModelSerializer):
     class Meta:
