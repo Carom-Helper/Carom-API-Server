@@ -18,6 +18,13 @@ class projection(Model):
 class balls_coord(Model):
     carom = models.ForeignKey(to="u_img.carom", on_delete=CASCADE, verbose_name="Carom Image ID")
     coord = models.JSONField(default=dict, verbose_name="COORDINATE JSON")
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["carom"],
+                name = "unique solution"
+            )
+        ]
     
     
 class detect_request(Model):
