@@ -16,7 +16,7 @@ Including another URLconf
 # django base
 from django.contrib import admin
 from django.urls import path, include
-from .views import CoordViewSet, ProjectionViewSet, RequestAPIView
+from .views import CoordViewSet, ProjectionViewSet, DetectRequestAPIView
 
 #define ViewSet
 coord_list = CoordViewSet.as_view({
@@ -37,17 +37,9 @@ projection_detail = ProjectionViewSet.as_view({
 
 #defin url pattern
 urlpatterns = [
-    path("balls-coord/<int:carom_id>/<str:usr>", RequestAPIView.as_view()),
+    path("balls-coord/<int:carom_id>/<str:usr>/", DetectRequestAPIView.as_view()),
     path("balls-coord/result/", coord_list),
     path("balls-coord/result/<int:id>/", coord_detail),
     path("projection-img/", projection_list),
     path("projection-img/<int:id>/", projection_detail),
 ]
-
-# django media
-from django.views.static import serve
-from django.conf import settings
-from django.conf.urls.static import static
-
-# django media
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

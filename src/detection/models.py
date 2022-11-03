@@ -1,11 +1,5 @@
-from ast import Mod
 from django.db import models
-from django.db import models
-# from django_db_views.db_view import DBView
 from django.db.models import CASCADE, Model
-from requests import request
-from django.core.validators import FileExtensionValidator
-from traitlets import default
 
 from u_img.models import carom
 from carom_api.settings import BASE_DIR, MEDIA_ROOT
@@ -22,7 +16,7 @@ class balls_coord(Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["carom"],
-                name = "unique solution"
+                name = "unique detect solution"
             )
         ]
     
@@ -35,7 +29,7 @@ class detect_request(Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["carom", "requester"],
-                name = "unique request"
+                name = "unique detect request"
             )
         ]
     

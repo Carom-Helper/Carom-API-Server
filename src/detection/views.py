@@ -40,7 +40,7 @@ def test_make_coord(carom_id, usr, t=1):
     carom_img.save()
     print("======== save ball_coord ============")
 
-class RequestAPIView(APIView):
+class DetectRequestAPIView(APIView):
     def get_coord(self, carom_id):
         try:
             return balls_coord.objects.get(carom_id=carom_id)

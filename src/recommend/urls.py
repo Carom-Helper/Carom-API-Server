@@ -13,10 +13,35 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# django base
 from django.contrib import admin
 from django.urls import path, include
-from .views import hello
+from .views import PositionViewSet, RouteViewSet, RouteRequestAPIView
+
+
+#define ViewSet
+position_list = PositionViewSet.as_view({
+    'get' : 'list',
+    'post' : 'create',
+})
+position_detail = PositionViewSet.as_view({
+    'get' : 'retrieve',
+    'delete' : 'destroy'
+})
+
+route_list = RouteViewSet.as_view({
+    'get' : 'list',
+})
+route_detail = RouteViewSet.as_view({
+    'get' : 'retrieve',
+    'delete' : 'destroy'
+})
+
 
 urlpatterns = [
-    path("carom", hello),
+    path("route/<int:issue_id>/<str:usr>", RouteRequestAPIView.as_view()),
+    path("route/result/", route_list),
+    path("route/result/<int:id>/", route_detail),
+    path("init-position/", position_list),
+    path("init-position/<int:id>/", position_detail),
 ]

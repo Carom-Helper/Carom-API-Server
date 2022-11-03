@@ -1,13 +1,10 @@
 from django.db import models
-from django.db import models
 from django.db.models import CASCADE, Model
-# from django_db_views.db_view import DBView
 
 from carom_api.settings import BASE_DIR, MEDIA_ROOT
 
 # Create your models here.
 
-from pathlib import Path
 
 class projection_method(Model):
     name = models.CharField(max_length=100, verbose_name="NAME")
@@ -25,3 +22,4 @@ class carom(Model):
     method = models.ForeignKey(to="projection_method", on_delete=CASCADE, verbose_name="Type")
     table_size = models.DecimalField(verbose_name="Persent", max_digits=4, decimal_places=1)
     detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N")
+    
