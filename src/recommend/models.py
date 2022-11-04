@@ -4,6 +4,8 @@ from django.db.models import CASCADE, Model
 from detection.models import balls_coord
 from carom_api.settings import BASE_DIR, MEDIA_ROOT
 
+ROUTE_ALGORITHM_VERSHION = "ver0"
+
 # Create your models here.
 class position(Model):
     WORK_STATE = [
@@ -18,7 +20,7 @@ class position(Model):
 class soultion_route(Model):
     issue = models.ForeignKey(to="position", on_delete=CASCADE, verbose_name="Ball Position")
     route = models.JSONField(default=dict, verbose_name="Route JSON")
-    algorithm_ver = models.CharField(max_length=10, verbose_name="Version", default="ver0")
+    algorithm_ver = models.CharField(max_length=10, verbose_name="Version")
     
 
 class compare_detect(Model):

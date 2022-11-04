@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 # add base
-import urllib.parse as uparse
 from time import sleep
 
 # add our project

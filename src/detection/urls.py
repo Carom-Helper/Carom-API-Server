@@ -14,7 +14,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # django base
-from django.contrib import admin
 from django.urls import path, include
 from .views import CoordViewSet, ProjectionViewSet, DetectRequestAPIView
 
@@ -35,7 +34,7 @@ projection_detail = ProjectionViewSet.as_view({
     'delete' : 'destroy'
 })
 
-#defin url pattern
+#define url pattern
 urlpatterns = [
     path("balls-coord/<int:carom_id>/<str:usr>/", DetectRequestAPIView.as_view()),
     path("balls-coord/result/", coord_list),

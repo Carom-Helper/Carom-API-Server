@@ -21,6 +21,8 @@ class PositionViewSet(viewsets.ModelViewSet):
     serializer_class = PositionSerializer
     
     def create(self, request, *args, **kwargs):
+        # =======================detect coord와 매칭시켜준다.
+        
         coord = eval(request.data["coord"])
         # 존재하면 기존 것을 반환해 준다.
         pos = position.objects.filter(
@@ -55,10 +57,9 @@ def test_make_route(issue_id, usr, t=1):
 			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
 			"obj1": [(600, 200), (700, 120)],
 			"obj2": [(200, 150), (150, 130)]
-		})
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION)
+    print(route)
     route.save()
-    coord = balls_coord(carom_id=issue_id, coord={"cue" : [200, 200], "obj1" : [600, 200], "obj2" : [200, 150]})
-    coord.save()
     pos.state="D"
     pos.save()
     print("======== save ball_coord ============")
@@ -95,7 +96,7 @@ class RouteRequestAPIView(APIView):
             try:
                 soultion = soultion_route.objects.filter(issue_id = issue_id)
                 http_status = status.HTTP_200_OK
-                serializer = RouteSerializer(soultion)
+                serializer = RouteSerializer(soultion, many=True)
             except:
                 return Response({"message":"Route doesn't exist"}, status=status.HTTP_404_NOT_FOUND)
             # requester 로그 쌓기
@@ -104,7 +105,7 @@ class RouteRequestAPIView(APIView):
                 requester = route_request.objects.get(issue_id=issue_id, requester=usr)
             except route_request.DoesNotExist:
                 #존재 하지 않으면 새로 생성
-                route_request(issue_id=issue_id, requester=usr).save()
+                rr = route_request(issue_id=issue_id, requester=usr).save()
             return Response(serializer.data, status=http_status)
         
         #   Progress - 기다리라고 하기 
