@@ -49,13 +49,15 @@ class PipeResource:
     def __init__(self, vid=-1, f_num=0, path=None, im=None, im0s=None, vid_cap=None, s=None) -> None:
         self.vid = vid #video id / set undefind
         self.f_num = f_num #video frame number / set undefind
-        self.dets = list()
         # get dateset  (path, im, im0s, vid_cap, s)
         self.path = path        # video path
-        self.im = im            # pading image
-        self.im0s = im0s        # origin image
         self.vid_cap = vid_cap  # video data
         self.s = s              # string
+        
+        self.im = im            # pading image
+        
+        self.im0s = im0s        # origin image
+        self.dets = list()
         self.unset_det_num = dict()
     
     def __iter__(self):
