@@ -1,3 +1,0 @@
-[submodule "src/detection/detect/yolo_sort"]
-	path = src/detection/detect/yolo_sort
-	url = https://github.com/mikel-brostrom/Yolov5_StrongSORT_OSNet

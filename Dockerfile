@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:22.05-py3
+FROM 31f3b6f28041
 
 SHELL ["/bin/bash", "-c"]
 
