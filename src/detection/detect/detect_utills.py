@@ -167,7 +167,7 @@ class PipeResource:
             print("==============================================")
             print(f'{self.s}',"dets")
             for i, det in enumerate(self.dets):
-                print(f'det {i} :', det)
+                print(f'det {i} :', str(det))
             print("==============================================")
         
     def auto_set_dets(self):

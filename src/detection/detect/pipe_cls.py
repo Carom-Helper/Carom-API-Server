@@ -397,19 +397,21 @@ class PassPipe(One2OnePipe):
   
 def test_split_pipe():
     print("========Run exe============")
-    src = create_test_resource(f_num=0)
+    src = create_test_resource({"f_num":0})
     print("input")
     src.print()
     
     p_pipe = SplitCls()
     output = p_pipe.exe(src)
     print("exe output")
-    output.print()
-    output.dets[0].print()
-    output.dets[1].print()
+    try:
+        output.print()
+    except:
+        output.dets[0].print()
+        output.dets[1].print()
     
     print("========connect bag1 and push_src============")
-    src = create_test_resource(f_num=0)
+    src = create_test_resource({"f_num":0})
     print("input")
     src.print()
     
@@ -421,7 +423,7 @@ def test_split_pipe():
     bag1.print_last()
     
     print("========connect bag2 and push_src============")
-    src = create_test_resource(f_num=1)
+    src = create_test_resource({"f_num":1})
     print("input")
     src.print()
     
@@ -435,7 +437,7 @@ def test_split_pipe():
     
     print("========Repeat push_src============")
     for i in range(2, randrange(3,10)):
-        src = create_test_resource(f_num=i)
+        src = create_test_resource({"f_num":i})
         print(f"frame{i} : input")
         src.print()
         
@@ -449,7 +451,7 @@ def test_split_pipe():
 
 def test_repeat_pipe():
     print("========Run exe============")
-    src = create_test_resource(f_num=0)
+    src = create_test_resource({"f_num":0})
     print("input")
     src.print()
     
@@ -459,7 +461,7 @@ def test_repeat_pipe():
     output.print()
 
     print("========connect bag1 and push_src============")
-    src = create_test_resource(f_num=1)
+    src = create_test_resource({"f_num":1})
     print("input")
     src.print()
     
@@ -471,7 +473,7 @@ def test_repeat_pipe():
     bag1.print_last()
     
     print("========connect bag2 and push_src============")
-    src = create_test_resource(f_num=1)
+    src = create_test_resource({"f_num":1})
     print("input")
     src.print()
     
@@ -485,7 +487,7 @@ def test_repeat_pipe():
     
     print("========Repeat push_src============")
     for i in range(2, randrange(3,10)):
-        src = create_test_resource(f_num=i)
+        src = create_test_resource({"f_num":i})
         print(f"frame{i} : input")
         src.print()
         
@@ -501,7 +503,7 @@ def test_repeat_pipe():
 def test_o2opipe():
     
     print("========Run exe============")
-    src = create_test_resource(f_num=0)
+    src = create_test_resource({"f_num":0})
     print("input")
     src.print()
     
@@ -511,7 +513,7 @@ def test_o2opipe():
     output.print()
 
     print("========Run push_src============")
-    src = create_test_resource(f_num=1)
+    src = create_test_resource({"f_num":1})
     print("input")
     src.print()
     
@@ -524,7 +526,7 @@ def test_o2opipe():
     
     print("========Repeat push_src============")
     for i in range(2, randrange(3,10)):
-        src = create_test_resource(f_num=i)
+        src = create_test_resource({"f_num":i})
         print(f"frame{i} : input")
         src.print()
         
