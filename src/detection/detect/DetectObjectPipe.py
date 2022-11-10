@@ -60,7 +60,7 @@ class DetectObjectWeight(metaclass=Singleton):
         max_det=7,
         cls=[0, 1],
         imgsz=(640,640),
-        device = '0'
+        framework = "furiosa"
         ) -> None:
         # 고정값
         WEIGHTS = WEIGHT_DIR / "yolo_ball.pt"
