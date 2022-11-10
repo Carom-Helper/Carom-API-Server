@@ -48,4 +48,4 @@ for file in file_list:
     if os.path.exists(file):
         os.remove(file)
         
-# python clear_migrate.py & python manage.py makemigrations & python manage.py makeviewmigrations & python manage.py migrate & ECHO import init_setting | python manage.py shell_plus
+# python clear_migrate.py & python manage.py makemigrations & python manage.py makeviewmigrations & python manage.py migrate & ECHO import init_setter | python manage.py shell_plus
