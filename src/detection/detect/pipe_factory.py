@@ -100,7 +100,7 @@ def detect(src, device='cpu', MIN_DETS= 10, display=True):
             for i in range(4):
                 origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
             cv2.imshow("origin", origin)
-            cv2.waitKey(0)
+            cv2.waitKey(3000)
     return (ball_bag, edge_bag)
     
 def test(src, device):

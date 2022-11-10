@@ -176,14 +176,8 @@ def test(src, display=True):
             for i in range(4):
                 origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
             cv2.imshow("origin", origin)
-            cv2.waitKey(0)
-    
-    if display:
-        for src in bag_split.src_list:
-            src.imshow(name="hellow")
-            cv2.waitKey(100)
-    else:
-        bag_split.print()
+            cv2.waitKey(1000)
+    bag_split.print()
 
 def runner(args):
     print_args(vars(args))
