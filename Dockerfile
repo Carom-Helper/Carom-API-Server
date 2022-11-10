@@ -26,4 +26,5 @@ WORKDIR /${fname}
 COPY . .
 
 RUN pip install -r requirements.txt
+WORKDIR /${fname}/src
 CMD python manage.py runserver ${Portnum}

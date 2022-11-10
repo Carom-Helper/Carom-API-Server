@@ -14,7 +14,7 @@ build:
 
 run:
 	@echo 'docker run -tiu --name="$(APP_NAME)" $(IMAGE_NAME)'
-	docker run -ti --name "$(APP_NAME)" --shm-size 32gb --gpus all -p $(PORT_NUM):$(PORT_NUM) -v $(MODEL_VOLUME) $(IMAGE_NAME)
+	docker run -ti --name "$(APP_NAME)" --shm-size 32gb --privileged -p $(PORT_NUM):$(PORT_NUM) -v $(MODEL_VOLUME) $(IMAGE_NAME)
 
 stop:
 	@echo 'stop docker $(APP_NAME)'
