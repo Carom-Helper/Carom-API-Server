@@ -61,7 +61,8 @@ class ProjectionPipe(One2OnePipe):
 class ProjectionCoordPipe(One2OnePipe):
     def __init__(self):
         super().__init__()
-        self.points = [[520,100],[970,102],[1440,650],[0,635]]
+        #self.points = [[520,100],[970,102],[1440,650],[0,635]]
+        self.points = [[549,109],[942,111],[1270,580],[180,565]]
 
     @torch.no_grad()
     def exe(self, input: PipeResource) -> PipeResource:
@@ -97,6 +98,7 @@ class ProjectionCoordPipe(One2OnePipe):
         result = cv2.warpPerspective(img, mtrx, (400, 800))
         t2 = time.time()
 
+        projected = np.zeros((800,400,1), np.uint8)
         for det in input.dets:
             #print(det["x"], det["y"])
             temp = np.array([det["x"] + det["w"]/2, det["y"] + det["h"]/2, 1])
@@ -106,11 +108,14 @@ class ProjectionCoordPipe(One2OnePipe):
             projy = int(temp_result[1]/temp_result[2])
             print(temp_result[0]/temp_result[2], temp_result[1]/temp_result[2], "\n")
             result = cv2.line(result, (projx, projy), (projx, projy), (0,0,0), 5)
+            projected = cv2.circle(projected, (projx, projy), 9, (255, 255, 255), 1)
 
         # 원본 정사영 영역 표시
         origin = input.im0s.copy()
         for i in range(4):
             origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
+        
+
 
 
         input.im = result.copy()
@@ -118,6 +123,7 @@ class ProjectionCoordPipe(One2OnePipe):
         output.im0s = output.im.copy()
         cv2.imshow("origin", origin)
         cv2.imshow("proj", output.im)
+        cv2.imshow("proj2", projected)
         cv2.waitKey(0)
 
         return output
