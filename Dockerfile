@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:22.05-py3
+FROM 31f3b6f28041
 
 SHELL ["/bin/bash", "-c"]
 
@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y sudo \
 ENV LC_ALL ko_KR.UTF-8
 RUN pip install --upgrade pip
 
-RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+# RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 
 # 프로젝트 필요 소스 다운로드
 RUN mkdir -p /${fname}
