@@ -1,3 +1,3 @@
-[submodule "src/detection/detect/yolov5"]
-	path = src/detection/detect/yolov5
-	url = https://github.com/furiosa-ai/yolov5-demo.git
+[submodule "src/detection/detect/gpu_yolov5"]
+	path = src/detection/detect/gpu_yolov5
+	url = https://github.com/ultralytics/yolov5.git

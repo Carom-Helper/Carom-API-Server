@@ -5,7 +5,7 @@ from random import randrange
 import time
 import sys
 
-from detect_utills import PipeResource, LOGGER, xyxy2xywh, copy_piperesource, is_test
+from detect_utills import PipeResource, xyxy2xywh, copy_piperesource, is_test
 def is_test_pipe_cls()->bool:
     return False and is_test()
 
@@ -135,7 +135,7 @@ class IOne2OnePipe(IObserverPipe, metaclass=ABCMeta):
                     self.next_pipe.push_src(output)
         except KeyboardInterrupt:sys.exit()
         except Exception as ex:
-            LOGGER.info(f'{str(self)} One2OnePipe call_next_pipe : {str(ex)}')
+            print(f'{str(self)} One2OnePipe call_next_pipe : {str(ex)}')
     
     
 class One2OnePipe(IOne2OnePipe, metaclass=ABCMeta):
@@ -387,7 +387,7 @@ class PassPipe(One2OnePipe):
     
     def exe(self, input: PipeResource) -> PipeResource:
         if self.display:
-            LOGGER.info(f'{input.s}')
+            print(f'{input.s}')
         return input
     
     def get_regist_type(self, idx=0) -> str:
@@ -444,8 +444,8 @@ def test_split_pipe():
         #bag.print_all()
         bag1.print_last()
         bag2.print_last()
-    bag1.print_all()
-    bag2.print_all()
+    bag1.print()
+    bag2.print()
 
 def test_repeat_pipe():
     print("========Run exe============")
@@ -494,8 +494,8 @@ def test_repeat_pipe():
         #bag.print_all()
         bag1.print_last()
         bag2.print_last()
-    bag1.print_all()
-    bag2.print_all()
+    bag1.print()
+    bag2.print()
 
 
 def test_o2opipe():

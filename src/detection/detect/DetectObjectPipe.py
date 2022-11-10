@@ -1,6 +1,6 @@
 import torch
-import argparse
 import time
+import argparse
 
 # set path
 import sys
@@ -11,18 +11,19 @@ import os
 CAROM_BASE_DIR=Path(__file__).resolve().parent.parent.parent
 FILE = Path(__file__).resolve()
 ROOT = FILE.parent
-WEIGHT_DIR = None
 
-# tmp = ROOT
+# # ADD gpu_yolov5 to env list
+# tmp = ROOT / 'gpu_yolov5'
 # if str(tmp) not in sys.path and os.path.isabs(tmp):
-#     sys.path.append(str(tmp))  # add ROOT to PATH
+#     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
+
+# Set weight directory
+WEIGHT_DIR = None
 tmp = ROOT / 'weights'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     WEIGHT_DIR= (tmp)  # add Weights ROOT to PATH
 
-tmp = ROOT + '/yolov5'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
+
 
 # import my project
 from Singleton import Singleton
@@ -30,8 +31,8 @@ from pipe_cls import One2OnePipe, ResourceBag
 from detect_utills import (PipeResource, LoadImages,
                            make_padding_image, copy_piperesource,
                            LOGGER, is_test, Annotator, cv2,
-                           select_device, time_sync,
-                           check_img_size, non_max_suppression, xyxy2xywh, scale_boxes,
+                           select_device, time_sync, 
+                           check_img_size, non_max_suppression, xyxy2xywh, scale_boxes, print_args,
                            DetectMultiBackend)
 
 def is_test_detect_object()->bool:
@@ -40,14 +41,6 @@ def is_test_detect_object()->bool:
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_detect_object():
         print("detect object pipe test : ", s, s1, s2, s3, s4, s5, end=end)
-
-def is_test()->bool:
-    return False
-
-def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
-    if is_test():
-        print("detect object pipe test : ", s, s1, s2, s3, s4, s5, end=end)
-test_print(sys.path)
 
 
 ############################
@@ -60,12 +53,12 @@ class DetectObjectWeight(metaclass=Singleton):
         max_det=7,
         cls=[0, 1],
         imgsz=(640,640),
-        framework = "furiosa"
+        device= '0'
         ) -> None:
         # 고정값
         WEIGHTS = WEIGHT_DIR / "yolo_ball.pt"
         self.yolo_weights = WEIGHTS
-        self.device = select_device(model_name="YOLOv5 Furiosa", device=device)
+        self.device = select_device(model_name="YOLOv5", device=device)
         
         # 변하는 값(입력 값)
         self.conf_thres = conf_thres
@@ -104,7 +97,7 @@ class DetectObjectPipe(One2OnePipe):
         
         t2 = time.time()
         if display:
-            LOGGER.info( f'[YOLOv5 init {(t2-t1):.1f}s]')
+            print(f'[YOLOv5 init {(t2-t1):.1f}s]')
 
     @torch.no_grad()
     def exe(
@@ -130,7 +123,6 @@ class DetectObjectPipe(One2OnePipe):
         t1 = time_sync()
         
         im = make_padding_image(input.im) # add padding
-        print(im.shape)
         im = torch.from_numpy(im).to(device)
         im = im.float()  # im.half() if half else im.float()  # uint8 to fp16/32
         im /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -140,7 +132,8 @@ class DetectObjectPipe(One2OnePipe):
         dt[0] += t2 - t1
 
         # Inference
-        pred = model(im, augment=False, visualize=visualize)
+        with self.model_instance.lock:
+            pred = model(im, augment=False, visualize=visualize)
         t3 = time_sync()
         dt[1] += t3 - t2
 
@@ -152,44 +145,22 @@ class DetectObjectPipe(One2OnePipe):
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             seen += 1
-
-            p, im0, _ = input.path, input.im0s.copy(), getattr(input, 'frame', 0)
-            p = Path(p)
-
-            ## 추가 ##
-            annotator = Annotator(
-                im0, line_width=3, example=str(self.model.names))
             if len(det):
-                det[:, :4] = scale_coords(
-                    im.shape[2:], det[:, :4], im0.shape).round()
-                for *xyxy, conf, cls in reversed(det):
-                    c = int(cls)
-                    label = None
-                    annotator.box_label(xyxy, label, color=colors(c, True))
-
-            #### 좌표 변환 ####
-            cxywh = xyxy2xywh(det[:, 0:4])
-
-            #### 바운딩 박스 & center x,y 점 ####
-            im0 = annotator.result()
-            for i in range(det.shape[0]):
-                cv2.circle(im0, (int(cxywh[i][0]), int(
-                    cxywh[i][1])), 4, (0, 255, 0), -1)
-
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], input.im.shape).round()
             ## output 설정 ###
-            for i in range(det.shape[0]):
-                output_det = {"frame": input.f_num, "x": int(det[i][0]), "y": int(det[i][1]), "w": int(
-                    det[i][2] - det[i][0]), "h": int(det[i][3] - det[i][1]), "conf": float(det[i][4]), "cls": int(det[i][5])}
+            for xmin, ymin, xmax, ymax, conf, cls in reversed(det):
+                output_det = {"xmin": int(xmin), "ymin": int(ymin), "xmax": int(
+                    xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls)}
                 input.dets.append(output_det)
-
         output = copy_piperesource(input)
         t2 = time.time()
-        ball_det_len = output.len_detkey_match("cls", "1")
-        ball_det_len = "" if ball_det_len == 3 else f"(det ball :{str(ball_det_len)})"
         if self.display:
-            print(f'[{ball_det_len}YOLOv5 run {t2-t1:.3f}s]', end=" ")
+            detect_len = output.len_detkey_match("cls", "1")
+            detect_len = "" if detect_len == 3 else f"(det ball :{str(detect_len)})"
+            print(f'[{detect_len}YOLOv5 run {t2-t1:.3f}s]')
         
-        output.print(on=(is_test() and output.__len__() < 7))
+        output.print(on=(is_test_detect_object() and output.__len__() < 7))
         return output
 
     def get_regist_type(self, idx=0) -> str:
@@ -227,13 +198,15 @@ def test_singleton():
     #print(id(cpu.model))
 
 def runner(args):
+    print_args(vars(args))
     test(args.src, args.device, args.display)
     #test_singleton()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', default= (CAROM_BASE_DIR / "media" / "test"))
+    parser.add_argument('--src', default= (CAROM_BASE_DIR / "media" / "test2"))
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--display', default=True, action="store_false")    
     args = parser.parse_args()
     runner(args) 
 

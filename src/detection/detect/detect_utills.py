@@ -6,21 +6,24 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
         print("pipe cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
 from random import random, randrange
-import sys
-from pathlib import Path
 import glob
 import logging
 from typing import Optional
 import inspect
+import cv2
+
+
+import sys
+from pathlib import Path
+import os
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLOv5 root directory
 
-# from yolov5.utils.torch_utils import select_device, time_sync
-# from yolov5.utils.general import (check_img_size, non_max_suppression, cv2, xyxy2xywh, xywh2xyxy, scale_boxes)
-# from yolov5.models.common import DetectMultiBackend
-# from yolov5.utils.dataloaders import letterbox, np
-# from yolov5.utils.plots import Annotator, colors, save_one_box
+# ADD gpu_yolov5 to env list
+tmp = FILE.parent / 'gpu_yolov5'
+if str(tmp) not in sys.path and os.path.isabs(tmp):
+    sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
 IMG_FORMATS = 'bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp', 'pfm'  # include image suffixes
 VID_FORMATS = 'asf', 'avi', 'gif', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'ts', 'wmv'  # include video suffixes
@@ -160,9 +163,9 @@ class PipeResource:
         
     def auto_set_dets(self):
         for i in range(randrange(1, 7)):
-            det = {"xmin": randrange(10,1970), "ymin": randrange(10,1070), "xmax":randrange(18,31), "ymax":randrange(18,31), "Maincategory":randrange(0,2), "conf":random()}
+            det = {"xmin": randrange(10,1970), "ymin": randrange(10,1070), "xmax":randrange(18,31), "ymax":randrange(18,31), "cls":randrange(0,2), "conf":random()}
             self.dets.append(det)
-    def set_det(self, idx=0, xyxy=None, maincategory=0, conf=0.0):
+    def set_det(self, idx=0, xyxy=None, cls=0, conf=0.0):
         #test_print(self.dets.__len__(), "det.len()")
         if self.dets.__len__() < idx:
             raise IndexError
@@ -172,17 +175,17 @@ class PipeResource:
             det["ymin"] = xyxy[1]
             det["xmax"] = xyxy[2]
             det["ymax"] = xyxy[3]
-            det["Maincategory"] = maincategory
+            det["cls"] = cls
             det["conf"] = conf
 
-    def append_det(self, xywh, id=-1, maincategory=0, conf=0.0):
+    def append_det(self, xywh, id=-1, cls=0, conf=0.0):
         det = dict()
         det["xmin"] = xywh[0]
         det["ymin"] = xywh[1]
         det["xmax"] = xywh[2]
         det["ymax"] = xywh[3]
         det["id"] = id
-        det["Maincategory"] = maincategory
+        det["cls"] = cls
         det["conf"] = conf
         self.dets.append(det)
             
@@ -192,7 +195,7 @@ class PipeResource:
             im0, line_width=line_thickness, example=str(cls_names))
         # Write results
         for i, det in enumerate(self.dets):
-            c = int(det["Maincategory"])  # integer class
+            c = int(det["cls"])  # integer class
             id = ""
             try:
                id = f"{idx_names[int(det['id'])]} "
@@ -204,7 +207,7 @@ class PipeResource:
             annotator.box_label(xyxy, label, color=colors(c, True))
         im0 = annotator.result()
         cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(name, im0.shape[0], im0.shape[1])
+        cv2.resizeWindow(name, im0.shape[1], im0.shape[0])
         cv2.imshow(name, im0)
         
     def is_detkey(self, key = "id") ->bool:
@@ -231,7 +234,7 @@ class PipeResource:
                     cnt += 1
             self.unset_det_num[key] = cnt
             return self.unset_det_num[key]
-    def len_detkey_match(self, key = "Maincategory", value="1") -> int:
+    def len_detkey_match(self, key = "cls", value="1") -> int:
         cnt = 0
         if len(self.dets) <= 0:
             return 0
@@ -242,7 +245,7 @@ class PipeResource:
         return cnt
     def update_id(self, key, value, xywh, conf, cls=1):
         for det in self.dets:
-            if float(det["conf"]) == float(conf) and int(det["Maincategory"]) == int(cls):
+            if float(det["conf"]) == float(conf) and int(det["cls"]) == int(cls):
                 if same_box([],[]):
                     det[key] = value
                         
@@ -278,6 +281,12 @@ def copy_piperesource(src:PipeResource)->PipeResource:
         dst.images[key] = value.copy()
         
     return dst
+
+from gpu_yolov5.utils.torch_utils import select_device, time_sync
+from gpu_yolov5.utils.general import (check_img_size, non_max_suppression, scale_boxes)
+from gpu_yolov5.models.common import DetectMultiBackend
+from gpu_yolov5.utils.dataloaders import letterbox, np
+from gpu_yolov5.utils.plots import Annotator, colors, save_one_box
 
 def make_padding_image(im0, img_size=640, stride=32, auto=True, transforms=None):
     if transforms:
