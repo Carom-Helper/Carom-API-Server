@@ -1,218 +1,20 @@
 from abc import *
 from pickle import NONE
-from random import random, randrange
-import time
 
-def is_test()->bool:
-    return False
+from random import randrange
+import time
+import sys
+
+from detect_utills import PipeResource, LOGGER, xyxy2xywh, copy_piperesource, is_test
+def is_test_pipe_cls()->bool:
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
-    if is_test():
+    if is_test_pipe_cls():
         print("pipe cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
-import sys
-from pathlib import Path
-import os
-
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0].__str__()
-
-temp = ROOT
-
-ROOT = ROOT + '/yolo_sort'  # yolov5 strongsort root directory
-tmp = ROOT
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add ROOT to PATH
-    
-tmp = ROOT + '/yolov5'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-tmp = ROOT + '/strong_sort'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
-tmp = ROOT + '/strong_sort/deep/reid'
-if str(tmp) not in sys.path and os.path.isabs(tmp):
-    sys.path.append(str(tmp))  # add strong_sort ROOT to PATH
-    
-# ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
-
-ROOT=temp
-test_print(sys.path)
 
 
-##############################################no test#####################################################
-# from yolo_sort.yolov5.utils.metrics import bbox_iou
-from yolo_sort.yolov5.utils.plots import Annotator, colors, save_one_box
-from yolo_sort.yolov5.utils.general import (xywh2xyxy, cv2)
-from DetectError import *
-class PipeResource:
-    def __init__(self, vid=-1, f_num=0, path=None, im=None, im0s=None, vid_cap=None, s=None) -> None:
-        self.vid = vid #video id / set undefind
-        self.f_num = f_num #video frame number / set undefind
-        # get dateset  (path, im, im0s, vid_cap, s)
-        self.path = path        # video path
-        self.vid_cap = vid_cap  # video data
-        self.s = s              # string
-        
-        self.im = im            # pading image
-        
-        self.im0s = im0s        # origin image
-        self.dets = list()
-        self.unset_det_num = dict()
-    
-    def __iter__(self):
-        self.count = 0
-        return self
-    
-    def __next__(self) -> dict:
-        if self.count == self.__len__():
-            raise StopIteration
-        
-        cnt = self.count 
-        
-        contents = self.dets[cnt]
-        
-        self.count += 1
-        
-        return contents
-    
-    def __len__(self):
-        #test_print("len ==>",self.dets.__len__())
-        return self.dets.__len__()
-    
-    def print(self, on=True):
-        if on:
-            print("==============================================")
-            print(f'{self.vid}.{self.f_num}',"dets")
-            for i, det in enumerate(self.dets):
-                print(f'det {i} :', det)
-            print("==============================================")
-        
-    def auto_set_dets(self):
-        for i in range(randrange(1, 7)):
-            det = {"frame": self.f_num, "x": randrange(10,1970), "y": randrange(10,1070), "w":randrange(18,31), "h":randrange(18,31), "cls":randrange(0,2), "conf":random()}
-            self.dets.append(det)
-    def set_det(self, idx=0, xywh=None, id=-1, cls=0, conf=0.0):
-        #test_print(self.dets.__len__(), "det.len()")
-        if self.dets.__len__() < idx:
-            raise IndexError
-        if xywh is not None:
-            det = self.dets[idx]
-            det["x"] = xywh[0]
-            det["y"] = xywh[1]
-            det["w"] = xywh[2]
-            det["h"] = xywh[3]
-            det["id"] = id
-            det["cls"] = cls
-            det["conf"] = conf
-
-    def append_det(self, xywh, id=-1, cls=0, conf=0.0):
-        det = dict()
-        det["x"] = xywh[0]
-        det["y"] = xywh[1]
-        det["w"] = xywh[2]
-        det["h"] = xywh[3]
-        det["id"] = id
-        det["cls"] = cls
-        det["conf"] = conf
-        self.dets.append(det)
-            
-    def imshow(self, name="no name", idx_names=["1","2","3"],cls_names=["E", "B"],line_thickness=2, hide_labels=True, hide_conf = True):
-        im0= self.im0s
-        annotator = Annotator(
-            im0, line_width=line_thickness, example=str(cls_names))
-        # Write results
-        for i, det in enumerate(self.dets):
-            c = int(det["cls"])  # integer class
-            id = ""
-            try:
-               id = f"{idx_names[int(det['id'])]} "
-            except KeyboardInterrupt:sys.exit()
-            except:
-                pass
-            label = None if hide_labels else (f"{id}{cls_names[c]}" if hide_conf else f'{cls_names[c]} {det["conf"]:.2f}')
-            xywh = [det["x"], det["y"], det["w"], det["h"]]
-            xyxy = xywh2xyxy(xywh)
-            annotator.box_label(xyxy, label, color=colors(c, True))
-        im0 = annotator.result()
-        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(name, 1280, 720)
-        cv2.imshow(name, im0)
-        # print(f"vid: {input.vid} / f_num: {input.f_num} / path: {input.path}")
-        
-    def is_detkey(self, key = "id") ->bool:
-        try:
-            for det in self.dets:
-                a = det[key]
-                test_print(f"is_detkey({key} : {a})")
-        except KeyboardInterrupt:sys.exit()
-        except:
-            return False
-        return True
-    
-    def len_unset_detkey(self, key = "id") -> int:
-        try:
-            return self.unset_det_num[key]
-        except KeyboardInterrupt:sys.exit()
-        except:
-            cnt = 0
-            for det in self.dets:
-                try:
-                    a = det[key]
-                    test_print(f"is_detkey({key} : {a})")
-                except:
-                    cnt += 1
-            self.unset_det_num[key] = cnt
-            return self.unset_det_num[key]
-    def len_detkey_match(self, key = "cls", value="1") -> int:
-        cnt = 0
-        if len(self.dets) <= 0:
-            return 0
-        
-        for det in self.dets:
-            if int(det[key]) == int(value):
-                cnt += 1
-        return cnt
-    def update_id(self, key, value, xywh, conf, cls=1):
-        for det in self.dets:
-            if float(det["conf"]) == float(conf) and int(det["cls"]) == int(cls):
-                if same_box([],[]):
-                    det[key] = value
-                        
-def same_box(box1, box2, iou_th=0.9) -> bool:
-    return True
-
-def xywh2xyxy(x):
-    y=list(x)
-    y[0] = float(x[0]) - float(x[2]) / 2  # top left x
-    y[1] = float(x[1]) - float(x[3]) / 2  # top left y
-    y[2] = float(x[0]) + float(x[2]) / 2  # bottom right x
-    y[3] = float(x[1]) + float(x[3]) / 2  # bottom right y
-    return y
-
-def xyxy2xywh(x):
-    y=list(x)
-    y[0] = (float(x[0]) + float(x[2])) / 2  # x center
-    y[1] = (float(x[1]) + float(x[3])) / 2  # y center
-    y[2] = float(x[2]) - float(x[0])  # width
-    y[3] = float(x[3]) - float(x[1]) # height
-    return y
-
-def copy_piperesource(src:PipeResource)->PipeResource:
-    dst = PipeResource()
-    dst.vid = src.vid #video id / set undefind
-    dst.f_num = src.f_num #video frame number / set undefind
-    dst.dets = src.dets.copy()
-    # get dateset  (path, im, im0s, vid_cap, s)
-    dst.path = src.path        # video path
-    dst.im = src.im.copy()      # image
-    dst.im0s = src.im0s        # 
-    dst.vid_cap = src.vid_cap  # video data
-    dst.s =src.s              # string
-    return dst
-
-
-        
 class IPipeHandler(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.det_idx2label = list()
@@ -332,9 +134,8 @@ class IOne2OnePipe(IObserverPipe, metaclass=ABCMeta):
                     test_print(self.__str__() + f" call_next_pipe({self.next_pipe.__str__()})")
                     self.next_pipe.push_src(output)
         except KeyboardInterrupt:sys.exit()
-        except NotEnoughDetectError as ex: raise NotEnoughDetectError(str(ex))
         except Exception as ex:
-            print(self.__str__(), " One2OnePipe call_next_pipe : ", ex.__str__())
+            LOGGER.info(f'{str(self)} One2OnePipe call_next_pipe : {str(ex)}')
     
     
 class One2OnePipe(IOne2OnePipe, metaclass=ABCMeta):
@@ -394,7 +195,6 @@ class One2ManyPipe(IObserverPipe, metaclass=ABCMeta):
                     # test_print(self.__str__() + " call_next_pipe")
                     self.next_pipe[observer_idx].push_src(output)
             except KeyboardInterrupt:sys.exit()
-            except NotEnoughDetectError as ex: raise NotEnoughDetectError(str(ex))
             except IndexError as ex:
                 pass
                 #print(self.__str__(), f" call_next_pipe({observer_idx}/{self.next_pipe.__len__()}) : ", ex.__str__())
@@ -448,64 +248,11 @@ class SplitPipe(One2ManyPipe, metaclass=ABCMeta):
     @abstractclassmethod
     def get_regist_type(self, idx=0) -> str:
         pass
-    def create_test_resource(f_num, im=None, im0s=None) -> PipeResource:    
-            src = PipeResource(vid=1, f_num=f_num, im=im, im0s=im0s, s="test data")
-            src.auto_set_dets()
-            return src        
-
-class StartNotDetectCutterPipe(One2OnePipe):
-    def __init__(self) -> None:
-        super().__init__()
-        self.frame_num = 0
-    def exe(self, input: PipeResource) -> PipeResource:
-        if self.frame_num ==0:
-            if input.dets.__len__() < 3:
-                input = None
-            elif input.dets.__len__() >=4 :
-                class OverStartDetectError(Exception):
-                    def __init__(self, msg = "Over Detect in start frame"):
-                        super().__init__(msg)
-                raise OverStartDetectError()
-            else :
-                self.frame_num += 1
-        return input
     
-    def get_regist_type(self, idx=0) -> str:
-        return "start cutter"
-
-class FirstCopyPipe(IOne2OnePipe):
-    def __init__(self, N_INIT=30, display=True) -> None:
-        super().__init__()
-        self.display = display
-        self.n_init = N_INIT
-        self.frame_num = 0
-            
-    def push_src(self, input: PipeResource) -> None:
-        
-        if input is not None and len(input.dets) > 0:
-            if isinstance(input, PipeResource):                                #check input valid
-                # test_print(self.__str__() + " puch_src")
-                output = self.handler.exe(input)
-                
-                t1 = time.time()
-                if self.frame_num == 0:
-                    if output is not None:                                          #no action condition
-                        k=self.n_init
-                        for i in range(k-1):
-                            self.call_next_pipe(output)
-                        self.frame_num += 1
-                    t2 = time.time()
-                    if self.display and k != 1:
-                        print(f"[{self.get_regist_type()} {t2-t1:.3f}s]",end=" ")
-                self.call_next_pipe(output)
-                
-                    
-    
-    def exe(self, input: PipeResource) -> PipeResource:
-        return input
-    
-    def get_regist_type(self, idx=0) -> str:
-        return "FirstCopy"
+def create_test_resource(im=None, images=dict(), metadata=dict()) -> PipeResource:
+    src = PipeResource(metadata=metadata, images=images, im=im)
+    src.auto_set_dets()
+    return src     
 
 class ConvertToxywhPipe(One2OnePipe):
     def __init__(self) -> None:
@@ -514,7 +261,7 @@ class ConvertToxywhPipe(One2OnePipe):
     def exe(self, input: PipeResource) -> PipeResource:
         dets = input.dets
         for det in dets:
-            xyxy = [det["x"],det["y"],det["w"],det["h"]]
+            xyxy = [det["xmin"],det["ymin"],det["xmax"],det["ymax"]]
             xywh = xyxy2xywh(xyxy)
             det["x"] = xywh[0]
             det["y"] = xywh[1]
@@ -589,8 +336,6 @@ class CopyPipe(RepeatPipe):
     def get_regist_type(self, idx=0) -> str:
         return "copy_pipe"+idx.__str__()
 
-
-
 class SplitKey(SplitPipe):
     def __init__(self, names=[], key="cls") -> None:
         super().__init__()
@@ -636,22 +381,18 @@ class SplitCls(SplitKey):
 #########################==================test case=============================
 
 class PassPipe(One2OnePipe):
-    def __init__(self) -> None:
+    def __init__(self, display=True) -> None:
         super().__init__()
-        self.istest = is_test()
+        self.display = display
     
     def exe(self, input: PipeResource) -> PipeResource:
-        if self.istest:
-            try:
-                for i, det in enumerate(input.dets):
-                    det["test"] = True
-            except KeyboardInterrupt:sys.exit()
-            except:
-                test_print("error : PassPipe")
+        if self.display:
+            LOGGER.info(f'{input.s}')
         return input
     
     def get_regist_type(self, idx=0) -> str:
         return "pass_pipe"
+
 
   
 def test_split_pipe():
