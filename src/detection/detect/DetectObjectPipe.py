@@ -47,6 +47,7 @@ from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
 from utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, cv2, xyxy2xywh)
 from utils.dataloaders import VID_FORMATS, LoadImages, LoadStreams
+from utils.augmentations import letterbox
 from models.common import DetectMultiBackend
 ############################
 
@@ -58,7 +59,9 @@ class DetectObjectWeight(metaclass=Singleton):
         max_det=7,
         cls=[0, 1],
         imgsz=(640,640),
-        device = '0'
+        device = '0',
+        stride = 32,
+        pt = True
         ) -> None:
         # 고정값
         WEIGHTS = WEIGHT_DIR + "/yolo_ball.pt"
@@ -72,6 +75,8 @@ class DetectObjectWeight(metaclass=Singleton):
         # classes = None  # filter by class: --class 0, or --class 0 2 3
         self.cls = cls
         self.imgsz = imgsz  # inference size (height, width)
+        self.stride = stride
+        self.auto = pt
         
         ### load model ###
         self.model = DetectMultiBackend(
@@ -99,6 +104,8 @@ class DetectObjectPipe(One2OnePipe):
         self.iou_thres = instance.iou_thres
         self.max_det = instance.max_det
         self.imgsz = instance.imgsz
+        self.stride = instance.stride
+        self.auto = instance.auto
         
         t2 = time.time()
         if display:
@@ -120,6 +127,13 @@ class DetectObjectPipe(One2OnePipe):
         conf_thres = self.conf_thres
         iou_thres = self.iou_thres
         max_det = self.max_det
+
+        # Padding
+        im0 = input.im0s.copy()
+        im = letterbox(im0, self.imgsz, stride=self.stride, auto=self.auto)[0]  # padded resize
+        im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+        im = np.ascontiguousarray(im)  # contiguous
+        input.im = im
 
         t1 = time_sync()
         im = torch.from_numpy(input.im).to(device)
@@ -170,7 +184,7 @@ class DetectObjectPipe(One2OnePipe):
             ## output 설정 ###
             for i in range(det.shape[0]):
                 output_det = {"frame": input.f_num, "x": int(det[i][0]), "y": int(det[i][1]), "w": int(
-                    det[i][2]), "h": int(det[i][3]), "conf": float(det[i][4]), "cls": int(det[i][5])}
+                    det[i][2] - det[i][0]), "h": int(det[i][3] - det[i][1]), "conf": float(det[i][4]), "cls": int(det[i][5])}
                 input.dets.append(output_det)
 
         output = copy_piperesource(input)
