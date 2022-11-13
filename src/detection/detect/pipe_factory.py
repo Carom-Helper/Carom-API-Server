@@ -21,14 +21,14 @@ from ProjectionPipe import ProjectionPipe, ProjectionCoordPipe
 from DetectObjectPipe import DetectObjectPipe
 from detect_utills import (PipeResource, LoadImages,
                            copy_piperesource, is_test,
-                           Annotator, cv2,print_args)
+                           Annotator, cv2, print_args)
 
 def is_test_factory()->bool:
     return True and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_factory():
-        print("projection pipe test : ", s, s1, s2, s3, s4, s5, end=end)
+        print("factory pipe test : ", s, s1, s2, s3, s4, s5, end=end)
 
 
 def pipe_factory(start_pipe=None, device='cpu', display = True):
