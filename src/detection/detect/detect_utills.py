@@ -11,6 +11,7 @@ import logging
 from typing import Optional
 import inspect
 import cv2
+import math
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -502,6 +503,22 @@ def make_padding_image(im0, img_size=640, stride=32, auto=True, transforms=None)
         dst = np.ascontiguousarray(dst)  # contiguous
     return dst
 
+def make_divisible(x, divisor):
+    # Returns nearest x divisible by divisor
+    if isinstance(divisor, torch.Tensor):
+        divisor = int(divisor.max())  # to int
+    return math.ceil(x / divisor) * divisor
+
+def check_img_size(imgsz, s=32, floor=0):
+    # Verify image size is a multiple of stride s in each dimension
+    if isinstance(imgsz, int):  # integer i.e. img_size=640
+        new_size = max(make_divisible(imgsz, int(s)), floor)
+    else:  # list i.e. img_size=[640, 480]
+        imgsz = list(imgsz)  # convert to list if tuple
+        new_size = [max(make_divisible(x, int(s)), floor) for x in imgsz]
+    if new_size != imgsz:
+        LOGGER.warning(f'WARNING ⚠️ --img-size {imgsz} must be multiple of max stride {s}, updating to {new_size}')
+    return new_size
 
 
 import os
