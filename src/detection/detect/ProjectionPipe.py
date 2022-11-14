@@ -126,6 +126,17 @@ class ProjectionCoordPipe(One2OnePipe):
             test_print(temp_result[0]/temp_result[2], temp_result[1]/temp_result[2], "\n")
             result = cv2.line(result, (projx, projy), (projx, projy), (0,0,0), 5)
             projected = cv2.circle(projected, (projx, projy), 9, (255, 255, 255), 1)
+            det['x'] = projx
+            det['y'] = projy
+
+        # 원본 정사영 영역 표시
+        origin = input.im0s.copy()
+        for i in range(4):
+            origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
+        
+
+
+
         input.im = result.copy()
         input.images["projected"] = result
         output = input

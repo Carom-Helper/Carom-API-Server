@@ -58,8 +58,7 @@ def pipe_factory(start_pipe=None, device='0', framework='nvidia', display=True, 
     
     # - connect
     #projection_pipe.connect_pipe(detect_cls_pipe)
-    detect_cls_pipe.connect_pipe(xyxy2xywh)     #detect class - split_cls
-    xyxy2xywh.connect_pipe(projection_coord_pipe) 
+    detect_cls_pipe.connect_pipe(projection_coord_pipe)     #detect class - split_cls
     projection_coord_pipe.connect_pipe(split_cls_pipe)
     _ = split_cls_pipe.connect_pipe(edge_bag) # split class - edge bag
 
