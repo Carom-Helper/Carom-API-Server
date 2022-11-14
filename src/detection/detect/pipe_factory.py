@@ -11,12 +11,23 @@ CAROM_BASE_DIR=Path(__file__).resolve().parent.parent.parent
 FILE = Path(__file__).resolve()
 ROOT = FILE.parent
 
+tmp = ROOT
+if str(tmp) not in sys.path and os.path.isabs(tmp):
+    sys.path.append(str(tmp))  # add ROOT to PATH
+
+# tmp = ROOT / "gpu_yolov5"
+# if str(tmp) not in sys.path and os.path.isabs(tmp):
+#     sys.path.append(str(tmp))  # add ROOT to PATH
+
+
 # # ADD gpu_yolov5 to env list
 # tmp = ROOT / 'gpu_yolov5'
 # if str(tmp) not in sys.path and os.path.isabs(tmp):
 #     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
-from pipe_cls import One2OnePipe, ResourceBag, ConvertToxywhPipe, IObserverPipe, SplitCls 
+from pipe_cls import One2OnePipe, ConvertToxywhPipe, IObserverPipe, SplitCls, ResourceOne, ResourceBag
+from pipe_utills import SaveBallCoordPipe
+from Singleton import Singleton
 from ProjectionPipe import ProjectionPipe, ProjectionCoordPipe
 from DetectObjectPipe import DetectObjectPipe
 from detect_utills import (PipeResource, LoadImages,
@@ -30,8 +41,11 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_factory():
         print("factory pipe test : ", s, s1, s2, s3, s4, s5, end=end)
 
+class PipeFactory(metaclass=Singleton):
+    def __init__(self, start_pipe=None, device='0', framework="nvidia", display = True, inDB=True):
+        self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
 
-def pipe_factory(start_pipe=None, device='cpu', display = True):
+def pipe_factory(start_pipe=None, device='cpu', framework='nvidia', display=True, inDB=True):
     if display:
         print("initialize weights")
     #detect class and split class
@@ -51,7 +65,7 @@ def pipe_factory(start_pipe=None, device='cpu', display = True):
 
     test_print("connect edge pipe : ", _)        
     
-    ball_bag = ResourceBag()
+    ball_bag = SaveBallCoordPipe(display=display) if inDB else ResourceOne()
     _ = split_cls_pipe.connect_pipe(ball_bag) # split class - ball bag
     test_print("connect ball pipe : ", _)     
     
@@ -62,13 +76,13 @@ def pipe_factory(start_pipe=None, device='cpu', display = True):
         start_pipe.connect_pipe(detect_cls_pipe)
     else:
         raise TypeError("TypeError in pipe_factory")
-    return (start_pipe, ball_bag,  edge_bag)
+    return start_pipe, ball_bag
 
 
 
-def detect(src, device='cpu', MIN_DETS= 10, display=True):
+def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
     # # set pipe
-    pipe, ball_bag, edge_bag = pipe_factory(device=device, display=display)
+    pipe, ball_bag = pipe_factory(device=device, display=display, inDB=inDB)
     
     ### Dataloader ###
     dataset = LoadImages(src)
@@ -90,7 +104,7 @@ def detect(src, device='cpu', MIN_DETS= 10, display=True):
         test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
         
 
-        metadata = {"path": path, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
+        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
         images = {"origin":im0}
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         pipe.push_src(input)
@@ -101,16 +115,17 @@ def detect(src, device='cpu', MIN_DETS= 10, display=True):
                 origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
             cv2.imshow("origin", origin)
             cv2.waitKey(3000)
-    return (ball_bag, edge_bag)
+    return ball_bag
     
-def test(src, device):
-    ball_bag, edge_bag = detect(src, device)
+def test(
+    src = CAROM_BASE_DIR / "media" / "test2" / "sample.jpg", 
+    device = '0',
+    display=True
+    ):
+    ball_bag = detect(src, device, display=display, inDB=True)
      
     title = "test"
-    for ball_det in ball_bag.src_list:
-        ball_det.imshow(title, dets_key=["cls", "label"], hide_labels=False)
-    cv2.waitKey(3000)
-    edge_bag.print
+    ball_bag.print()
     
 def runner(args):
     print_args(vars(args))
@@ -122,6 +137,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "test2" / "sample.jpg")
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--display', default=True, action="store_false")
+    parser.add_argument('--display', action="store_true")
     args = parser.parse_args()
     runner(args) 

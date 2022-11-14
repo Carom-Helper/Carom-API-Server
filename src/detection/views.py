@@ -11,6 +11,9 @@ from time import sleep
 
 # add our project
 from .serializers import *
+from carom_api.settings import FRAME_WORK
+
+from .detect.pipe_factory import *
 
 
 # Create your views here.
@@ -29,9 +32,29 @@ def test_make_coord(carom_id, usr, t=1):
     print("======== test ============")
     carom_img = carom.objects.get(id=carom_id)
     carom_img.detect_state="P"
-    carom_img.save()
+    # carom_img.save()
     print("======== start Process ============")
-    sleep(t*3)
+    topLeft = carom_img.guide["TL"]
+    bottomRight = carom_img.guide["BR"]
+    topRight = carom_img.guide["TR"]
+    bottomLeft = carom_img.guide["BL"]
+    
+    factory = PipeFactory(framework=FRAME_WORK, display=False, inDB=True)
+    start_pipe = factory.pipe
+    
+    ### Dataloader ###
+    src = carom_img.img.path
+    dataset = LoadImages(src)
+    ### 실행 ###
+    for im0, path, s in dataset:
+        # set piperesource
+        metadata = {"path": path, "carom_id":carom_id, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
+        images = {"origin":im0}
+        input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
+        input.print()
+        # push input
+        start_pipe.push_src(input)
+    
     print("======== detect done ============")
     coord = balls_coord(carom_id=carom_id, coord={"cue" : [200, 200], "obj1" : [600, 200], "obj2" : [200, 150]})
     coord.save()

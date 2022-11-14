@@ -48,7 +48,7 @@ from threading import Lock
 
 class DetectObjectPipe(One2OnePipe):
     cls_list = ["EDGE", "BALL"]
-    def __init__(self, device, display=True):
+    def __init__(self, device, framework="nvidia", display=True):
         super().__init__()
         self.display = display
         t1 = time.time()

@@ -6,7 +6,7 @@ import sys
 
 from detect_utills import PipeResource, xyxy2xywh, copy_piperesource, is_test
 def is_test_pipe_cls()->bool:
-    return False and is_test()
+    return True and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_pipe_cls():
@@ -267,7 +267,7 @@ class ConvertToxywhPipe(One2OnePipe):
             det["w"] = xywh[2]
             det["h"] = xywh[3]
         # test_print("++++++++++++++convert xywh+++++++++++++++++")
-        # input.print(on=is_test())
+        input.print(on=is_test_pipe_cls())
         return input
     
     def get_regist_type(self, idx=0) -> str:
