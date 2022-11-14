@@ -64,5 +64,18 @@ class IWeight:
         t2 = time.time()
         print( f'[{self.NAME} init {(t2-t1):.1f}s]')
     @abstractmethod
-    def inference(im, size):
+    def inference(self, im, size):
         pass
+    # @abstractmethod
+    # def non_max_suppression((
+    #     prediction,
+    #     conf_thres=0.25,
+    #     iou_thres=0.45,
+    #     classes=None,
+    #     agnostic=False,
+    #     multi_label=False,
+    #     labels=(),
+    #     max_det=300,
+    #     nm=0,  # number of masks
+    #     ):
+    #     pass

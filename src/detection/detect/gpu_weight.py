@@ -26,6 +26,8 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
     WEIGHT_DIR= (tmp)  # add Weights ROOT to PATH
 
 
+# from gpu_yolov5.utils.general import (non_max_suppression, scale_boxes)
+
 from IWeight import IWeight, test_print
 from Singleton import Singleton
 from detect_utills import (

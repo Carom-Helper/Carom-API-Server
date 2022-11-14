@@ -46,7 +46,8 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
 ############################
 from threading import Lock
 
-class DetectObjectPipe(One2OnePipe):  
+class DetectObjectPipe(One2OnePipe):
+    cls_list = ["EDGE", "BALL"]
     def __init__(self, device, display=True):
         super().__init__()
         self.display = display
@@ -119,7 +120,7 @@ class DetectObjectPipe(One2OnePipe):
             ## output 설정 ###
             for xmin, ymin, xmax, ymax, conf, cls in reversed(det):
                 output_det = {"xmin": int(xmin), "ymin": int(ymin), "xmax": int(
-                    xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls)}
+                    xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls), "label":self.cls_list[int(cls)]}
                 input.dets.append(output_det)
         output = copy_piperesource(input)
         t2 = time.time()

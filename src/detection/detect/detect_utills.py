@@ -30,8 +30,8 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
 from gpu_yolov5.utils.torch_utils import select_device, time_sync
-from gpu_yolov5.utils.general import (check_img_size, non_max_suppression, scale_boxes)
-from gpu_yolov5.utils.plots import Annotator, colors, save_one_box
+from gpu_yolov5.utils.general import (non_max_suppression, scale_boxes)
+# from gpu_yolov5.utils.plots import Annotator, colors, save_one_box
 
 
 IMG_FORMATS = 'bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp', 'pfm'  # include image suffixes

@@ -108,7 +108,8 @@ def test(src, device):
      
     title = "test"
     for ball_det in ball_bag.src_list:
-        ball_det.imshow(title, idx_names=["1","2","3","4","5","6"], hide_labels=False)
+        ball_det.imshow(title, dets_key=["cls", "label"], hide_labels=False)
+    cv2.waitKey(3000)
     edge_bag.print
     
 def runner(args):
