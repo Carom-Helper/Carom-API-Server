@@ -9,6 +9,9 @@ from carom_api.settings import BASE_DIR, MEDIA_ROOT
 class projection_method(Model):
     name = models.CharField(max_length=100, verbose_name="NAME")
     value = models.PositiveSmallIntegerField(verbose_name="VALUE", null=True)
+    
+    def __str__(self) -> str:
+        return str(self.name)
 
 class carom(Model):
     WORK_STATE = [

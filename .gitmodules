@@ -1,3 +1,6 @@
-[submodule "src/detection/detect/yolo_sort"]
-	path = src/detection/detect/yolo_sort
-	url = https://github.com/mikel-brostrom/Yolov5_StrongSORT_OSNet
+[submodule "src/detection/detect/gpu_yolov5"]
+	path = src/detection/detect/gpu_yolov5
+	url = https://github.com/ultralytics/yolov5.git
+[submodule "src/detection/detect/npu_yolov5"]
+	path = src/detection/detect/npu_yolov5
+	url = https://github.com/furiosa-ai/yolov5-demo.git
