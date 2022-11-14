@@ -56,10 +56,6 @@ INSTALLED_APPS = [
     "u_img",
     "detection",
     "recommend",
-    
-    "detection.detect",
-    "detection.detect.gpu_yolov5",
-    "detection.detect.npu_yolov5",
 ]
 
 MIDDLEWARE = [

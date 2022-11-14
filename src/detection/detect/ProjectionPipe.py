@@ -19,7 +19,7 @@ from detect_utills import (PipeResource, LoadImages,
                            copy_piperesource, is_test, cv2, print_args)
 
 def is_test_projection()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_projection():
@@ -86,8 +86,8 @@ class ProjectionCoordPipe(One2OnePipe):
     def __init__(self, display=True):
         super().__init__()
         self.display = display
-        #self.points = [[520,100],[970,102],[1440,650],[0,635]]
-        self.points = [[549,109],[942,111],[1270,580],[180,565]]
+        # #self.points = [[520,100],[970,102],[1440,650],[0,635]]
+        # self.points = [[549,109],[942,111],[1270,580],[180,565]]
 
     @torch.no_grad()
     def exe(self, input: PipeResource) -> PipeResource:

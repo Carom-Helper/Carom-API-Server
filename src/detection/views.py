@@ -29,18 +29,18 @@ class ProjectionViewSet(viewsets.ModelViewSet):
     
 
 def test_make_coord(carom_id, usr, t=1):
-    print("======== test ============")
+    #Start make coord
     carom_img = carom.objects.get(id=carom_id)
     carom_img.detect_state="P"
-    # carom_img.save()
-    print("======== start Process ============")
+    carom_img.save()
+    
+    # set PipeResource
     topLeft = carom_img.guide["TL"]
     bottomRight = carom_img.guide["BR"]
     topRight = carom_img.guide["TR"]
     bottomLeft = carom_img.guide["BL"]
     
-    factory = PipeFactory(framework=FRAME_WORK, display=False, inDB=True)
-    start_pipe = factory.pipe
+    pipe, bag = pipe_factory(display=False, inDB=True)
     
     ### Dataloader ###
     src = carom_img.img.path
@@ -53,14 +53,11 @@ def test_make_coord(carom_id, usr, t=1):
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         input.print()
         # push input
-        start_pipe.push_src(input)
+        pipe.push_src(input)
     
-    print("======== detect done ============")
-    coord = balls_coord(carom_id=carom_id, coord={"cue" : [200, 200], "obj1" : [600, 200], "obj2" : [200, 150]})
-    coord.save()
+    # end make coord
     carom_img.detect_state="D"
     carom_img.save()
-    print("======== save ball_coord ============")
 
 class DetectRequestAPIView(APIView):
     def get_coord(self, carom_id):
