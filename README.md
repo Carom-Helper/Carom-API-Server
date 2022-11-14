@@ -4,8 +4,8 @@ This project uses Django REST API and Pythorch. It provides an API that tells yo
 # How to install
 ```bash
 git clone https://github.com/Carom-Helper/Carom-API-Server.git
+cd Carom-API-Server
 git submodule update --init --recursive
-cd src
 ```
 ##### Next Step. Set {$ROOT}/src/secrets.json
 ```json
