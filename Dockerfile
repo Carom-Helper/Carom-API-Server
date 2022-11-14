@@ -14,7 +14,7 @@ ENV Portnum="0.0.0.0:${portnum}"
 RUN apt-get update && apt-get install -y sudo \
     && apt-get install -y libgl1-mesa-glx git locales \
     && locale-gen ko_KR.UTF-8
-RUN apt-get install libglib2.0-0
+RUN apt-get install libglib2.0-0 -y
 
 ENV LC_ALL ko_KR.UTF-8
 RUN pip install --upgrade pip
