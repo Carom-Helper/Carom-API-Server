@@ -33,7 +33,7 @@ WORKDIR /${fname}/src
 ENV work_dir="`echo pwd`"
 WORKDIR /detection/detect/npu_yolov5
 RUN echo `pwd`
-RUN ECHO ${work_dir}
+RUN echo ${work_dir}
 RUN ./build.sh
 WORKDIR ${work_dir}
 
