@@ -30,7 +30,7 @@ COPY . .
 
 RUN pip install -r requirements.txt
 WORKDIR /${fname}/src
-ENV work_dir="`echo pwd`"
+ENV work_dir="`pwd`"
 WORKDIR /detection/detect/npu_yolov5
 RUN echo "`pwd`"
 RUN echo ${work_dir}
