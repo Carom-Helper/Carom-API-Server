@@ -4,8 +4,8 @@ This project uses Django REST API and Pythorch. It provides an API that tells yo
 # How to install
 ```bash
 git clone https://github.com/Carom-Helper/Carom-API-Server.git
+cd Carom-API-Server
 git submodule update --init --recursive
-cd src
 ```
 ##### Next Step. Set {$ROOT}/src/secrets.json
 ```json
@@ -32,6 +32,7 @@ pip install -r requirements.txt
 # How to run with Anaconda(or PIP)
 ```bash
 # Check if the django works well
+cd src
 python manage.py runserver
 ```
 ```bash
@@ -55,6 +56,12 @@ make build
 # How to run with Docker
 ```bash
 make run
+```
+
+# How to setting In Docker Container (attach shell)
+```bash
+python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus 
+/build.sh
 ```
 
 # How to stop Docker container
