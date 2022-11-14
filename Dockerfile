@@ -30,11 +30,4 @@ COPY . .
 
 RUN pip install -r requirements.txt
 WORKDIR /${fname}/src
-ENV work_dir="`pwd`"
-WORKDIR /detection/detect/npu_yolov5
-RUN echo "`pwd`"
-RUN echo ${work_dir}
-RUN /build.sh
-WORKDIR ${work_dir}
-
 CMD python manage.py runserver ${Portnum}
