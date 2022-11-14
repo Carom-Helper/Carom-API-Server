@@ -34,7 +34,7 @@ ENV work_dir="`echo pwd`"
 WORKDIR /detection/detect/npu_yolov5
 RUN echo "`pwd`"
 RUN echo ${work_dir}
-RUN ./build.sh
+RUN /build.sh
 WORKDIR ${work_dir}
 
 CMD python manage.py runserver ${Portnum}
