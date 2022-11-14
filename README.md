@@ -32,6 +32,7 @@ pip install -r requirements.txt
 # How to run with Anaconda(or PIP)
 ```bash
 # Check if the django works well
+cd src
 python manage.py runserver
 ```
 ```bash
@@ -55,6 +56,12 @@ make build
 # How to run with Docker
 ```bash
 make run
+```
+
+# How to setting In Docker Container (attach shell)
+```bash
+python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus 
+/build.sh
 ```
 
 # How to stop Docker container
