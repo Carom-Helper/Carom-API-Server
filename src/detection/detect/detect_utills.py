@@ -11,8 +11,9 @@ import logging
 from typing import Optional
 import inspect
 import cv2
+import math
 import numpy as np
-
+from PIL import Image, ImageDraw, ImageFont
 
 import sys
 from pathlib import Path
@@ -29,13 +30,169 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
 from gpu_yolov5.utils.torch_utils import select_device, time_sync
-from gpu_yolov5.utils.general import (check_img_size, non_max_suppression, scale_boxes)
-from gpu_yolov5.models.common import DetectMultiBackend
-from gpu_yolov5.utils.plots import Annotator, colors, save_one_box
+from gpu_yolov5.utils.general import (non_max_suppression, scale_boxes)
+# from gpu_yolov5.utils.plots import Annotator, colors, save_one_box
 
 
 IMG_FORMATS = 'bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp', 'pfm'  # include image suffixes
 VID_FORMATS = 'asf', 'avi', 'gif', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'ts', 'wmv'  # include video suffixes
+
+class Colors:
+    # Ultralytics color palette https://ultralytics.com/
+    def __init__(self):
+        # hex = matplotlib.colors.TABLEAU_COLORS.values()
+        hexs = ('FF3838', 'FF9D97', 'FF701F', 'FFB21D', 'CFD231', '48F90A', '92CC17', '3DDB86', '1A9334', '00D4BB',
+                '2C99A8', '00C2FF', '344593', '6473FF', '0018EC', '8438FF', '520085', 'CB38FF', 'FF95C8', 'FF37C7')
+        self.palette = [self.hex2rgb(f'#{c}') for c in hexs]
+        self.n = len(self.palette)
+
+    def __call__(self, i, bgr=False):
+        c = self.palette[int(i) % self.n]
+        return (c[2], c[1], c[0]) if bgr else c
+
+    @staticmethod
+    def hex2rgb(h):  # rgb order (PIL)
+        return tuple(int(h[1 + i:1 + i + 2], 16) for i in (0, 2, 4))
+
+
+colors = Colors()  # create instance for 'from utils.plots import colors'
+
+def scale_image(im1_shape, masks, im0_shape, ratio_pad=None):
+    """
+    img1_shape: model input shape, [h, w]
+    img0_shape: origin pic shape, [h, w, 3]
+    masks: [h, w, num]
+    """
+    # Rescale coordinates (xyxy) from im1_shape to im0_shape
+    if ratio_pad is None:  # calculate from im0_shape
+        gain = min(im1_shape[0] / im0_shape[0], im1_shape[1] / im0_shape[1])  # gain  = old / new
+        pad = (im1_shape[1] - im0_shape[1] * gain) / 2, (im1_shape[0] - im0_shape[0] * gain) / 2  # wh padding
+    else:
+        pad = ratio_pad[1]
+    top, left = int(pad[1]), int(pad[0])  # y, x
+    bottom, right = int(im1_shape[0] - pad[1]), int(im1_shape[1] - pad[0])
+
+    if len(masks.shape) < 2:
+        raise ValueError(f'"len of masks shape" should be 2 or 3, but got {len(masks.shape)}')
+    masks = masks[top:bottom, left:right]
+    # masks = masks.permute(2, 0, 1).contiguous()
+    # masks = F.interpolate(masks[None], im0_shape[:2], mode='bilinear', align_corners=False)[0]
+    # masks = masks.permute(1, 2, 0).contiguous()
+    masks = cv2.resize(masks, (im0_shape[1], im0_shape[0]))
+
+    if len(masks.shape) == 2:
+        masks = masks[:, :, None]
+    return masks
+
+class Annotator:
+    # YOLOv5 Annotator for train/val mosaics and jpgs and detect/hub inference annotations
+    def __init__(self, im, line_width=None, font_size=None, font='Arial.ttf', pil=False, example='abc'):
+        assert im.data.contiguous, 'Image not contiguous. Apply np.ascontiguousarray(im) to Annotator() input images.'
+        self.pil = pil
+        if self.pil:  # use PIL
+            self.im = im if isinstance(im, Image.Image) else Image.fromarray(im)
+            self.draw = ImageDraw.Draw(self.im)
+            self.font = ImageFont.load_default()
+        else:  # use cv2
+            self.im = im
+        self.lw = line_width or max(round(sum(im.shape) / 2 * 0.003), 2)  # line width
+
+    def box_label(self, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255)):
+        # Add one xyxy box to image with label
+        if self.pil:
+            self.draw.rectangle(box, width=self.lw, outline=color)  # box
+            if label:
+                w, h = self.font.getsize(label)  # text width, height
+                outside = box[1] - h >= 0  # label fits outside box
+                self.draw.rectangle(
+                    (box[0], box[1] - h if outside else box[1], box[0] + w + 1,
+                     box[1] + 1 if outside else box[1] + h + 1),
+                    fill=color,
+                )
+                # self.draw.text((box[0], box[1]), label, fill=txt_color, font=self.font, anchor='ls')  # for PIL>8.0
+                self.draw.text((box[0], box[1] - h if outside else box[1]), label, fill=txt_color, font=self.font)
+        else:  # cv2
+            p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
+            cv2.rectangle(self.im, p1, p2, color, thickness=self.lw, lineType=cv2.LINE_AA)
+            if label:
+                tf = max(self.lw - 1, 1)  # font thickness
+                w, h = cv2.getTextSize(label, 0, fontScale=self.lw / 3, thickness=tf)[0]  # text width, height
+                outside = p1[1] - h >= 3
+                p2 = p1[0] + w, p1[1] - h - 3 if outside else p1[1] + h + 3
+                cv2.rectangle(self.im, p1, p2, color, -1, cv2.LINE_AA)  # filled
+                cv2.putText(self.im,
+                            label, (p1[0], p1[1] - 2 if outside else p1[1] + h + 2),
+                            0,
+                            self.lw / 3,
+                            txt_color,
+                            thickness=tf,
+                            lineType=cv2.LINE_AA)
+
+    def masks(self, masks, colors, im_gpu=None, alpha=0.5):
+        """Plot masks at once.
+        Args:
+            masks (tensor): predicted masks on cuda, shape: [n, h, w]
+            colors (List[List[Int]]): colors for predicted masks, [[r, g, b] * n]
+            im_gpu (tensor): img is in cuda, shape: [3, h, w], range: [0, 1]
+            alpha (float): mask transparency: 0.0 fully transparent, 1.0 opaque
+        """
+        if self.pil:
+            # convert to numpy first
+            self.im = np.asarray(self.im).copy()
+        if im_gpu is None:
+            # Add multiple masks of shape(h,w,n) with colors list([r,g,b], [r,g,b], ...)
+            if len(masks) == 0:
+                return
+            if isinstance(masks, torch.Tensor):
+                masks = torch.as_tensor(masks, dtype=torch.uint8)
+                masks = masks.permute(1, 2, 0).contiguous()
+                masks = masks.cpu().numpy()
+            # masks = np.ascontiguousarray(masks.transpose(1, 2, 0))
+            masks = scale_image(masks.shape[:2], masks, self.im.shape)
+            masks = np.asarray(masks, dtype=np.float32)
+            colors = np.asarray(colors, dtype=np.float32)  # shape(n,3)
+            s = masks.sum(2, keepdims=True).clip(0, 1)  # add all masks together
+            masks = (masks @ colors).clip(0, 255)  # (h,w,n) @ (n,3) = (h,w,3)
+            self.im[:] = masks * alpha + self.im * (1 - s * alpha)
+        else:
+            if len(masks) == 0:
+                self.im[:] = im_gpu.permute(1, 2, 0).contiguous().cpu().numpy() * 255
+            colors = torch.tensor(colors, device=im_gpu.device, dtype=torch.float32) / 255.0
+            colors = colors[:, None, None]  # shape(n,1,1,3)
+            masks = masks.unsqueeze(3)  # shape(n,h,w,1)
+            masks_color = masks * (colors * alpha)  # shape(n,h,w,3)
+
+            inv_alph_masks = (1 - masks * alpha).cumprod(0)  # shape(n,h,w,1)
+            mcs = (masks_color * inv_alph_masks).sum(0) * 2  # mask color summand shape(n,h,w,3)
+
+            im_gpu = im_gpu.flip(dims=[0])  # flip channel
+            im_gpu = im_gpu.permute(1, 2, 0).contiguous()  # shape(h,w,3)
+            im_gpu = im_gpu * inv_alph_masks[-1] + mcs
+            im_mask = (im_gpu * 255).byte().cpu().numpy()
+            self.im[:] = scale_image(im_gpu.shape, im_mask, self.im.shape)
+        if self.pil:
+            # convert im back to PIL and update draw
+            self.fromarray(self.im)
+
+    def rectangle(self, xy, fill=None, outline=None, width=1):
+        # Add rectangle to image (PIL-only)
+        self.draw.rectangle(xy, fill, outline, width)
+
+    def text(self, xy, text, txt_color=(255, 255, 255), anchor='top'):
+        # Add text to image (PIL-only)
+        if anchor == 'bottom':  # start y from font bottom
+            w, h = self.font.getsize(text)  # text width, height
+            xy[1] += 1 - h
+        self.draw.text(xy, text, fill=txt_color, font=self.font)
+
+    def fromarray(self, im):
+        # Update self.im from a numpy array
+        self.im = im if isinstance(im, Image.Image) else Image.fromarray(im)
+        self.draw = ImageDraw.Draw(self.im)
+
+    def result(self):
+        # Return annotated image as array
+        return np.asarray(self.im)
 
 class LoadImages:
     def __init__(self, path, vid_stride=1):   
@@ -198,26 +355,38 @@ class PipeResource:
         det["conf"] = conf
         self.dets.append(det)
             
-    def imshow(self, name="no name", idx_names=["1","2","3","4","5","6"],cls_names=["Overall", "Bottom", "Top", "Outer","Shose"],line_thickness=2, hide_labels=True, hide_conf = True):
-        im0= self.images["origin"]
+    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
+        im0= self.images[images]
         annotator = Annotator(
-            im0, line_width=line_thickness, example=str(cls_names))
-        # Write results
-        for i, det in enumerate(self.dets):
-            c = int(det["cls"])  # integer class
-            id = ""
+            im0, line_width=line_thickness)
+        
+        # metadata 이름
+        base_s = ""
+        for key in metadata:
             try:
-               id = f"{idx_names[int(det['id'])]} "
-            except KeyboardInterrupt:sys.exit()
+                base_s += f"({self.metadata[key]})"
             except:
                 pass
-            label = None if hide_labels else (f"{id}{cls_names[c]}" if hide_conf else f'{cls_names[c]} {det["conf"]:.2f}')
-            xyxy = [det["xmin"], det["ymin"], det["xmax"], det["ymax"]]
-            annotator.box_label(xyxy, label, color=colors(c, True))
+        # Write results
+        if hide_box:pass
+        else:
+            for i, det in enumerate(self.dets):
+                s = ""
+                for key in dets_key:
+                    try:
+                        s += f'({str(det[key])})'
+                    except: pass
+                try:
+                    label = None if hide_labels else (f"{s}")
+                    xyxy = [det["xmin"], det["ymin"], det["xmax"], det["ymax"]]
+                    annotator.box_label(xyxy, label, color=colors(i*5, True))
+                except:
+                    pass
         im0 = annotator.result()
-        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(name, im0.shape[1], im0.shape[0])
-        cv2.imshow(name, im0)
+        window_name = base_s if name is None else str(name)
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(window_name, im0.shape[1], im0.shape[0])
+        cv2.imshow(window_name, im0)
         
     def is_detkey(self, key = "id") ->bool:
         try:
@@ -334,6 +503,22 @@ def make_padding_image(im0, img_size=640, stride=32, auto=True, transforms=None)
         dst = np.ascontiguousarray(dst)  # contiguous
     return dst
 
+def make_divisible(x, divisor):
+    # Returns nearest x divisible by divisor
+    if isinstance(divisor, torch.Tensor):
+        divisor = int(divisor.max())  # to int
+    return math.ceil(x / divisor) * divisor
+
+def check_img_size(imgsz, s=32, floor=0):
+    # Verify image size is a multiple of stride s in each dimension
+    if isinstance(imgsz, int):  # integer i.e. img_size=640
+        new_size = max(make_divisible(imgsz, int(s)), floor)
+    else:  # list i.e. img_size=[640, 480]
+        imgsz = list(imgsz)  # convert to list if tuple
+        new_size = [max(make_divisible(x, int(s)), floor) for x in imgsz]
+    if new_size != imgsz:
+        LOGGER.warning(f'WARNING ⚠️ --img-size {imgsz} must be multiple of max stride {s}, updating to {new_size}')
+    return new_size
 
 
 import os

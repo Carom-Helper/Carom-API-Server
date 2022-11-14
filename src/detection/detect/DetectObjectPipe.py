@@ -28,12 +28,12 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 # import my project
 from Singleton import Singleton
 from pipe_cls import One2OnePipe, ResourceBag
+from gpu_weight import DetectObjectWeight
 from detect_utills import (PipeResource, LoadImages,
                            make_padding_image, copy_piperesource,
                            LOGGER, is_test, Annotator, cv2,
                            select_device, time_sync, 
-                           check_img_size, non_max_suppression, xyxy2xywh, scale_boxes, print_args,
-                           DetectMultiBackend)
+                           check_img_size, non_max_suppression, xyxy2xywh, scale_boxes, print_args)
 
 def is_test_detect_object()->bool:
     return True and is_test()
@@ -45,41 +45,9 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
 
 ############################
 from threading import Lock
-class DetectObjectWeight(metaclass=Singleton):
-    def __init__(
-        self,
-        conf_thres=0.25,
-        iou_thres=0.45,
-        max_det=7,
-        cls=[0, 1],
-        imgsz=(640,640),
-        device= '0'
-        ) -> None:
-        # 고정값
-        WEIGHTS = WEIGHT_DIR / "yolo_ball.pt"
-        self.yolo_weights = WEIGHTS
-        self.device = select_device(model_name="YOLOv5", device=device)
-        
-        # 변하는 값(입력 값)
-        self.conf_thres = conf_thres
-        self.iou_thres = iou_thres
-        self.max_det = max_det
-        # classes = None  # filter by class: --class 0, or --class 0 2 3
-        self.cls = cls
-        self.imgsz = imgsz  # inference size (height, width)
-        self.lock = Lock()
-        
-        ### load model ###
-        self.model = DetectMultiBackend(
-            self.yolo_weights, device=self.device, dnn=False, data=None, fp16=False)
-        ############
-        
-        self.imgsz = check_img_size(
-            self.imgsz, s=self.model.stride)  # check image size
-        
-        self.model.warmup(imgsz=(1, 3, *self.imgsz))  # warmup
 
-class DetectObjectPipe(One2OnePipe):  
+class DetectObjectPipe(One2OnePipe):
+    cls_list = ["EDGE", "BALL"]
     def __init__(self, device, display=True):
         super().__init__()
         self.display = display
@@ -87,13 +55,13 @@ class DetectObjectPipe(One2OnePipe):
         
         #load model
         instance = DetectObjectWeight(device=device)
-        self.model = instance.model
+        self.model = instance
         self.device = instance.device
         self.conf_thres = instance.conf_thres
         self.iou_thres = instance.iou_thres
         self.max_det = instance.max_det
         self.imgsz = instance.imgsz
-        self.model_instance = instance
+        self.lock = instance.lock
         
         t2 = time.time()
         if display:
@@ -113,6 +81,7 @@ class DetectObjectPipe(One2OnePipe):
         # 고정 값
         device = self.device
         model = self.model
+        imgsz = self.imgsz
         dt, seen = [0.0, 0.0, 0.0, 0.0], 0
 
         conf_thres = self.conf_thres
@@ -132,8 +101,8 @@ class DetectObjectPipe(One2OnePipe):
         dt[0] += t2 - t1
 
         # Inference
-        with self.model_instance.lock:
-            pred = model(im, augment=False, visualize=visualize)
+        with self.lock:
+            pred = model.inference(im, size=imgsz)
         t3 = time_sync()
         dt[1] += t3 - t2
 
@@ -151,7 +120,7 @@ class DetectObjectPipe(One2OnePipe):
             ## output 설정 ###
             for xmin, ymin, xmax, ymax, conf, cls in reversed(det):
                 output_det = {"xmin": int(xmin), "ymin": int(ymin), "xmax": int(
-                    xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls)}
+                    xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls), "label":self.cls_list[int(cls)]}
                 input.dets.append(output_det)
         output = copy_piperesource(input)
         t2 = time.time()
