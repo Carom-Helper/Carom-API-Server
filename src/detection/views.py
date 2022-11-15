@@ -40,7 +40,8 @@ def test_make_coord(carom_id, usr, t=1):
     topRight = carom_img.guide["TR"]
     bottomLeft = carom_img.guide["BL"]
     
-    pipe, bag = pipe_factory(display=False, inDB=True)
+    display = True
+    pipe, bag = pipe_factory(display=display, inDB=True)
     
     ### Dataloader ###
     src = carom_img.img.path
@@ -62,7 +63,10 @@ def test_make_coord(carom_id, usr, t=1):
         # end make coord
         carom_img.save()
     except:
-        pass
+        return
+    if display:
+        cv2.waitKey(0)
+    
 
 class DetectRequestAPIView(APIView):
     def get_coord(self, carom_id):
