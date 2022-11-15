@@ -39,31 +39,8 @@ class ISubject(metaclass=ABCMeta):
         pass
 
 class IMoveable():
-    def __init__(self) -> None:
-        self.init()
-        self.mover = None
-    
-    def init(self):
-        self.vec = np.array([0,0]) # 방향벡터
-        self.pos = np.array([0,0]) # 현재 위치
-        self.speed = np.array([0]) #
-        self.distance = 0
-    
     def set_mover(self, mover) ->None:
         self.mover = mover
-    
-    def set_value(self,
-        vec:np.array=None, 
-        pos:np.array=None, 
-        speed:np.array=None
-        ) ->None:
-        if vec is not None:
-            self.vec = vec
-        if pos is not None:
-            self.pos = pos
-        if speed is not None:
-            self.speed = speed
-        
     # 해당 시간이 지날 때 거리를 반환다.
     def move(self, t:float)->float:
         return self.mover(t)
@@ -88,11 +65,11 @@ class ICrashable(metaclass=ABCMeta):
     
     # 점에 대한 법선 벡트를 반환한다.
     @abstractclassmethod
-    def get_reflect_vector(self, x:float, y:float)-> np.array:
+    def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
     
     @abstractclassmethod
-    def crash(self, reflect_vec:np.array):
+    def crash(self, normal_vec:np.array):
         pass
 
 class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
