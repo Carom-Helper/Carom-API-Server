@@ -130,9 +130,9 @@ class ProjectionCoordPipe(One2OnePipe):
             det['y'] = projy
 
         # 원본 정사영 영역 표시
-        origin = input.im0s.copy()
+        origin = input.images["origin"].copy()
         for i in range(4):
-            origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
+            origin = cv2.line(origin, (pts1[i][0], pts1[i][1]), (pts1[(i+1)%4][0], pts1[(i+1)%4][1]), (0, 255, 0), 2)
         
 
 
