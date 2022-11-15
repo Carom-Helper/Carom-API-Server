@@ -28,11 +28,11 @@ class ProjectionViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectionSerializer
     
 
-def test_make_coord(carom_id, usr, t=1):
+def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     #Start make coord
     carom_img = carom.objects.get(id=carom_id)
     carom_img.detect_state="P"
-    carom_img.save()
+    # carom_img.save()
     
     # set PipeResource
     topLeft = carom_img.guide["TL"]
@@ -40,24 +40,33 @@ def test_make_coord(carom_id, usr, t=1):
     topRight = carom_img.guide["TR"]
     bottomLeft = carom_img.guide["BL"]
     
-    pipe, bag = pipe_factory(display=False, inDB=True)
+    
+    pipe, bag = pipe_factory(display=display, inDB=True)
     
     ### Dataloader ###
     src = carom_img.img.path
     dataset = LoadImages(src)
     ### 실행 ###
-    for im0, path, s in dataset:
-        # set piperesource
-        metadata = {"path": path, "carom_id":carom_id, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
-        images = {"origin":im0}
-        input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
-        input.print()
-        # push input
-        pipe.push_src(input)
+    try:
+        
+        for im0, path, s in dataset:
+            # set piperesource
+            metadata = {"path": path, "carom_id":carom_id, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
+            images = {"origin":im0}
+            input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
+            # push input
+            pipe.push_src(input)
+            carom_img.detect_state="D"
+    except:
+        carom_img.detect_state="A"
+    try:
+        # end make coord
+        carom_img.save()
+    except:
+        return
+    if display:
+        cv2.waitKey(0)
     
-    # end make coord
-    carom_img.detect_state="D"
-    carom_img.save()
 
 class DetectRequestAPIView(APIView):
     def get_coord(self, carom_id):
