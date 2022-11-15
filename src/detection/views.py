@@ -28,7 +28,7 @@ class ProjectionViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectionSerializer
     
 
-def test_make_coord(carom_id, usr, t=1):
+def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     #Start make coord
     carom_img = carom.objects.get(id=carom_id)
     carom_img.detect_state="P"
@@ -40,7 +40,7 @@ def test_make_coord(carom_id, usr, t=1):
     topRight = carom_img.guide["TR"]
     bottomLeft = carom_img.guide["BL"]
     
-    display = True
+    
     pipe, bag = pipe_factory(display=display, inDB=True)
     
     ### Dataloader ###

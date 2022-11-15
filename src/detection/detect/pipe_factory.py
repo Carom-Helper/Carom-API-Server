@@ -54,7 +54,7 @@ def pipe_factory(start_pipe=None, device='0', framework='nvidia', display=True, 
     xyxy2xywh = ConvertToxywhPipe()
     split_cls_pipe = SplitCls()
     edge_bag = ResourceBag()
-    projection_coord_pipe = ProjectionCoordPipe()
+    projection_coord_pipe = ProjectionCoordPipe(display = display)
     
     # - connect
     detect_cls_pipe.connect_pipe(xyxy2xywh)     #detect class - split_cls

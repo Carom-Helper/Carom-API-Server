@@ -21,7 +21,7 @@ class carom(Model):
         ('D', "Done"),
     ]
     
-    img = models.ImageField(upload_to="carom/%Y/%m/%d/", verbose_name="Image")
+    img = models.ImageField(upload_to="carom/", verbose_name="Image")
     guide = models.JSONField(default=dict, verbose_name="Guide JSON")
     detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N")
     # method = models.ForeignKey(to="projection_method", on_delete=CASCADE, verbose_name="Type")
