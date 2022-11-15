@@ -12,7 +12,7 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
 
 class IObserver(metaclass=ABCMeta):
     @abstractclassmethod
-    def update(self, time=None, reflect=None) -> None:
+    def update(self, event:dict=None) -> None:
         pass
 
 class ISubject(metaclass=ABCMeta):
@@ -38,19 +38,44 @@ class ISubject(metaclass=ABCMeta):
     def notify_observers(self):
         pass
 
-class IMoveable(metaclass=ABCMeta):
+class IMoveable():
     def __init__(self) -> None:
         self.init()
+        self.mover = None
     
     def init(self):
         self.vec = np.array([0,0]) # 방향벡터
         self.pos = np.array([0,0]) # 현재 위치
-        self.speed = np.array([0]) # 
+        self.speed = np.array([0]) #
+        self.distance = 0
+    
+    def set_mover(self, mover) ->None:
+        self.mover = mover
+    
+    def set_value(self,
+        vec:np.array=None, 
+        pos:np.array=None, 
+        speed:np.array=None
+        ) ->None:
+        if vec is not None:
+            self.vec = vec
+        if pos is not None:
+            self.pos = pos
+        if speed is not None:
+            self.speed = speed
         
     # 해당 시간이 지날 때 거리를 반환다.
-    @abstractclassmethod
     def move(self, t:float)->float:
-        pass
+        return self.mover(t)
+    
+class SaveDistanceMoveAble(IMoveable):
+    def __init__(self) -> None:
+        super().__init__()
+        
+    def move(self, t: float) -> float:
+        distance = super().move(t)
+        self.distance =+ distance
+        return distance
     
 class ICrashable(metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -74,7 +99,5 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def __init__(self) -> None:
         super().__init__()
         
-    def set_vec(self, vec:np.array):
-        self.vec = vec
     
     

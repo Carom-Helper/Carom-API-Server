@@ -27,6 +27,7 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 
 
 # from gpu_yolov5.utils.general import (non_max_suppression, scale_boxes)
+from gpu_yolov5.models.common import DetectMultiBackend
 
 from IWeight import IWeight, test_print
 from Singleton import Singleton
@@ -46,8 +47,9 @@ class DetectObjectWeight(IWeight, metaclass=Singleton):
         ) -> None:
         t1 = time.time()
         # 고정값
-        WEIGHTS = "yolo_ball.pt"
-        self.yolo_weights = WEIGHT_DIR / WEIGHTS
+        # WEIGHTS = "yolo_ball.pt"
+        # self.yolo_weights = WEIGHT_DIR / WEIGHTS
+        weights = WEIGHT_DIR / 'npu_yolo_ball'
         self.device = select_device(model_name="YOLOv5", device=device)
         
         # 변하는 값(입력 값)
@@ -60,8 +62,10 @@ class DetectObjectWeight(IWeight, metaclass=Singleton):
         self.lock = Lock()
         
         ### load model ###
-        model = torch.hub.load(str(YOLO_PY), "custom", path=str(self.yolo_weights) , source="local")
-        model = model.to(self.device)
+        model = DetectMultiBackend(weights, device=device, dnn=False, data=weights/'cfg.yaml', fp16=False)
+        
+        # model = torch.hub.load(str(YOLO_PY), "custom", path=str(self.yolo_weights) , source="local")
+        # model = model.to(self.device)
         self.model = model
         ############
         self.imgsz = check_img_size(
