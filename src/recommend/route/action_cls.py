@@ -39,21 +39,24 @@ class ISubject(metaclass=ABCMeta):
     def notify_observers(self):
         pass
 
-class IMoveable():
+class IMoveable(metaclass=ABCMeta):
     def set_mover(self, mover) ->None:
         self.mover = mover
     # 해당 시간이 지날 때 거리를 반환다.
     def move(self, t:float)->float:
         return self.mover(t)
+    @abstractclassmethod
+    def get_xy(self)->list:
+        pass
     
-class SaveDistanceMoveAble(IMoveable):
-    def __init__(self) -> None:
-        super().__init__()
+# class SaveDistanceMoveAble(IMoveable):
+#     def __init__(self) -> None:
+#         super().__init__()
         
-    def move(self, t: float) -> float:
-        distance = super().move(t)
-        self.distance =+ distance
-        return distance
+#     def move(self, t: float) -> float:
+#         distance = super().move(t)
+#         self.distance =+ distance
+#         return distance
     
 class ICrashable(metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -109,7 +112,7 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
 
     def get_distance_from_point(x:float, y:float)-> float:
         pass
-    
+
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
     

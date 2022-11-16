@@ -36,9 +36,6 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','192.168.0.214', 'localhost']
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -114,6 +111,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
 ]
 
+#FRAME_WORK = "furiosa" # 'furiosa', '0', 'cpu', 'onnx'
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    '192.168.0.214', 
+    #'192.168.0.2',
+    'localhost'
+    ]
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = [
@@ -121,7 +127,27 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    #'http://192.168.0.2:8000',
 ]
+
+
+SETTINGS_BASE_FILE = Path(os.path.join(BASE_DIR, 'settings.json'))
+
+if SETTINGS_BASE_FILE.exists():
+    setting_json = json.loads(open(SETTINGS_BASE_FILE).read())
+    FRAME_WORK = setting_json["FRAME_WORK"]# 'furiosa', '0', 'cpu', 'onnx'
+    host_name = setting_json["HOST_NAME"]
+    ALLOWED_HOSTS.append(host_name)
+    CORS_ORIGIN_WHITELIST.append(f'http://{host_name}:8000')
+    print("Complete to Set settings.json")
+    print(FRAME_WORK)
+    print(ALLOWED_HOSTS)
+    print(CORS_ORIGIN_WHITELIST)
+else:
+    print("Plese Set settings.json")
+
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -144,4 +170,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-FRAME_WORK = "nvidia" # 'furiosa', 'nvidia'

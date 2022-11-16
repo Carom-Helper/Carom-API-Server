@@ -40,15 +40,15 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     topRight = carom_img.guide["TR"]
     bottomLeft = carom_img.guide["BL"]
     
-    
-    pipe, bag = pipe_factory(display=display, inDB=True)
+    print(FRAME_WORK)
+    pipe, _ = pipe_factory(device=FRAME_WORK, display=display, inDB=True)
     
     ### Dataloader ###
     src = carom_img.img.path
+    print(src)
     dataset = LoadImages(src)
     ### 실행 ###
     try:
-        
         for im0, path, s in dataset:
             # set piperesource
             metadata = {"path": path, "carom_id":carom_id, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
@@ -57,8 +57,9 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
             # push input
             pipe.push_src(input)
             carom_img.detect_state="D"
-    except:
+    except Exception as ex:
         carom_img.detect_state="A"
+        print(f"Error", str(ex))
     try:
         # end make coord
         carom_img.save()

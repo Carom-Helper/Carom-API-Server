@@ -6,8 +6,19 @@ This project uses Django REST API and Pythorch. It provides an API that tells yo
 git clone https://github.com/Carom-Helper/Carom-API-Server.git
 cd Carom-API-Server
 git submodule update --init --recursive
+cd src/detection/detect/npu_yolov5/utils/box_decode/cbox_decode
+python setup.py build_ext --inplace
+cd ../../../../../../..
 ```
-##### Next Step. Set {$ROOT}/src/secrets.json
+#### Next Step. Set {$ROOT}/src/secrets.json
+```bash
+set +H
+# FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
+echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"192.168.0.2"}' > settings.json
+echo '{json contents}' > secrets.json
+cd ..
+```
+###### json contents
 ```json
 # example
 {"SECRET_KEY":"django-insecure-d*upt!(-*)wA#3^cdc-e9ac3s4s8afd9d4m=_2(!a+2v&@1avs2s4v="}
@@ -60,8 +71,14 @@ make run
 
 # How to setting In Docker Container (attach shell)
 ```bash
-python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus 
-/build.sh
+python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
+```
+
+# How to test
+```bash
+# error npu_yolov5/utils/inference_engine.py InferenceEngineFuriosa.__init__
+# compile_config change to compiler_config
+python manage.py test
 ```
 
 # How to stop Docker container
