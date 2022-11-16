@@ -1,5 +1,6 @@
 from abc import *
 import numpy as np
+import math
 
 from route_utills import is_test
 
@@ -79,5 +80,41 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def __init__(self) -> None:
         super().__init__()
         
+    def start_param(self, power = 50, clock = 12, tip = 0):
+        radius = 8.6
+        self.power = power
+        self.theta = clock % 12 * (-30) + 90
+        self.tip = tip
+        upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
+        upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
+        self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * radius
+        upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
+
+        self.upspinrate = upspinrate
+
+        sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
+        sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
+        self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
+        sidespinrate = int((self.sidespin - sidespinmin) / (sidespinmax-sidespinmin) * 10)
+
+        self.sidespinrate = sidespinrate-5
     
+    def print_param(self):
+        print(f'theta: {self.theta}, tip: {self.tip}/3')
+        print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
+        print(f'upspinrate: {self.upspinrate}, sidespinrate: {self.sidespinrate}\n')
     
+    def update(self, event:dict=None) -> None:
+        pass
+
+    def notify_observers(self):
+        pass
+
+    def get_distance_from_point(x:float, y:float)-> float:
+        pass
+
+    def get_normal_vector(self, x:float, y:float)-> np.array:
+        pass
+    
+    def crash(self, normal_vec:np.array):
+        pass
