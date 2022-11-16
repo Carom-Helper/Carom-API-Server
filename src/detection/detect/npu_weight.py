@@ -12,6 +12,9 @@ CAROM_BASE_DIR=Path(__file__).resolve().parent.parent.parent
 FILE = Path(__file__).resolve()
 ROOT = FILE.parent
 
+tmp = ROOT / 'gpu_yolov5'
+if os.path.isabs(tmp):
+    GPU_YOLO_DIR = tmp
 
 tmp = ROOT / 'npu_yolov5'
 if os.path.isabs(tmp):
@@ -42,6 +45,8 @@ class NPUDetectObjectWeight(IWeight):
         device= 'cpu'
         ) -> None:
         # ADD gpu_yolov5 to env list
+        if str(GPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(GPU_YOLO_DIR))
         if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(NPU_YOLO_DIR))  # add yolov5 ROOT to PATH
         from npu_yolov5.models.yolov5 import Yolov5Detector
@@ -73,16 +78,21 @@ class NPUDetectObjectWeight(IWeight):
         
         t2 = time.time()
         print( f'[NPU YOLOv5 init {(t2-t1):.1f}s]')
-        if str(NPU_YOLO_DIR) not in sys.path:
+        if str(NPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(NPU_YOLO_DIR))
         
         
     def inference(self, im, origin_size=(640,640)):
+        if str(GPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(GPU_YOLO_DIR))
         if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(NPU_YOLO_DIR))  # add yolov5 ROOT to PATH
         from npu_yolov5.models.yolov5 import Yolov5Detector
+        
         result = self.model(im)
-        if str(NPU_YOLO_DIR) not in sys.path:
+        
+        
+        if str(NPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(NPU_YOLO_DIR))
         return result
     

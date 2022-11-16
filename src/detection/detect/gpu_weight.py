@@ -16,6 +16,10 @@ ROOT = FILE.parent
 tmp = ROOT / 'gpu_yolov5'
 if os.path.isabs(tmp):
     GPU_YOLO_DIR = tmp
+    
+tmp = ROOT / 'npu_yolov5'
+if os.path.isabs(tmp):
+    NPU_YOLO_DIR = tmp  # add yolov5 ROOT to PATH
 
 YOLO_PY = Path(__file__).resolve().parent / 'gpu_yolov5'
 
@@ -44,6 +48,8 @@ class GPUDetectObjectWeight(IWeight):
         imgsz=(640,640),
         device= 'furiosa'
         ) -> None:
+        if str(NPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(NPU_YOLO_DIR))
         if str(GPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(GPU_YOLO_DIR))  # add yolov5 ROOT to PATH
         from gpu_yolov5.models.common import DetectMultiBackend
@@ -77,11 +83,13 @@ class GPUDetectObjectWeight(IWeight):
 
         t2 = time.time()
         print( f'[GPU YOLOv5 init {(t2-t1):.1f}s]')
-        if str(GPU_YOLO_DIR) not in sys.path:
+        if str(GPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(GPU_YOLO_DIR))
         
         
     def inference(self, im, origin_size=(640,640)):
+        if str(NPU_YOLO_DIR) in sys.path:
+            sys.path.remove(str(NPU_YOLO_DIR))
         if str(GPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(GPU_YOLO_DIR))  # add yolov5 ROOT to PATH
         #from gpu_yolov5.models.common import DetectMultiBackend
@@ -98,8 +106,7 @@ class GPUDetectObjectWeight(IWeight):
                 _, det = det
                 det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], origin_size).round()
                 dets = det.tolist()
-        print(dets)
-        if str(GPU_YOLO_DIR) not in sys.path:
+        if str(GPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(GPU_YOLO_DIR))
         return pred
     
