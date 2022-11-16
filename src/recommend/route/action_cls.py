@@ -1,6 +1,5 @@
 from abc import *
 import numpy as np
-import math
 
 from route_utills import is_test
 
@@ -40,6 +39,7 @@ class ISubject(metaclass=ABCMeta):
         pass
 
 class IMoveable(metaclass=ABCMeta):
+    # mover is closure
     def set_mover(self, mover) ->None:
         self.mover = mover
     # 해당 시간이 지날 때 거리를 반환다.
@@ -64,7 +64,7 @@ class ICrashable(metaclass=ABCMeta):
     
     # x,y 점과 자신과의 거리를 반환한다.
     @abstractclassmethod
-    def get_distance_from_point(x:float, y:float)-> float:
+    def get_distance_from_point(self, x:float, y:float)-> float:
         pass
     
     # 점에 대한 법선 벡트를 반환한다.
@@ -72,49 +72,71 @@ class ICrashable(metaclass=ABCMeta):
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
     
+    
+class ICrashAction(metaclass=ABCMeta):
+    # 충돌 했을 때 발생하는 이벤트를 받는다. 
+    # crasher is closure
     @abstractclassmethod
-    def crash(self, normal_vec:np.array):
+    def crash(self, crashable:ICrashable):
+        pass
+
+class ICrash(ICrashable, ICrashAction, metaclass=ABCMeta):
+    # x,y 점과 자신과의 거리를 반환한다.
+    @abstractclassmethod
+    def get_distance_from_point(self, x:float, y:float)-> float:
+        pass
+    # 점에 대한 법선 벡트를 반환한다.
+    @abstractclassmethod
+    def get_normal_vector(self, x:float, y:float)-> np.array:
+        pass
+    # 충돌 했을 때 발생하는 이벤트를 받는다. 
+    # crasher is closure
+    @abstractclassmethod
+    def crash(self, crashable:ICrashable):
         pass
 
 class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def __init__(self) -> None:
         super().__init__()
         
-    def start_param(self, power = 50, clock = 12, tip = 0):
-        radius = 8.6
-        self.power = power
-        self.theta = clock % 12 * (-30) + 90
-        self.tip = tip
-        upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
-        upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
-        self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * radius
-        upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
 
-        self.upspinrate = upspinrate
 
-        sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
-        sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
-        self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
-        sidespinrate = int((self.sidespin - sidespinmin) / (sidespinmax-sidespinmin) * 10)
 
-        self.sidespinrate = sidespinrate-5
+
+class CrashSubject(ICrash, ISubject, meta=ABCMeta):
+    def __init__(self) -> None:
+        super().__init__()
     
-    def print_param(self):
-        print(f'theta: {self.theta}, tip: {self.tip}/3')
-        print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
-        print(f'upspinrate: {self.upspinrate}, sidespinrate: {self.sidespinrate}\n')
-    
-    def update(self, event:dict=None) -> None:
+    #해당 객체와 충돌했는지 판단해 준다.
+    @abstractclassmethod
+    def check_crash(self, observer_idx)-> bool:
         pass
-
+    
     def notify_observers(self):
+        # observer들을 하나씩 방문하면서
+        for idx, observer in enumerate(self.observer_list):
+            # 충돌 인지를 판정한다.
+            if self.check_crash(idx):
+                # 충돌 했다면, 충돌을 전파한다.
+                
+        # 만일 충돌이면, 충돌 했다고 전파한다.
+                pass
+    # x,y 점과 자신과의 거리를 반환한다.
+    @abstractclassmethod
+    def get_distance_from_point(self, x:float, y:float)-> float:
         pass
-
-    def get_distance_from_point(x:float, y:float)-> float:
-        pass
-
+    # 점에 대한 법선 벡트를 반환한다.
+    @abstractclassmethod
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
-    
-    def crash(self, normal_vec:np.array):
+
+
+class IMovableObserver(IMoveable, IObserver):
+    def __init__(self) -> None:
+        super().__init__()
+    @abstractclassmethod
+    def get_xy(self)->list:
+        pass
+    @abstractclassmethod
+    def update(self, event:dict=None) -> None:
         pass
