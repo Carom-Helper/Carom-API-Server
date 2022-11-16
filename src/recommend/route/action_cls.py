@@ -173,17 +173,6 @@ class CrashableSubject(ICrashable, ISubject, meta=ABCMeta):
     def get_reflect_closure(self):
         pass
 
-
-class IMovableObserver(IMoveable, IObserver):
-    def __init__(self) -> None:
-        super().__init__()
-    @abstractclassmethod
-    def get_xy(self)->list:
-        pass
-    @abstractclassmethod
-    def update(self, event:dict=None) -> None:
-        pass
-
     def get_xy(self)->list:
         return self.xy
 
@@ -207,6 +196,17 @@ class IMovableObserver(IMoveable, IObserver):
         xy = {"x": new_x, "y": new_y, "t": self.xy[-1]["elapsed"] + elapsed}
 
         return xy
+
+class IMovableObserver(IMoveable, IObserver):
+    def __init__(self) -> None:
+        super().__init__()
+    @abstractclassmethod
+    def get_xy(self)->list:
+        pass
+    @abstractclassmethod
+    def update(self, event:dict=None) -> None:
+        pass
+
 
 def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     radius = 8.6
