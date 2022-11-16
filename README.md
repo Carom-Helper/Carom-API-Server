@@ -12,7 +12,7 @@ cd ../../../../../../..
 ```
 #### Next Step. Set {$ROOT}/src/secrets.json
 ```bash
-echo {json contents} | screts.json
+echo {json contents} > screts.json
 cd ..
 ```
 ###### json contents
