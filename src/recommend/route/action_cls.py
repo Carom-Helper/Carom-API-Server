@@ -79,5 +79,5 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def __init__(self) -> None:
         super().__init__()
         
-    
+
     
