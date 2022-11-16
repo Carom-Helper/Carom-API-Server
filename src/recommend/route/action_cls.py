@@ -18,7 +18,7 @@ class IObserver(metaclass=ABCMeta):
 
 class ISubject(metaclass=ABCMeta):
     def __init__(self) -> None:
-        self.observer_list=list()    
+        self.observer_list=list()
         
     def register_observer(self, observer:IObserver) -> int:
         if isinstance(observer, IObserver):
@@ -106,24 +106,27 @@ class ICrash(ICrashable, ICrashAction, metaclass=ABCMeta):
 
 class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def __init__(self) -> None:
-        super().__init__()
+        #IMoveable.__init__()
+        ICrashable.__init__(self)
+        IObserver.__init__(self)
+        ISubject.__init__(self)
         self.xy = []
         self.vector = {"x": 0, "y": 0}
+        self.radius = 8.6
         
     def start_param(self, power = 50, clock = 12, tip = 0):
-        radius = 8.6
         self.power = power
         self.theta = clock % 12 * (-30) + 90
         self.tip = tip
 
-        upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
-        upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
-        self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * radius
+        upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * self.radius
+        upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * self.radius
+        self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * self.radius
         self.upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
 
-        sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
-        sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
-        self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
+        sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * self.radius
+        sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * self.radius
+        self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * self.radius
         self.sidespinrate = int((self.sidespin - sidespinmin) / (sidespinmax-sidespinmin) * 10)
 
     def print_param(self):
@@ -131,14 +134,20 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
         print(f'upspinrate: {self.upspinrate}, sidespinrate: {self.sidespinrate}\n')
     
-    def update(self, event:dict=None) -> None:
-        pass
+    def update(self, event:dict=None) -> bool:
+        return self.get_distance_from_point(x=event['x'], y=event['y'])
 
     def notify_observers(self):
-        pass
+        self.crash_list = []
+        for ob in self.observer_list:
+            if ob.update(self.xy[-1]):
+                self.crash_list.append(ob)
+        return len(self.crash_list) > 0
 
-    def get_distance_from_point(x:float, y:float)-> float:
-        pass
+    def get_distance_from_point(self, x:float, y:float)-> float:
+        curr_pos = self.xy[-1]
+        dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5
+        return True if dist < self.radius * 2 else False
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
@@ -158,27 +167,33 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
 
     def move(self, t:float)->float:
         xy = self.mover(t)
-        self.add_xy(xy)
-        self.notify_observers()
-        return 
+        if xy is not None:
+            self.add_xy(xy)
+            return self.notify_observers()
+        else:
+            return False
 
     def move_by_time(self, elapsed:float)->float:
         x, y = self.xy[-1]["x"], self.xy[-1]["y"]
         new_x, new_y = x + self.vector["x"] * elapsed, y + self.vector["y"] * elapsed
 
-        xy = {"x": new_x, "y": new_y, "t": self.xy[-1]["elapsed"] + elapsed}
+        xy = {"x": new_x, "y": new_y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
+        return xy
+    
+    def move_stay(self, elapsed:float)->dict:
+        x, y = self.xy[-1]['x'], self.xy[-1]['y']
 
+        xy = {"x": x, "y": y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
         return xy
 
-def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
-    radius = 8.6
 
+def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     cue_pos = cue.get_xy()[-1]
     tar_pos = tar.get_xy()[-1]
 
     cue_tar = {'x':(cue_pos['x'] - tar_pos['x']), 'y':(cue_pos['y'] - tar_pos['y'])}
-    new_x = thickness/8 * radius
-    new_y = (radius**2 - new_x**2)**0.5
+    new_x = thickness/8 * cue.radius
+    new_y = (cue.radius**2 - new_x**2)**0.5
 
     new_x *= 1.5
     new_y *= 1.5
