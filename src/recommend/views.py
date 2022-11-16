@@ -52,14 +52,24 @@ def test_make_route(issue_id, usr, t=1):
     print("======== start Process ============")
     sleep(t*3)
     print("======== detect done ============")
-    route = soultion_route(issue_id=issue_id, route={
+    soultion_route(issue_id=issue_id, route={
 			"power": 2.4,
 			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
 			"obj1": [(600, 200), (700, 120)],
 			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION)
-    print(route)
-    route.save()
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION).save()
+    soultion_route(issue_id=issue_id, route={
+			"power": 5.4,
+			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
+			"obj1": [(600, 200), (700, 120)],
+			"obj2": [(200, 150), (150, 130)]
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION).save()
+    soultion_route(issue_id=issue_id, route={
+			"power": 9,
+			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
+			"obj1": [(600, 200), (700, 120)],
+			"obj2": [(200, 150), (150, 130)]
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION).save()
     pos.state="D"
     pos.save()
     print("======== save ball_coord ============")
