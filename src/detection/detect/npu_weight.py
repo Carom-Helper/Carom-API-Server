@@ -12,13 +12,14 @@ CAROM_BASE_DIR=Path(__file__).resolve().parent.parent.parent
 FILE = Path(__file__).resolve()
 ROOT = FILE.parent
 
-tmp = ROOT / 'gpu_yolov5'
-if os.path.isabs(tmp):
-    GPU_YOLO_DIR = tmp
 
 tmp = ROOT / 'npu_yolov5'
 if os.path.isabs(tmp):
     NPU_YOLO_DIR = tmp  # add yolov5 ROOT to PATH
+
+tmp = ROOT / 'gpu_yolov5'
+if os.path.isabs(tmp):
+    GPU_YOLO_DIR = tmp  # add yolov5 ROOT to PATH
 
 # Set weight directory
 WEIGHT_DIR = None
@@ -42,7 +43,7 @@ class NPUDetectObjectWeight(IWeight):
         max_det=7,
         cls=[0, 1],
         imgsz=(640,640),
-        device= 'cpu'
+        device= 'furiosa'
         ) -> None:
         # ADD gpu_yolov5 to env list
         if str(GPU_YOLO_DIR) in sys.path:
@@ -54,7 +55,7 @@ class NPUDetectObjectWeight(IWeight):
         # 고정값
         WEIGHTS = "npu_yolo_ball"
         self.yolo_weights = WEIGHT_DIR / WEIGHTS
-        self.device = select_device(model_name="YOLOv5", device=device)
+        self.device = select_device(model_name="FURIOSA YOLOv5", device=device)
         
         # 변하는 값(입력 값)
         self.conf_thres = conf_thres
@@ -65,7 +66,7 @@ class NPUDetectObjectWeight(IWeight):
         self.imgsz = imgsz  # inference size (height, width)
         self.lock = Lock()
         
-        framework = framework
+        framework = device
         weights = self.yolo_weights / "weights.onnx"
         cfg_file = self.yolo_weights / "cfg.yaml"
         calib_data = CAROM_BASE_DIR / 'media' / 'test'
@@ -83,16 +84,11 @@ class NPUDetectObjectWeight(IWeight):
         
         
     def inference(self, im, origin_size=(640,640)):
-        if str(GPU_YOLO_DIR) in sys.path:
-            sys.path.remove(str(GPU_YOLO_DIR))
         if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(NPU_YOLO_DIR))  # add yolov5 ROOT to PATH
         from npu_yolov5.models.yolov5 import Yolov5Detector
-        
-        result = self.model(im)
-        
-        
-        if str(NPU_YOLO_DIR) in sys.path:
+        result = [self.model(im)]
+        if str(NPU_YOLO_DIR) not in sys.path:
             sys.path.remove(str(NPU_YOLO_DIR))
         return result
     

@@ -61,16 +61,12 @@ class DetectObjectPipe(One2OnePipe):
         #load model
         instance = NPUDetectObjectWeight(device=device) if device=="furiosa" or device=='onnx' else GPUDetectObjectWeight(device='cpu')
         self.model = instance
-        self.device = instance.device
-        self.conf_thres = instance.conf_thres
-        self.iou_thres = instance.iou_thres
-        self.max_det = instance.max_det
-        self.imgsz = instance.imgsz
         self.lock = instance.lock
+        self.framework = device
         
         t2 = time.time()
         if display:
-            print(f'[YOLOv5 init {(t2-t1):.1f}s]')
+            print(f'[{str(framework).upper()} YOLOv5 init {(t2-t1):.1f}s]')
 
     @torch.no_grad()
     def exe(
@@ -86,17 +82,13 @@ class DetectObjectPipe(One2OnePipe):
         # 고정 값
         model = self.model
         dt = [0.0, 0.0, 0.0, 0.0]
-
-        conf_thres = self.conf_thres
-        iou_thres = self.iou_thres
-        max_det = self.max_det
-
+        
         # preprocess
         t1 = time.time()
         im = model.preprocess(input.im)
         t2 = time.time()
         dt[0] += t2 - t1
-
+        
         # Inference
         with self.lock:
             pred = model.inference(im, input.im.shape)
@@ -105,18 +97,22 @@ class DetectObjectPipe(One2OnePipe):
         
         # Process detections
         for det in pred:# detection per image
+            test_print(det)
             for xmin, ymin, xmax, ymax, conf, cls in det: # detect datas
                 output_det = {"xmin": int(xmin), "ymin": int(ymin), "xmax": int(
                     xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls), "label":self.cls_list[int(cls)]}
                 input.dets.append(output_det)
         output = copy_piperesource(input)
+        
         t2 = time.time()
         if self.display:
             detect_len = output.len_detkey_match("cls", "1")
             detect_len = "" if detect_len == 3 else f"(det ball :{str(detect_len)})"
-            print(f'[{detect_len}YOLOv5 run {t2-t1:.3f}s]')
-        test_print("Done")
-        output.print(on=(is_test_detect_object() and output.__len__() < 7))
+            print(f'[{detect_len}YOLOv5 run {t2-t1:.3f}s {str(self.framework).upper()}]')
+        
+        output.print(on=(is_test_detect_object()))
+        if is_test_detect_object():
+            print(f'[{str(self.framework).upper()} YOLOv5 run {t2-t1:.3f}s]')
         return output
 
     def get_regist_type(self, idx=0) -> str:

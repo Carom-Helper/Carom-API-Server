@@ -44,7 +44,7 @@ class PipeFactory(metaclass=Singleton):
     def __init__(self, start_pipe=None, device='furiosa', display = True, inDB=True):
         self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
 
-def pipe_factory(start_pipe=None, device='cpu',  display=True, inDB=True):
+def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
     if display:
         print("initialize weights")
     #detect class and split class
