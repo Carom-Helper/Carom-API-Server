@@ -63,8 +63,7 @@ make run
 
 # How to setting In Docker Container (attach shell)
 ```bash
-python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus 
-/build.sh
+python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
 ```
 
 # How to stop Docker container
