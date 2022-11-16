@@ -9,7 +9,10 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
         print("wall object exe : ", s, s1, s2, s3, s4, s5, end=end)
         
         
-class WallObject(IMovableObserver):
+class WallObject(IMovableObserver, CrashableSubject):
     def __init__(self) -> None:
         super().__init__()
-        self.subject = CrashSubject
+        self.pos={"x":-1, "y":-1}
+    
+    
+    
