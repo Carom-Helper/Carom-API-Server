@@ -36,7 +36,7 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','192.168.0.214', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1','192.168.0.214', '192.168.0.2','localhost']
 
 
 # Application definition
@@ -121,6 +121,7 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://192.168.0.2:8000',
 ]
 
 # Internationalization
@@ -144,4 +145,4 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-FRAME_WORK = "nvidia" # 'furiosa', 'nvidia'
+FRAME_WORK = "0" # 'furiosa', '0', 'cpu', 'onnx'

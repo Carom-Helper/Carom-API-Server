@@ -72,7 +72,7 @@ class GPUDetectObjectWeight(IWeight):
         self.lock = Lock()
         
         ### load model ###
-        model = DetectMultiBackend(weights, device=device, dnn=False, data=weights/'cfg.yaml', fp16=False)
+        model = DetectMultiBackend(weights, device=self.device, dnn=False, data=weights/'cfg.yaml', fp16=False)
         
         # model = torch.hub.load(str(YOLO_PY), "custom", path=str(self.yolo_weights) , source="local")
         # model = model.to(self.device)
@@ -80,9 +80,9 @@ class GPUDetectObjectWeight(IWeight):
         ############
         self.imgsz = check_img_size(
             self.imgsz, s=32)  # check image size
-
+        name = device if device != '0' else 'gpu'
         t2 = time.time()
-        print( f'[GPU YOLOv5 init {(t2-t1):.1f}s]')
+        print( f'[{str(name).upper()} YOLOv5 init {(t2-t1):.1f}s]')
         if str(GPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(GPU_YOLO_DIR))
         

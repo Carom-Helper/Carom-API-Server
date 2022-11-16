@@ -560,7 +560,7 @@ import torch
 warnings.filterwarnings('ignore', message='User provided device_type of \'cuda\', but CUDA is not available. Disabling')
 
 def select_device(model_name="Resnet34" ,device='', batch_size=0, newline=True):
-    if device == 'furiosa':return device
+    if device == 'furiosa' or device == "onnx":return device
     # device = None or 'cpu' or 0 or '0' or '0,1,2,3'
     s = f'{model_name} 🚀 Python-{platform.python_version()} torch-{torch.__version__} '
     device = str(device).strip().lower().replace('cuda:', '').replace('none', '')  # to string, 'cuda:0' to '0'

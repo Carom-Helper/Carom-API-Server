@@ -59,7 +59,7 @@ class DetectObjectPipe(One2OnePipe):
         t1 = time.time()
         
         #load model
-        instance = NPUDetectObjectWeight(device=device) if device=="furiosa" or device=='onnx' else GPUDetectObjectWeight(device='cpu')
+        instance = NPUDetectObjectWeight(device=device) if device=="furiosa" or device=='onnx' else GPUDetectObjectWeight(device=device)
         self.model = instance
         self.lock = instance.lock
         self.framework = device
