@@ -79,26 +79,25 @@ class ICrashable(metaclass=ABCMeta):
 class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def __init__(self) -> None:
         super().__init__()
+        self.xy = []
+        self.vector = {"x": 0, "y": 0}
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         radius = 8.6
         self.power = power
         self.theta = clock % 12 * (-30) + 90
         self.tip = tip
+
         upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
         upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
         self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * radius
-        upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
-
-        self.upspinrate = upspinrate
+        self.upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
 
         sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
         sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
         self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
-        sidespinrate = int((self.sidespin - sidespinmin) / (sidespinmax-sidespinmin) * 10)
+        self.sidespinrate = int((self.sidespin - sidespinmin) / (sidespinmax-sidespinmin) * 10)
 
-        self.sidespinrate = sidespinrate-5
-    
     def print_param(self):
         print(f'theta: {self.theta}, tip: {self.tip}/3')
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
@@ -118,3 +117,49 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     
     def crash(self, normal_vec:np.array):
         pass
+
+    def get_xy(self)->list:
+        return self.xy
+
+    def add_xy(self, x:float, y:float, time:float):
+        temp = {"x": x, "y": y, "t": time}
+        self.xy.append(temp)
+
+    def add_xy(self, xy:dict):
+        self.xy.append(xy)
+
+    def move_by_time(self, time:float)->float:
+        x, y = self.xy[-1]["x"], self.xy[-1]["y"]
+        new_x, new_y = x + self.vector["x"] * time, y + self.vector["y"] * time
+
+        xy = {"x": new_x, "y": new_y, "t": self.xy[-1]["t"] + time}
+
+        return xy
+
+    def get_vector_to_tar(self, x:float, y:float, thickness:float)->dict:
+        radius = 8.6
+
+        cue_tar = {'x':(self.xy[-1]['x'] - x), 'y':(self.xy[-1]['y'] - y)}
+        new_x = thickness/8 * radius
+        new_y = (radius**2 - new_x**2)**0.5
+
+        new_x *= 1.5
+        new_y *= 1.5
+
+        new_t = {'x': new_x, 'y': new_y}
+
+        cue_tar_l = (cue_tar['x']**2+cue_tar['y']**2)**0.5
+        cos = cue_tar['y'] / cue_tar_l
+        sin = -cue_tar['x'] / cue_tar_l
+
+        new_t['x'] = new_x * cos - new_y * sin + x
+        new_t['y'] = new_x * sin + new_y * cos + y
+
+        vector = {"x": new_t["x"] - self.xy[-1]["x"], "y": new_t["y"] - self.xy[-1]["y"]}
+
+        length = (vector["x"]**2 + vector["y"]**2)**0.5
+        vector["x"] *= 3/5 / length * self.power / 50
+        vector["y"] *= 3/5 / length * self.power / 50
+        
+        self.vector["x"] = vector["x"]
+        self.vector["y"] = vector["y"]
