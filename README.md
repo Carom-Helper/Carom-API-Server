@@ -10,7 +10,12 @@ cd src/detection/detect/npu_yolov5/utils/box_decode/cbox_decode
 python setup.py build_ext --inplace
 cd ../../../../../../..
 ```
-##### Next Step. Set {$ROOT}/src/secrets.json
+#### Next Step. Set {$ROOT}/src/secrets.json
+```bash
+echo {json contents} | screts.json
+cd ..
+```
+###### json contents
 ```json
 # example
 {"SECRET_KEY":"django-insecure-d*upt!(-*)wA#3^cdc-e9ac3s4s8afd9d4m=_2(!a+2v&@1avs2s4v="}
@@ -63,7 +68,7 @@ make run
 
 # How to setting In Docker Container (attach shell)
 ```bash
-python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
+python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus &python manage.py test
 ```
 
 # How to stop Docker container
