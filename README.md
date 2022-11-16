@@ -68,7 +68,14 @@ make run
 
 # How to setting In Docker Container (attach shell)
 ```bash
-python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus &python manage.py test
+python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
+```
+
+# How to test
+```bash
+# error npu_yolov5/utils/inference_engine.py InferenceEngineFuriosa.__init__
+# compile_config change to compiler_config
+python manage.py test
 ```
 
 # How to stop Docker container
