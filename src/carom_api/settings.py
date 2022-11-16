@@ -145,4 +145,4 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-FRAME_WORK = "0" # 'furiosa', '0', 'cpu', 'onnx'
+FRAME_WORK = "furiosa" # 'furiosa', '0', 'cpu', 'onnx'
