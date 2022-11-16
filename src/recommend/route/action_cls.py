@@ -147,10 +147,11 @@ class MoveableSubject(IMoveable, ISubject, meta=ABCMeta):
         if observer is not ICrashObserver: raise TypeError
         return super().register_observer(observer)
     
-    def check_crash(self, observer:ICrash):
+    def check_crash(self, observer:ICrash)-> bool:
+        if observer is not ICrash: raise TypeError()
         x,y = self.get_xy()
         distance = observer.get_distance_from_point(x,y)
-        return (distance - self.get_range()) < self.elapse
+        return ((distance - self.get_range()) < self.elapse)
     
     # 자신과 충돌한 것이 있는지 없는지 확인한다. 
     # 그리고 충돌한 것이 있다면, 발견한 즉시 검색을 멈추고 충돌을 전파한다.
