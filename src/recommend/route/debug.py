@@ -1,4 +1,4 @@
-from action_cls import CaromBall, set_vec
+from CaromBall import CaromBall, set_vec
 
 cue = CaromBall()
 cue.start_param(clock = 12, tip = 1)
