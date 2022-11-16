@@ -13,7 +13,9 @@ cd ../../../../../../..
 ##### Next Step. Set {$ROOT}/src/secrets.json
 ```bash
 echo {json contents} | screts.json
+cd ..
 ```
+######## json contents
 ```json
 # example
 {"SECRET_KEY":"django-insecure-d*upt!(-*)wA#3^cdc-e9ac3s4s8afd9d4m=_2(!a+2v&@1avs2s4v="}
