@@ -186,48 +186,57 @@ class IMovableObserver(IMoveable, IObserver):
     def get_xy(self)->list:
         return self.xy
 
-    def add_xy(self, x:float, y:float, time:float):
-        temp = {"x": x, "y": y, "t": time}
+    def set_xy(self, x:float, y:float):
+        temp = {"x": x, "y": y, "elapsed": 0}
         self.xy.append(temp)
 
     def add_xy(self, xy:dict):
         self.xy.append(xy)
 
-    def move_by_time(self, time:float)->float:
-        x, y = self.xy[-1]["x"], self.xy[-1]["y"]
-        new_x, new_y = x + self.vector["x"] * time, y + self.vector["y"] * time
+    def move(self, t:float)->float:
+        xy = self.mover(t)
+        self.add_xy(xy)
+        self.notify_observers()
+        return 
 
-        xy = {"x": new_x, "y": new_y, "t": self.xy[-1]["t"] + time}
+    def move_by_time(self, elapsed:float)->float:
+        x, y = self.xy[-1]["x"], self.xy[-1]["y"]
+        new_x, new_y = x + self.vector["x"] * elapsed, y + self.vector["y"] * elapsed
+
+        xy = {"x": new_x, "y": new_y, "t": self.xy[-1]["elapsed"] + elapsed}
 
         return xy
 
-    def get_vector_to_tar(self, x:float, y:float, thickness:float)->dict:
-        radius = 8.6
+def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
+    radius = 8.6
 
-        cue_tar = {'x':(self.xy[-1]['x'] - x), 'y':(self.xy[-1]['y'] - y)}
-        new_x = thickness/8 * radius
-        new_y = (radius**2 - new_x**2)**0.5
+    cue_pos = cue.get_xy()[-1]
+    tar_pos = tar.get_xy()[-1]
 
-        new_x *= 1.5
-        new_y *= 1.5
+    cue_tar = {'x':(cue_pos['x'] - tar_pos['x']), 'y':(cue_pos['y'] - tar_pos['y'])}
+    new_x = thickness/8 * radius
+    new_y = (radius**2 - new_x**2)**0.5
 
-        new_t = {'x': new_x, 'y': new_y}
+    new_x *= 1.5
+    new_y *= 1.5
 
-        cue_tar_l = (cue_tar['x']**2+cue_tar['y']**2)**0.5
-        cos = cue_tar['y'] / cue_tar_l
-        sin = -cue_tar['x'] / cue_tar_l
+    new_t = {'x': new_x, 'y': new_y}
 
-        new_t['x'] = new_x * cos - new_y * sin + x
-        new_t['y'] = new_x * sin + new_y * cos + y
+    cue_tar_l = (cue_tar['x']**2+cue_tar['y']**2)**0.5
+    cos = cue_tar['y'] / cue_tar_l
+    sin = -cue_tar['x'] / cue_tar_l
 
-        vector = {"x": new_t["x"] - self.xy[-1]["x"], "y": new_t["y"] - self.xy[-1]["y"]}
+    new_t['x'] = new_x * cos - new_y * sin + tar_pos['x']
+    new_t['y'] = new_x * sin + new_y * cos + tar_pos['y']
 
-        length = (vector["x"]**2 + vector["y"]**2)**0.5
-        vector["x"] *= 3/5 / length * self.power / 50
-        vector["y"] *= 3/5 / length * self.power / 50
-        
-        self.vector["x"] = vector["x"]
-        self.vector["y"] = vector["y"]
+    vector = {"x": new_t["x"] - cue_pos["x"], "y": new_t["y"] - cue_pos["y"]}
+
+    length = (vector["x"]**2 + vector["y"]**2)**0.5
+    vector["x"] *= 3/5 / length * cue.power / 50
+    vector["y"] *= 3/5 / length * cue.power / 50
+    
+    cue.vector["x"] = vector["x"]
+    cue.vector["y"] = vector["y"]
 
 class ICrashObserver(ICrash, IObserver, meta=ABCMeta):
     def __init__(self) -> None:
