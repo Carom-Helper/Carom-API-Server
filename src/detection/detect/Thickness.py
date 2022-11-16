@@ -21,6 +21,8 @@ def thickness_prediction(cue, tar, thickness = 0):
     new_t['x'] = x * cos - y * sin + tar['x']
     new_t['y'] = x * sin + y * cos + tar['y']
 
+    return new_t
+
     projected = np.zeros((800,400,3), np.uint8)
     projected = cv2.circle(projected, (int(cue['x']), int(cue['y'])), 8, (255, 255, 255), 1)
     projected = cv2.circle(projected, (int(tar['x']), int(tar['y'])), 8, (0, 0, 255), 1)
@@ -34,4 +36,4 @@ cue = {'x':300, 'y':400}
 tar = {'x':350, 'y':350}
 print(f'cue : ({cue["x"]}, {cue["y"]}), tar : ({tar["x"]}, {tar["y"]})')
 for i in range(-7, 8):
-    thickness_prediction(cue, tar, i/8)
+    print(thickness_prediction(cue, tar, i/8))
