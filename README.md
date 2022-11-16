@@ -8,6 +8,7 @@ cd Carom-API-Server
 git submodule update --init --recursive
 cd src/detection/detect/npu_yolov5/utils/box_decode/cbox_decode
 python setup.py build_ext --inplace
+cd ../../../../../../..
 ```
 ##### Next Step. Set {$ROOT}/src/secrets.json
 ```json
