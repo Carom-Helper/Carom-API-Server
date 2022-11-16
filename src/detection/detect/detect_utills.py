@@ -29,8 +29,8 @@ tmp = FILE.parent / 'gpu_yolov5'
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
-from gpu_yolov5.utils.torch_utils import select_device, time_sync
-from gpu_yolov5.utils.general import (non_max_suppression, scale_boxes)
+# from npu_yolov5.utils.torch_utils import select_device, time_sync
+# from npu_yolov5.DetectObjectPipe import (non_max_suppression, scale_boxes)
 # from gpu_yolov5.utils.plots import Annotator, colors, save_one_box
 
 
@@ -560,6 +560,7 @@ import torch
 warnings.filterwarnings('ignore', message='User provided device_type of \'cuda\', but CUDA is not available. Disabling')
 
 def select_device(model_name="Resnet34" ,device='', batch_size=0, newline=True):
+    if device == 'furiosa':return device
     # device = None or 'cpu' or 0 or '0' or '0,1,2,3'
     s = f'{model_name} 🚀 Python-{platform.python_version()} torch-{torch.__version__} '
     device = str(device).strip().lower().replace('cuda:', '').replace('none', '')  # to string, 'cuda:0' to '0'

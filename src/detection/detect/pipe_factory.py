@@ -28,11 +28,10 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 from pipe_cls import One2OnePipe, ConvertToxywhPipe, IObserverPipe, SplitCls, ResourceOne, ResourceBag
 from pipe_utills import SaveBallCoordPipe
 from Singleton import Singleton
-from ProjectionPipe import ProjectionPipe, ProjectionCoordPipe
-from DetectObjectPipe import DetectObjectPipe
+from ProjectionPipe import ProjectionCoordPipe
+from DetectObjectPipe import DetectObjectPipe # ,NPU_YOLO_DIR, GPU_YOLO_DIR
 from detect_utills import (PipeResource, LoadImages,
-                           copy_piperesource, is_test,
-                           Annotator, cv2, print_args)
+                           is_test, cv2, print_args)
 
 def is_test_factory()->bool:
     return False and is_test()
@@ -42,10 +41,10 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
         print("factory pipe test : ", s, s1, s2, s3, s4, s5, end=end)
 
 class PipeFactory(metaclass=Singleton):
-    def __init__(self, start_pipe=None, device='0', framework="nvidia", display = True, inDB=True):
+    def __init__(self, start_pipe=None, device='furiosa', display = True, inDB=True):
         self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
 
-def pipe_factory(start_pipe=None, device='0', framework='nvidia', display=True, inDB=True):
+def pipe_factory(start_pipe=None, device='cpu',  display=True, inDB=True):
     if display:
         print("initialize weights")
     #detect class and split class
