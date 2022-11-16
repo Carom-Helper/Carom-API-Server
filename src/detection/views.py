@@ -32,7 +32,7 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     #Start make coord
     carom_img = carom.objects.get(id=carom_id)
     carom_img.detect_state="P"
-    # carom_img.save()
+    carom_img.save()
     
     # set PipeResource
     topLeft = carom_img.guide["TL"]
