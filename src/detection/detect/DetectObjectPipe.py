@@ -99,8 +99,15 @@ class DetectObjectPipe(One2OnePipe):
         for det in pred:# detection per image
             test_print(det)
             for xmin, ymin, xmax, ymax, conf, cls in det: # detect datas
-                output_det = {"xmin": int(xmin), "ymin": int(ymin), "xmax": int(
-                    xmax), "ymax": int(ymax), "conf": float(conf), "cls": int(cls), "label":self.cls_list[int(cls)]}
+                output_det = {
+                    "xmin": int(xmin),
+                    "ymin": int(ymin),
+                    "xmax": int(xmax),
+                    "ymax": int(ymax),
+                    "conf": float(conf),
+                    "cls": int(cls),
+                    "label":self.cls_list[int(cls)]
+                }
                 input.dets.append(output_det)
         output = copy_piperesource(input)
         
