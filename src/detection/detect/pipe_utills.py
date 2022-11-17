@@ -39,7 +39,7 @@ class SaveBallCoordPipe(IPipeObserver):
         carom_id = input.metadata["carom_id"]
         coord = dict()
         for i, det in enumerate(input):
-            coord[str(i+1)] = [int(det["y"]), int(det["x"])]
+            coord[str(i+1)] = [int(det["x"]), int(det["y"])]
         test_print("coord : ", coord)
         ball = balls_coord(carom_id=carom_id, coord=coord)
         ball.save()
