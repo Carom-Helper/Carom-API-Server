@@ -13,34 +13,36 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_caromball():
         print("action cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
-
+radius = 8.6
+upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
+upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
+upsinrange = upspinmax - upspinmin
+sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
+sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
+sidespinrange = sidespinmax - sidespinmin
 class CaromBall(ICrashObserver, IMoveableSubject):
     def __init__(self) -> None:
         IMoveableSubject.__init__(self)
         self.xy = []
         self.vector = {"x": 0, "y": 0}
-        self.radius = 8.6
         self.moved = 0
+        self.colpoint = []
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
         self.theta = clock % 12 * (-30) + 90
         self.tip = tip
 
-        upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * self.radius
-        upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * self.radius
-        self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * self.radius
-        self.upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
+        self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * radius
+        self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
 
-        sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * self.radius
-        sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * self.radius
-        self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * self.radius
-        self.sidespinrate = int((self.sidespin - sidespinmin) / (sidespinmax-sidespinmin) * 10)
+        self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
+        self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
 
     def print_param(self):
         print(f'theta: {self.theta}, tip: {self.tip}/3')
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
-        print(f'upspinrate: {self.upspinrate}, sidespinrate: {self.sidespinrate}\n')
+        print(f'upspin_lv: {self.upspin_lv}, sidespin_lv: {self.sidespin_lv}\n')
     
     def update(self, event:dict=None) -> bool:
         return self.get_distance_from_point(x=event['x'], y=event['y'])
@@ -53,7 +55,21 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         return len(self.crash_list) > 0
 
     def crash(self, crashable:ICrashable):
-        print("crash")
+        v = np.array(self.vector['x'], self.vector['y'])
+        closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(self.get_xy()))
+        new_v, data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
+        self.vector['x'] = new_v[0]
+        self.vector['y'] = new_v[1]
+
+        self.power = data['power']
+
+        self.upspin = data['upspin']
+        self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+
+        self.sidespin = data['sidespin']
+        self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+
+        self.colpoint.append(self.xy[-1])
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
@@ -109,15 +125,15 @@ class CaromBall(ICrashObserver, IMoveableSubject):
 
         if self.moved > 1:
             self.moved -= 1
-            upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * self.radius
-            upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * self.radius
+            upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
+            upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
             for i, j in enumerate([1, 2.5, 4.5, 7, 100]):
                 if self.power < j:
-                    decreaserate = (1-decrease[i][self.upspinrate if self.upspinrate < 10 else 9])
+                    decreaserate = (1-decrease[i][self.upspin_lv if self.upspin_lv < 10 else 9])
                     break
             next_power = self.power * decreaserate
 
-            # if self.upspinrate == 0:
+            # if self.upspin_lv == 0:
             #     print(f'upspin: {self.upspin}')
             #     print(f'vector: {self.vector}')
             #     print(f'power: {self.power}, new_power: {next_power}')
@@ -126,8 +142,8 @@ class CaromBall(ICrashObserver, IMoveableSubject):
             self.vector["y"] = self.vector["y"] * next_power / self.power
 
             self.power = next_power
-            #self.upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
-            #print(self.power, 1-decrease[self.upspinrate-1])
+            #self.upspin_lv = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
+            #print(self.power, 1-decrease[self.upspin_lv-1])
         return dist
     
     def move_stay(self, elapsed:float)->dict:
@@ -142,8 +158,8 @@ def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     tar_x, tar_y = tar.get_xy()
 
     cue_tar = {'x':(cue_x - tar_x), 'y':(cue_y - tar_y)}
-    new_x = thickness/8 * cue.radius
-    new_y = (cue.radius**2 - new_x**2)**0.5
+    new_x = thickness/8 * radius
+    new_y = (radius**2 - new_x**2)**0.5
 
     new_x *= 1.5
     new_y *= 1.5

@@ -50,7 +50,6 @@ class WallObject(IObserver, ICrashableSubject):
             else :
                 y = self.pos1[1]
             distance = observer.get_distance_from_point(x,y)
-            if distance < 10 : print(distance)
             if (distance < self.elapse): # 충돌
         #       충돌을 전파한다.
                 observer.crash(self)
@@ -91,13 +90,13 @@ class WallObject(IObserver, ICrashableSubject):
         #     pass
         # else:
         #     pass
-        def simple_reflect(power:dict):
+        def simple_reflect(data:dict):
             x , y = normal_vec.tolist()
             if x==0:
                 direct_vec[0] = -direct_vec[0]
             else:
                 direct_vec[1] = -direct_vec[1]
-            return (direct_vec, power)
+            return (direct_vec, data)
         return simple_reflect
     
     def update(self, event:dict=None) -> None:
