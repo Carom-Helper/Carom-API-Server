@@ -21,9 +21,6 @@ class PositionViewSet(viewsets.ModelViewSet):
     serializer_class = PositionSerializer
     def create(self, request, *args, **kwargs):
         # =======================detect coord와 매칭시켜준다.
-        print()
-        print(request.data)
-        print(request.data["coord"])
         try:
             coord = eval(request.data["coord"])
         except:
