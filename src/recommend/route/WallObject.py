@@ -45,8 +45,12 @@ class WallObject(IObserver, ICrashableSubject):
             xy = observer.get_xy()
             x, y = xy
             test_print("notify_filltered_observer",x,y)
-            distance = self.get_distance_from_point(x,y)
-            print(x, y)
+            if self.orth_vec[0] == 0:
+                x = 0
+            else :
+                y = 0
+            distance = observer.get_distance_from_point(x,y)
+            print(distance)
             if (distance < self.elapse and
                 type(observer) is ICrashAction): # 충돌
         #       충돌을 전파한다.
