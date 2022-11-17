@@ -21,13 +21,15 @@ sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
 sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
 class CaromBall(ICrashObserver, IMoveableSubject):
-    def __init__(self) -> None:
+    def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
+        self.name=f'{name}'
         self.xy = []
         self.vector = {"x": 0, "y": 0}
         self.moved = 0
         self.colpoint = []
         self.last_crashable = None
+        self.crash_list = []
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
@@ -74,8 +76,8 @@ class CaromBall(ICrashObserver, IMoveableSubject):
             self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
 
             self.colpoint.append(self.xy[-1])
-            print(v, new_v, data)
             self.last_crashable = crashable
+            self.crash_list.append(self.last_crashable.name)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
@@ -102,14 +104,14 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         self.xy.append(xy)
 
     def move(self, t:float)->float:
-        dist = self.mover(t)
+        self.crash_list = []
+        dist, next_t = self.mover(t)
         if dist > 0:
-            if self.notify_observers():
-                for ob in self.observer_list:
-                    pass
-            return self.notify_observers()
+            self.notify_observers()
+            cue_hit = self.crash_list
+            return cue_hit, dist, next_t
         else:
-            return False
+            return None, 0, t
 
     def move_by_time(self, elapsed:float)->float:
         decrease = [
@@ -128,6 +130,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         xy = {"x": new_x, "y": new_y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
         self.add_xy(xy)
 
+        next_elapsed = (3/5) / (dist/elapsed)
 
         if self.moved > 1:
             self.moved -= 1
@@ -138,26 +141,25 @@ class CaromBall(ICrashObserver, IMoveableSubject):
                     decreaserate = (1-decrease[i][self.upspin_lv if self.upspin_lv < 10 else 9])
                     break
             next_power = self.power * decreaserate
-
-            # if self.upspin_lv == 0:
-            #     print(f'upspin: {self.upspin}')
-            #     print(f'vector: {self.vector}')
-            #     print(f'power: {self.power}, new_power: {next_power}')
             
-            self.vector["x"] = self.vector["x"] * next_power / self.power
-            self.vector["y"] = self.vector["y"] * next_power / self.power
+            reduce = next_power / self.power
+            
+            self.vector["x"] = self.vector["x"] * reduce
+            self.vector["y"] = self.vector["y"] * reduce
 
             self.power = next_power
+            next_elapsed = (3/5) / (dist/elapsed*reduce)
+
             #self.upspin_lv = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
             #print(self.power, 1-decrease[self.upspin_lv-1])
-        return dist
+        return dist/elapsed, next_elapsed
     
     def move_stay(self, elapsed:float)->dict:
         x, y = self.xy[-1]['x'], self.xy[-1]['y']
 
         xy = {"x": x, "y": y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
         self.add_xy(xy)
-        return 0
+        return 0, elapsed
     
 def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     cue_x, cue_y = cue.get_xy()
