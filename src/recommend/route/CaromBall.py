@@ -27,6 +27,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         self.vector = {"x": 0, "y": 0}
         self.moved = 0
         self.colpoint = []
+        self.last_crashable = None
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
@@ -55,21 +56,26 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         return len(self.crash_list) > 0
 
     def crash(self, crashable:ICrashable):
-        v = np.array(self.vector['x'], self.vector['y'])
-        closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(self.get_xy()))
-        new_v, data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
-        self.vector['x'] = new_v[0]
-        self.vector['y'] = new_v[1]
+        if self.last_crashable is not crashable:
+            v = np.array([self.vector['x'], self.vector['y']])
+            #x, y = self.get_xy()
+            closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
+            new_v, data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
+            
+            self.vector['x'] = new_v[0]
+            self.vector['y'] = new_v[1]
 
-        self.power = data['power']
+            self.power = data['power']
 
-        self.upspin = data['upspin']
-        self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+            self.upspin = data['upspin']
+            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
 
-        self.sidespin = data['sidespin']
-        self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+            self.sidespin = data['sidespin']
+            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
 
-        self.colpoint.append(self.xy[-1])
+            self.colpoint.append(self.xy[-1])
+            print(v, new_v, data)
+            self.last_crashable = crashable
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]

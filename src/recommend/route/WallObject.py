@@ -92,7 +92,7 @@ class WallObject(IObserver, ICrashableSubject):
         #     pass
         def simple_reflect(data:dict):
             x , y = normal_vec.tolist()
-            if x==0:
+            if y==0:
                 direct_vec[0] = -direct_vec[0]
             else:
                 direct_vec[1] = -direct_vec[1]
