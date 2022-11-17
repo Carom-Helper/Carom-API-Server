@@ -33,6 +33,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         self.colpoint = []
         self.last_crashable = None
         self.crash_list = []
+        self.thick = 0
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
@@ -201,6 +202,8 @@ def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     
     cue.vector["x"] = vector["x"]
     cue.vector["y"] = vector["y"]
+
+    cue.thick = thickness
     
 
 def test(
