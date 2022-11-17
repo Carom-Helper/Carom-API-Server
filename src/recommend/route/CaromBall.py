@@ -98,8 +98,8 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
         self.add_xy(xy)
 
 
-        if self.moved > 10:
-            self.moved -= 10
+        if self.moved > 1:
+            self.moved -= 1
             upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * self.radius
             upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * self.radius
             next_power = self.power * (1-decrease[self.upspinrate-1])
