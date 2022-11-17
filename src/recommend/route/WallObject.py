@@ -8,7 +8,7 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
         print("wall object exe : ", s, s1, s2, s3, s4, s5, end=end)
         
-class WallObject(IMovableObserver, ICrashableSubject, ICrashChecker):
+class WallObject(IMovableObserver, ICrashableSubject):
     def __init__(
             self,
             pos1={"x":0.0, "y":0.0}, 
@@ -36,10 +36,11 @@ class WallObject(IMovableObserver, ICrashableSubject, ICrashChecker):
         # 움직임을 확인하고
         if observer is IMovableObserver:
         #   1. ICrashObserver가 들어오면,
-            if observer is ICrashable and observer is ICrashAction:
+            if (observer is ICrashable and
+                observer is ICrashAction):
         #       충돌을 확인하고,
                 xy = observer.get_xy()
-                if ()
+                if self.check_crash()
         #       충돌을 전파한다.
         
 
