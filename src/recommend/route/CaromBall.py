@@ -58,7 +58,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5
-        return True if dist < self.radius * 2 else False
+        return dist
 
     def notify_filltered_observer(self, observer:IObserver)->None:
         pass

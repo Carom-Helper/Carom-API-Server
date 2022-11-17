@@ -11,7 +11,7 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
         print("wall object exe : ", s, s1, s2, s3, s4, s5, end=end)
         
 class WallObject(IObserver, ICrashableSubject):
-    elapse = 0.0001
+    elapse = 1.0
     def __init__(
             self,
             pos1={"x":0.0, "y":0.0}, 
@@ -46,13 +46,12 @@ class WallObject(IObserver, ICrashableSubject):
             x, y = xy
             test_print("notify_filltered_observer",x,y)
             if self.orth_vec[0] == 0:
-                x = 0
+                x = self.pos1[0]
             else :
-                y = 0
+                y = self.pos1[1]
             distance = observer.get_distance_from_point(x,y)
-            print(distance)
-            if (distance < self.elapse and
-                type(observer) is ICrashAction): # 충돌
+            if distance < 10 : print(distance)
+            if (distance < self.elapse): # 충돌
         #       충돌을 전파한다.
                 observer.crash(self)
 
