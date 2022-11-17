@@ -91,3 +91,8 @@ python manage.py test
 # Ctrl + c
 make rm
 ```
+
+#furiosa compile 
+```bash
+ furiosa compile 파일명.onnx -o 파일명.enf
+```
