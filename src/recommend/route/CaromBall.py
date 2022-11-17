@@ -23,6 +23,7 @@ sidespinrange = sidespinmax - sidespinmin
 
 
 class CaromBall(ICrashObserver, IMoveableSubject):
+    elapse = 1.0
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
         self.name=f'{name}'
@@ -87,7 +88,16 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         return dist
 
     def notify_filltered_observer(self, observer:IObserver)->None:
-        pass
+        # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
+        # 움직임을 확인하고
+        if type(observer) is CaromBall:
+        #   1. ICrashObserver가 들어오면,
+            #if observer is ICrashable:
+        #       충돌을 확인하고,
+            distance = observer.get_distance_from_point(*self.get_xy())
+            if (distance - radius < self.elapse): # 충돌
+        #       충돌을 전파한다.
+                observer.crash(self)
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
