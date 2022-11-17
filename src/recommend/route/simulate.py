@@ -16,9 +16,9 @@ def test(
     tip = 1,
     thick = 0
     ):
-    cue = CaromBall()
-    tar1 = CaromBall()
-    tar2 = CaromBall()
+    cue = CaromBall("cue")
+    tar1 = CaromBall("tar1")
+    tar2 = CaromBall("tar2")
 
     wall_list = list()
     wall_list.append(WallObject(
@@ -73,16 +73,40 @@ def test(
 
     elapsed = 1
     i=0
-    for _ in range(1000):
-        c1 = cue.move(elapsed)
-        c2 = tar1.move(elapsed)
-        c3 = tar2.move(elapsed)
-        if c1 or c2 or c3:
+    success = False
+    wall_count = 0
+    is_tar1_hit = False
+    is_tar2_hit = False
+    #while True:
+    for _ in range(100000):
+        cue_hit, cue_dist, cue_elapsed = cue.move(elapsed)
+        _, tar1_dist, tar1_elapsed = tar1.move(elapsed)
+        _, tar2_dist, tar2_elapsed = tar2.move(elapsed)
+
+        elapsed = cue_elapsed
+
+        if cue_hit is not None:
+            for hit in cue_hit:
+                if hit == 'tar1':
+                    is_tar1_hit = True
+                elif hit == 'tar2':
+                    is_tar2_hit = True
+                else:
+                    wall_count += 1
+            
+        if is_tar1_hit and is_tar2_hit and wall_count >= 3:
+            success = True
             break
-        
+
+        if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
+            print("all ball stoped")
+            break
+    print(success)
     #if False:
     if True:
         show(cue, tar1, tar2)
+
+    return success, cue, tar1, tar2
 
 def show(cue, tar1, tar2):
     img = np.zeros((800,400,3), np.uint8)
@@ -116,7 +140,7 @@ def runner(args):
     #                 #test(args.cue, args.tar1, power=p, clock=c, tip=t, thick=th)
     #                 test(power=p, clock=c, tip=t, thick=th)
     
-    test(power = 50, clock = 0, tip = 3, thick = 0)
+    test(power = 30, clock = 0, tip = 3, thick = 0)
     #run(args.src, args.device)
     # detect(args.src, args.device)
     
