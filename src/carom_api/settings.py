@@ -116,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.0.214',
-    '10.0.2.2'
+    '10.0.2.2',
     #'192.168.0.2',
     'localhost'
     ]
