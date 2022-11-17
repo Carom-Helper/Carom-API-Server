@@ -15,6 +15,11 @@ class IObserver(metaclass=ABCMeta):
     def update(self, event:dict=None) -> None:
         pass
 
+class IFitteringNotifier(metaclass=ABCMeta):
+    @abstractclassmethod
+    def notify_filltered_observer(self, observer:IObserver)->None:
+        pass
+
 class ISubject(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.observer_list=list()
@@ -37,6 +42,19 @@ class ISubject(metaclass=ABCMeta):
     @abstractclassmethod
     def notify_observers(self)->None:
         pass
+
+class IFitteringSubject(IFitteringNotifier, ISubject, metaclass=ABCMeta):
+    def __init__(self) -> None:
+        super().__init__()
+    @abstractclassmethod
+    def notify_filltered_observer(self, observer:IObserver)->None:
+        pass
+    
+    def notify_observers(self)->None:
+        for observer in enumerate(self.observer_list):
+            self.filltering_notify(observer)
+        return observer
+    
 
 class IMoveable(metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -131,6 +149,7 @@ class ICrashObserver(ICrashAction, ICrashable, IObserver, metaclass=ABCMeta):
         pass
 
 class ICrashChecker(ICrashAction, metaclass=ABCMeta):
+    elapse = 0.0001
     def __init__(self) -> None:
         super().__init__()
         
@@ -167,15 +186,9 @@ class ICrashChecker(ICrashAction, metaclass=ABCMeta):
 
 
 
-class IMoveableSubject(IMoveable, ISubject, metaclass=ABCMeta):
-    elapse = 0.001
+class IMoveableSubject(IMoveable, IFitteringSubject, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
-    
-    def notify_observers(self)->None:
-        for observer in enumerate(self.observer_list):
-            self.filltering_notify(observer)
-        return observer
     
     @abstractclassmethod
     def get_xy(self)->list:
@@ -185,25 +198,14 @@ class IMoveableSubject(IMoveable, ISubject, metaclass=ABCMeta):
     def notify_filltered_observer(self, observer:IObserver)->None:
         pass
     
-class ICrashableSubject(ICrashable, ISubject, metaclass=ABCMeta):
+class ICrashableSubject(ICrashable, IFitteringSubject, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
-        self.crash_event = None
-    
-    def set_crash_event(self, crash_action:ICrashAction):
-        self.crash_event = crash_action
-    
+
     @abstractclassmethod
-    def notify_observers(self)->None:
+    def notify_filltered_observer(self, observer:IObserver)->None:
         pass
-        # # observer들을 하나씩 방문하면서
-        # for idx, observer in enumerate(self.observer_list):
-        #     # 충돌 인지를 판정한다.
-        #     if self.check_crash(idx):
-        #         # 충돌 했다면, 충돌을 전파한다.
-        #         observer.crash(self)
-        #         # 그리고 자기도 충돌 행동을 한다. 하지만 안한다.
-    # x,y 점과 자신과의 거리를 반환한다.
+    
     @abstractclassmethod
     def get_distance_from_point(self, x:float, y:float)-> float:
         pass
@@ -216,8 +218,29 @@ class ICrashableSubject(ICrashable, ISubject, metaclass=ABCMeta):
     def get_reflect_closure(self):
         pass
 
+class ICrashObserver(ICrash, IObserver, metaclass=ABCMeta):
+    @abstractclassmethod
+    def update(self, event:dict=None) -> None:
+        pass
+    # x,y 점과 자신과의 거리를 반환한다.
+    @abstractclassmethod
+    def get_distance_from_point(self, x:float, y:float)-> float:
+        pass
+    # 점에 대한 법선 벡트를 반환한다.
+    @abstractclassmethod
+    def get_normal_vector(self, x:float, y:float)-> np.array:
+        pass
+    # 점에 대한 법선 벡트를 반환한다.
+    @abstractclassmethod
+    def get_reflect_closure(self):
+        pass
+    # 충돌 했을 때 발생하는 이벤트를 받는다. 
+    # crasher is closure
+    @abstractclassmethod
+    def crash(self, crashable:ICrashable):
+        pass
 
-class IMovableObserver(IMoveable, IObserver):
+class IMovableObserver(IMoveable, IObserver, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
     @abstractclassmethod
