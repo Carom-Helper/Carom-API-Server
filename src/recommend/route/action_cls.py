@@ -206,10 +206,14 @@ class ICrashableSubject(ICrashable, IFitteringSubject, metaclass=ABCMeta):
     def notify_filltered_observer(self, observer:IObserver)->None:
         pass
     
+    # 접선의 방정식을 구하고
+    # 수선의 발에서 그은 x,y 값과의 거리를 반환한다.
     @abstractclassmethod
     def get_distance_from_point(self, x:float, y:float)-> float:
         pass
-    # 점에 대한 법선 벡트를 반환한다.
+    # 접선의 방정식을 구하고
+    # 접선의 방정식의 수직하는 방정식을 구하고
+    # 수직하는 방정식를 방향을 x,y 방향으로 해서 반환
     @abstractclassmethod
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
