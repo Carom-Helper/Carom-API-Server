@@ -45,7 +45,8 @@ class ISubject(metaclass=ABCMeta):
 
 class IFitteringSubject(IFitteringNotifier, ISubject, metaclass=ABCMeta):
     def __init__(self) -> None:
-        super().__init__()
+        #IFitteringNotifier.__init__()
+        ISubject.__init__(self)
     @abstractclassmethod
     def notify_filltered_observer(self, observer:IObserver)->None:
         pass
@@ -188,7 +189,8 @@ class ICrashChecker(ICrashAction, metaclass=ABCMeta):
 
 class IMoveableSubject(IMoveable, IFitteringSubject, metaclass=ABCMeta):
     def __init__(self) -> None:
-        super().__init__()
+        IMoveable.__init__(self)
+        IFitteringSubject.__init__(self)
     
     @abstractclassmethod
     def get_xy(self)->list:
@@ -200,7 +202,8 @@ class IMoveableSubject(IMoveable, IFitteringSubject, metaclass=ABCMeta):
     
 class ICrashableSubject(ICrashable, IFitteringSubject, metaclass=ABCMeta):
     def __init__(self) -> None:
-        super().__init__()
+        ICrashable.__init__(self)
+        IFitteringSubject.__init__(self)
 
     @abstractclassmethod
     def notify_filltered_observer(self, observer:IObserver)->None:
