@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import math
+import cv2
 
 from route_utills import is_test, print_args
 from action_cls import *
@@ -22,6 +23,7 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
         self.xy = []
         self.vector = {"x": 0, "y": 0}
         self.radius = 8.6
+        self.moved = 0
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
@@ -56,6 +58,7 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5
+        print(dist)
         return True if dist < self.radius * 2 else False
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
@@ -76,25 +79,45 @@ class CaromBall(IMoveable, ICrashable, IObserver, ISubject):
         self.xy.append(xy)
 
     def move(self, t:float)->float:
-        xy = self.mover(t)
-        if xy is not None:
-            self.add_xy(xy)
+        dist = self.mover(t)
+        if dist > 0:
             return self.notify_observers()
         else:
             return False
 
     def move_by_time(self, elapsed:float)->float:
+        #decrease = [0.0121504, 0.0164196, 0.0207284, 0.0271995, 0.0338062, 0.0450838, 0.0572598, 0.0820890, 0.1394312, 1.0000000]
+        decrease = [1.0000000, 0.1394312, 0.0820890, 0.0572598, 0.0450838, 0.0338062, 0.0271995, 0.0207284, 0.0164196, 0.0121504]
+
         x, y = self.xy[-1]["x"], self.xy[-1]["y"]
         new_x, new_y = x + self.vector["x"] * elapsed, y + self.vector["y"] * elapsed
+        dist = ((new_x - x)**2 + (new_y - y)**2)**0.5
+        self.moved += dist
 
         xy = {"x": new_x, "y": new_y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
-        return xy
+        self.add_xy(xy)
+
+
+        if self.moved > 10:
+            self.moved -= 10
+            upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * self.radius
+            upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * self.radius
+            next_power = self.power * (1-decrease[self.upspinrate-1])
+            
+            self.vector["x"] = self.vector["x"] * next_power / self.power
+            self.vector["y"] = self.vector["y"] * next_power / self.power
+
+            self.power = next_power
+            #self.upspinrate = int((self.upspin - upspinmin) / (upspinmax-upspinmin) * 10)
+            #print(self.power, 1-decrease[self.upspinrate-1])
+        return dist
     
     def move_stay(self, elapsed:float)->dict:
         x, y = self.xy[-1]['x'], self.xy[-1]['y']
 
         xy = {"x": x, "y": y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
-        return xy
+        self.add_xy(xy)
+        return 0
     
 def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     cue_pos = cue.get_xy()[-1]
@@ -128,19 +151,49 @@ def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
 
 def test(
     cue_coord=(300,400), 
-    tar1_coord=(350,450)
+    tar1_coord=(100,750),
+    tar2_coord=(300,300)
     ):
     cue = CaromBall()
+    tar1 = CaromBall()
+    tar2 = CaromBall()
     cue.start_param(clock = 12, tip = 1)
     cue.print_param()
 
-    tar = CaromBall()
-    tar.set_xy(*tar1_coord)
-
     cue.set_xy(*cue_coord)
-    set_vec(cue, tar, 0)
+    tar1.set_xy(*tar1_coord)
+    tar2.set_xy(*tar2_coord)
+
+    cue.register_observer(tar1)
+    cue.register_observer(tar2)
+
+    set_vec(cue, tar1, 0)
     cue.set_mover(cue.move_by_time)
-    print(cue.move(1))
+    tar1.set_mover(tar1.move_stay)
+    tar2.set_mover(tar2.move_stay)
+
+    elapsed = 1
+    for _ in range(1000):
+        c1 = cue.move(elapsed)
+        c2 = tar1.move(elapsed)
+        c3 = tar2.move(elapsed)
+        if c1 or c2 or c3:
+            break
+        
+    #if False:
+    if True:
+        show(cue, tar1, tar2)
+
+def show(cue, tar1, tar2):
+    img = np.zeros((800,400,3), np.uint8)
+    for c in cue.get_xy():
+        img = cv2.line(img, (int(c['x']), int(c['y'])), (int(c['x']), int(c['y'])), (255, 255, 255),1)
+    for t in tar1.get_xy():
+        img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 0, 255),1)
+    for t in tar2.get_xy():
+        img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0),1)
+    cv2.imshow('simulate', img)
+    cv2.waitKey()
     
 def runner(args):
     print_args(vars(args))

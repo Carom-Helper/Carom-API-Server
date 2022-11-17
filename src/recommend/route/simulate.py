@@ -1,6 +1,16 @@
-from action_cls import CaromBall, set_vec
+import argparse
 import cv2
 import numpy as np
+
+from route_utills import is_test, print_args
+from action_cls import CaromBall, set_vec
+
+def is_test_caromball()->bool:
+    return True and is_test()
+
+def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
+    if is_test_caromball():
+        print("action cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
 def test():
     cue = CaromBall()
@@ -46,4 +56,17 @@ def show(cue, tar1, tar2):
     cv2.imshow('simulate', img)
     cv2.waitKey()
 
-test()
+def runner(args):
+    print_args(vars(args))
+    test(args.cue, args.tar1)
+    #run(args.src, args.device)
+    # detect(args.src, args.device)
+    
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cue', default=(300,400))
+    parser.add_argument('--tar1', default=(350,450))
+    # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    # parser.add_argument('--display', action="store_true")
+    args = parser.parse_args()
+    runner(args) 
