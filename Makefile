@@ -20,6 +20,7 @@ stop:
 	@echo 'stop docker $(APP_NAME)'
 	docker stop $(APP_NAME)
 attach:
+	docker start $(APP_NAME)
 	docker attach $(APP_NAME)
 rm:
 	@echo 'rm docker $(APP_NAME)'
