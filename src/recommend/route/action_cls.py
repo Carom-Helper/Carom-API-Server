@@ -57,8 +57,8 @@ class IFitteringSubject(IFitteringNotifier, ISubject, metaclass=ABCMeta):
     
 
 class IMoveable(metaclass=ABCMeta):
-    def __init__(self) -> None:
-        self.mover = None
+    mover = None
+    
     # mover is closure
     def set_mover(self, mover) ->None:
         self.mover = mover
