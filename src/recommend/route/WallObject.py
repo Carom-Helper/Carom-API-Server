@@ -9,7 +9,7 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
         print("wall object exe : ", s, s1, s2, s3, s4, s5, end=end)
         
-class WallObject(IMovableObserver, ICrashableSubject):
+class WallObject(IObserver, ICrashableSubject):
     elapse = 0.0001
     def __init__(
             self,
@@ -36,7 +36,7 @@ class WallObject(IMovableObserver, ICrashableSubject):
     def notify_filltered_observer(self, observer:IObserver)->None:
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
-        if observer is IMovableObserver:
+        if observer is IMoveable:
         #   1. ICrashObserver가 들어오면,
             if observer is ICrashable:
         #       충돌을 확인하고,
@@ -85,22 +85,22 @@ class WallObject(IMovableObserver, ICrashableSubject):
         #     pass
         # else:
         #     pass
-        def simple_reflect(power):
+        def simple_reflect(power:dict):
             x , y = normal_vec.tolist()
             if x==0:
                 direct_vec[0] = -direct_vec[0]
             else:
                 direct_vec[1] = -direct_vec[1]
-            return direct_vec
-        return 
-        
-    def get_xy(self)->list:
-        return self.pos1
+            return (direct_vec, power)
+        return simple_reflect
     
     def update(self, event:dict=None) -> None:
         # crash 이벤트를 전파해야한다.
         self.notify_observers()
+
+def test():
     
+
 def test_get_distance_from_point():
     from random import randint
     wall_list = list()

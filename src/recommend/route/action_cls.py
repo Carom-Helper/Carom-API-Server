@@ -51,8 +51,8 @@ class IFitteringSubject(IFitteringNotifier, ISubject, metaclass=ABCMeta):
         pass
     
     def notify_observers(self)->None:
-        for observer in enumerate(self.observer_list):
-            self.filltering_notify(observer)
+        for observer in self.observer_list:
+            self.notify_filltered_observer(observer)
         return observer
     
 
