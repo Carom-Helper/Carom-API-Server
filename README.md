@@ -70,8 +70,13 @@ make run
 ```
 
 # How to setting In Docker Container (attach shell)
+#### For Window
 ```bash
-python clear_migrate.py & python manage.py makemigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
+python clear_migrate.py & python manage.py makemigrations & python manage.py makeviewmigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
+```
+#### Fro Linux
+```bash
+python clear_migrate.py && python manage.py makemigrations && python manage.py makeviewmigrations && python manage.py migrate && echo import init_setter > python manage.py shell_plus
 ```
 
 # How to test
@@ -85,4 +90,9 @@ python manage.py test
 ```bash
 # Ctrl + c
 make rm
+```
+
+#furiosa compile 
+```bash
+ furiosa compile 파일명.onnx -o 파일명.enf
 ```
