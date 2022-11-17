@@ -5,7 +5,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework.parsers import MultiPartParser
 # add base
 import urllib.parse as uparse
 from time import sleep
@@ -19,9 +19,9 @@ class PositionViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
     queryset = position.objects.all()
     serializer_class = PositionSerializer
-    
     def create(self, request, *args, **kwargs):
         # =======================detect coord와 매칭시켜준다.
+        print()
         print(request.data)
         print(request.data["coord"])
         try:
@@ -62,19 +62,19 @@ def test_make_route(issue_id, usr, t=1):
 			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
 			"obj1": [(600, 200), (700, 120)],
 			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION).save()
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSION).save()
     soultion_route(issue_id=issue_id, route={
 			"power": 5.4,
 			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
 			"obj1": [(600, 200), (700, 120)],
 			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION).save()
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSION).save()
     soultion_route(issue_id=issue_id, route={
 			"power": 9,
 			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
 			"obj1": [(600, 200), (700, 120)],
 			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSHION).save()
+		}, algorithm_ver=ROUTE_ALGORITHM_VERSION).save()
     pos.state="D"
     pos.save()
     print("======== save ball_coord ============")

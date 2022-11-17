@@ -15,7 +15,7 @@ Including another URLconf
 """
 # django base
 from django.urls import path, include
-from .views import CoordViewSet, ProjectionViewSet, DetectRequestAPIView
+from .views import CoordViewSet,DetectRequestAPIView
 
 #define ViewSet
 coord_list = CoordViewSet.as_view({
@@ -26,19 +26,10 @@ coord_detail = CoordViewSet.as_view({
     'delete' : 'destroy'
 })
 
-projection_list = ProjectionViewSet.as_view({
-    'get' : 'list',
-})
-projection_detail = ProjectionViewSet.as_view({
-    'get' : 'retrieve',
-    'delete' : 'destroy'
-})
 
 #define url pattern
 urlpatterns = [
     path("balls-coord/<int:carom_id>/<str:usr>/", DetectRequestAPIView.as_view()),
     path("balls-coord/result/", coord_list),
     path("balls-coord/result/<int:id>/", coord_detail),
-    path("projection-img/", projection_list),
-    path("projection-img/<int:id>/", projection_detail),
 ]

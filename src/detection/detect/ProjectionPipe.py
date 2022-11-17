@@ -141,9 +141,10 @@ class ProjectionCoordPipe(One2OnePipe):
         input.images["projected"] = result
         output = input
         if self.display :
-            cv2.imshow("proj", output.im)
-            cv2.imshow("proj2", projected)
-
+            output.print()
+            if is_test_projection():
+                cv2.imshow("proj", output.im)
+                cv2.imshow("proj2", projected)
         return output
 
     def get_regist_type(self, idx=0) -> str:

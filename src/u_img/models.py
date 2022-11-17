@@ -1,19 +1,33 @@
 from django.db import models
-from django.db.models import CASCADE, Model
+from django.db.models import CASCADE, Model, F
+from django_db_views.db_view import DBView
 
 from carom_api.settings import BASE_DIR, MEDIA_ROOT
 
 # Create your models here.
 
+class carom_img(Model):
+    img = models.ImageField(upload_to="carom/", verbose_name="Image")
 
-# class projection_method(Model):
-#     name = models.CharField(max_length=100, verbose_name="NAME")
-#     value = models.PositiveSmallIntegerField(verbose_name="VALUE", null=True)
+class carom_data(Model):
+    WORK_STATE = [
+        ('N', "None"),
+        ('A', "Accepted"),
+        ('P', "Progress"),
+        ('D', "Done"),
+    ]
+    img = models.ForeignKey(to="carom_img", on_delete=CASCADE, verbose_name="Image ID")
+    guide = models.JSONField(default=dict, verbose_name="Guide JSON")
+    detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N")
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["img"],
+                name = "unique img id"
+            )
+        ]
     
-#     def __str__(self) -> str:
-#         return str(self.name)
-
-class carom(Model):
+class CaromTable(DBView):
     WORK_STATE = [
         ('N', "None"),
         ('A', "Accepted"),
@@ -21,10 +35,24 @@ class carom(Model):
         ('D', "Done"),
     ]
     
-    img = models.ImageField(upload_to="carom/", verbose_name="Image")
-    guide = models.JSONField(default=dict, verbose_name="Guide JSON")
-    detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N")
-    # method = models.ForeignKey(to="projection_method", on_delete=CASCADE, verbose_name="Type")
-    # table_size = models.DecimalField(verbose_name="Persent", max_digits=4, decimal_places=1)
+    guide = models.JSONField(verbose_name="Guide Point", default=dict, null=True)
+    img = models.ImageField(verbose_name="Image", default="/", null=True)
+    detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N", null=True)
     
     
+    view_definition = lambda: str(
+        carom_data.objects.select_related(
+            "img"
+            ).values(
+                "img_id", 
+                "img__img", 
+                "guide", 
+                "detect_state"
+            ).annotate(
+                id = F('img_id'),
+                img = F('img__img')
+            ).all().query
+    )
+    class Meta:
+        managed = False 
+        db_table = "CaromTable"

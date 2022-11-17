@@ -4,7 +4,7 @@ from django.db.models import CASCADE, Model
 from detection.models import balls_coord
 from carom_api.settings import BASE_DIR, MEDIA_ROOT
 
-ROUTE_ALGORITHM_VERSHION = "ver0"
+ROUTE_ALGORITHM_VERSION = "ver0"
 
 # Create your models here.
 class position(Model):
