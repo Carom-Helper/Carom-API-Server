@@ -12,7 +12,7 @@ cd ../../../../../../..
 ```
 #### Next Step. Set {$ROOT}/src/secrets.json
 ```bash
-set +H
+# set +H
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
 echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"192.168.0.2"}' > settings.json
 echo '{json contents}' > secrets.json
