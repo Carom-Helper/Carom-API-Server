@@ -3,7 +3,7 @@ def is_test()->bool:
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
-        print("pipe cls exe : ", s, s1, s2, s3, s4, s5, end=end)
+        print("utills cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
 import cv2
 import numpy as np
@@ -81,7 +81,33 @@ def thickness_prediction(cue, tar, thickness = 0):
     new_t['y'] = x * sin + y * cos + tar['y']
 
     return new_t
+
+# input x,y는 2차원 벡터
+# return 되는 각도는 radian
+def angle(x,y):
+    v=np.inner(x,y) / (np.linalg.norm(x) * np.linalg.norm(y))
+    theta = np.arccos(v)
+    test_print("angle", theta)
+    return theta
+def radian2degree(theta):
+    return np.rad2deg(theta)
+
+def test_degree():
+    from random import random
+    normal_vec_list = list()
+    normal_vec_list.append(np.array([0.0,-1.0])) # top
+    normal_vec_list.append(np.array([-1.0,0.0])) # right
+    normal_vec_list.append(np.array([0.0,1.0])) # bottom
+    normal_vec_list.append(np.array([1.0,0.0])) # left
     
+    x = random()
+    direct_vec = [x, 1.0-x]
+    direct_vec = np.array(direct_vec)
+    print("direct_vect", direct_vec)
+    for normal_vec in normal_vec_list:
+        theta = angle(normal_vec, direct_vec)
+        theta = radian2degree(theta)
+        print(f"direct({direct_vec})/normal({normal_vec}) : {theta}")
 
 def test():
     cue = {'x':300, 'y':400}
@@ -97,4 +123,5 @@ def test():
         cv2.waitKey()
     
 if __name__ == '__main__':
-    test()
+    test_degree()
+    #test()

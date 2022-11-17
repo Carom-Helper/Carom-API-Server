@@ -93,9 +93,9 @@ class ICrashable(metaclass=ABCMeta):
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
     
-    # 점에 대한 법선 벡트를 반환한다.
+    # 점에 대한 법선 벡트를 반환하는 클로저를 반환한다.
     @abstractclassmethod
-    def get_reflect_closure(self):
+    def get_reflect_closure(self, direct_vec, normal_vec, power):
         pass
     
 class ICrashAction(metaclass=ABCMeta):
@@ -116,7 +116,7 @@ class ICrash(ICrashable, ICrashAction, metaclass=ABCMeta):
         pass
     # 점에 대한 법선 벡트를 반환한다.
     @abstractclassmethod
-    def get_reflect_closure(self):
+    def get_reflect_closure(self, direct_vec, normal_vec, power):
         pass
     # 충돌 했을 때 발생하는 이벤트를 받는다. 
     # crasher is closure
@@ -137,7 +137,7 @@ class ICrashObserver(ICrashAction, ICrashable, IObserver, metaclass=ABCMeta):
         pass
     # 점에 대한 법선 벡트를 반환한다.
     @abstractclassmethod
-    def get_reflect_closure(self):
+    def get_reflect_closure(self, direct_vec, normal_vec, power):
         pass
     # 충돌 했을 때 발생하는 이벤트를 받는다. 
     # crasher is closure
@@ -219,7 +219,7 @@ class ICrashableSubject(ICrashable, IFitteringSubject, metaclass=ABCMeta):
         pass
     # 점에 대한 법선 벡트를 반환한다.
     @abstractclassmethod
-    def get_reflect_closure(self):
+    def get_reflect_closure(self, direct_vec, normal_vec, power):
         pass
 
 class ICrashObserver(ICrash, IObserver, metaclass=ABCMeta):
@@ -236,7 +236,7 @@ class ICrashObserver(ICrash, IObserver, metaclass=ABCMeta):
         pass
     # 점에 대한 법선 벡트를 반환한다.
     @abstractclassmethod
-    def get_reflect_closure(self):
+    def get_reflect_closure(self, direct_vec, normal_vec, power):
         pass
     # 충돌 했을 때 발생하는 이벤트를 받는다. 
     # crasher is closure
