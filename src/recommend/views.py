@@ -22,13 +22,13 @@ class PositionViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         # =======================detect coord와 매칭시켜준다.
-        # print(request.data)
-        # print(request.data["coord"])
+        print(request.data)
+        print(request.data["coord"])
         try:
             coord = eval(request.data["coord"])
         except:
             coord = request.data["coord"]
-            print(type(coord))
+            # print(type(coord))
         # 존재하면 기존 것을 반환해 준다.
         pos = position.objects.filter(
             coord__cue=coord["cue"], 
