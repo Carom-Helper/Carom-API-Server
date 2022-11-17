@@ -16,28 +16,32 @@ Including another URLconf
 # django base
 from django.contrib import admin
 from django.urls import path, include
-from .views import CaromViewSet
+from .views import CaromDataViewSet, CaromImageViewSet, CaromTableViewSet
 
 #define ViewSet
-carom_list = CaromViewSet.as_view({
+carom_data_upload = CaromDataViewSet.as_view({
     'get' : 'list',
+    'post' : 'create',
 })
-
-carom_detail = CaromViewSet.as_view({
-    'get' : 'retrieve',
-    'delete' : 'destroy'
-})
-
-carom_update = CaromViewSet.as_view({
+carom_img_upload = CaromImageViewSet.as_view({
     'get' : 'list',
     'post' : 'create',
 })
 
+carom_list= CaromTableViewSet.as_view({
+    'get' : 'list',
+})
+
+carom_detail = CaromTableViewSet.as_view({
+    'get' : 'list',
+})
+
 #defin url pattern
 urlpatterns = [
-    path("carom/", carom_list),
-    path("carom/<int:id>/", carom_detail),
-    path("carom/<str:url>/", carom_update),
+    path("", carom_list),
+    path("<int:id>/", carom_detail),
+    path("img/", carom_img_upload),
+    path("data/", carom_data_upload),
 ]
 
 

@@ -7,10 +7,10 @@ class CoordSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
         
-class ProjectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = projection
-        fields = '__all__'
+# class ProjectionSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = projection
+#         fields = '__all__'
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:

@@ -115,7 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '192.168.0.214', 
+    '192.168.0.214',
+    '10.0.2.2',
     #'192.168.0.2',
     'localhost'
     ]
@@ -127,6 +128,7 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://10.0.2.2:8000'
     #'http://192.168.0.2:8000',
 ]
 
@@ -144,6 +146,7 @@ if SETTINGS_BASE_FILE.exists():
     print(ALLOWED_HOSTS)
     print(CORS_ORIGIN_WHITELIST)
 else:
+    FRAME_WORK = 'cpu'
     print("Plese Set settings.json")
 
 

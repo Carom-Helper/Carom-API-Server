@@ -14,7 +14,7 @@ from .serializers import *
 from carom_api.settings import FRAME_WORK
 
 from .detect.pipe_factory import *
-
+from u_img.models import carom_data, carom_img
 
 # Create your views here.
 class CoordViewSet(viewsets.ModelViewSet):
@@ -22,30 +22,30 @@ class CoordViewSet(viewsets.ModelViewSet):
     queryset = balls_coord.objects.all()
     serializer_class = CoordSerializer
     
-class ProjectionViewSet(viewsets.ModelViewSet):
-    lookup_field = 'id'
-    queryset = projection.objects.all()
-    serializer_class = ProjectionSerializer
+# class ProjectionViewSet(viewsets.ModelViewSet):
+#     lookup_field = 'id'
+#     queryset = projection.objects.all()
+#     serializer_class = ProjectionSerializer
     
 
 def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     #Start make coord
-    carom_img = carom.objects.get(id=carom_id)
-    carom_img.detect_state="P"
-    carom_img.save()
+    img_data = carom_data.objects.get(img_id=carom_id)
+    img_data.detect_state="P"
+    img_data.save()
     
     # set PipeResource
-    topLeft = carom_img.guide["TL"]
-    bottomRight = carom_img.guide["BR"]
-    topRight = carom_img.guide["TR"]
-    bottomLeft = carom_img.guide["BL"]
+    topLeft = img_data.guide["TL"]
+    bottomRight = img_data.guide["BR"]
+    topRight = img_data.guide["TR"]
+    bottomLeft = img_data.guide["BL"]
     
     print(FRAME_WORK)
     pipe, _ = pipe_factory(device=FRAME_WORK, display=display, inDB=True)
     
     ### Dataloader ###
-    src = carom_img.img.path
-    print(src)
+    img = carom_img.objects.get(id=carom_id)
+    src = img.img.path
     dataset = LoadImages(src)
     ### 실행 ###
     try:
@@ -56,13 +56,13 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
             input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
             # push input
             pipe.push_src(input)
-            carom_img.detect_state="D"
+            img_data.detect_state="D"
     except Exception as ex:
-        carom_img.detect_state="A"
+        img_data.detect_state="A"
         print(f"Error", str(ex))
     try:
         # end make coord
-        carom_img.save()
+        img_data.save()
     except:
         return
     if display:
@@ -87,8 +87,8 @@ class DetectRequestAPIView(APIView):
     def get(self, request, carom_id, usr, format=None):
         # carom에서 carom_id 있는지 확인
         try:
-            carom_obj = carom.objects.get(id=carom_id)
-        except carom.DoesNotExist: # 이미지가 아직 저장 안된 경우
+            carom_obj = carom_data.objects.get(img_id=carom_id)
+        except carom_data.DoesNotExist: # 이미지가 아직 저장 안된 경우
             return Response({"message":"Image doesn't exist"},status=status.HTTP_404_NOT_FOUND)
         
         # carom의 detect_state 확인
