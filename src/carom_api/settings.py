@@ -144,6 +144,7 @@ if SETTINGS_BASE_FILE.exists():
     print(ALLOWED_HOSTS)
     print(CORS_ORIGIN_WHITELIST)
 else:
+    FRAME_WORK = 'cpu'
     print("Plese Set settings.json")
 
 
