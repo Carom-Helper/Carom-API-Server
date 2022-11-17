@@ -20,6 +20,8 @@ upsinrange = upspinmax - upspinmin
 sidespinmax = 3 * math.cos(math.pi * (0 / 180)) * 50 * radius
 sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
+
+
 class CaromBall(ICrashObserver, IMoveableSubject):
     def __init__(self) -> None:
         IMoveableSubject.__init__(self)
