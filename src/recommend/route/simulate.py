@@ -102,6 +102,7 @@ def test(
             print("all ball stoped")
             break
     print(success)
+    print(cue.colpoint)
     #if False:
     if True:
         show(cue, tar1, tar2)

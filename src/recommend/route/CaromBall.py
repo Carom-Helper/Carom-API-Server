@@ -75,13 +75,13 @@ class CaromBall(ICrashObserver, IMoveableSubject):
             self.sidespin = data['sidespin']
             self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
 
-            self.colpoint.append(self.xy[-1])
+            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
             self.last_crashable = crashable
             self.crash_list.append(self.last_crashable.name)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
-        dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5
+        dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
         return dist
 
     def notify_filltered_observer(self, observer:IObserver)->None:
