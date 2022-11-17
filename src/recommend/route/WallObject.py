@@ -1,9 +1,10 @@
 from route_utills import angle, radian2degree
 from action_cls import *
 import numpy as np
+from CaromBall import CaromBall
 
 def is_test_wallobject()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
@@ -36,18 +37,20 @@ class WallObject(IObserver, ICrashableSubject):
     def notify_filltered_observer(self, observer:IObserver)->None:
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
-        if observer is IMoveable:
+        if type(observer) is CaromBall:
         #   1. ICrashObserver가 들어오면,
-            if observer is ICrashable:
+            #if observer is ICrashable:
         #       충돌을 확인하고,
-                xy = observer.get_xy()
-                [x,y] = xy
-                test_print("notify_filltered_observer",x,y)
-                distance = self.get_distance_from_point(x,y)
-                if (distance < self.elapse and
-                    observer is ICrashAction): # 충돌
-        #           충돌을 전파한다.
-                    observer.crash(self)
+        
+            xy = observer.get_xy()
+            x, y = xy
+            test_print("notify_filltered_observer",x,y)
+            distance = self.get_distance_from_point(x,y)
+            print(x, y)
+            if (distance < self.elapse and
+                type(observer) is ICrashAction): # 충돌
+        #       충돌을 전파한다.
+                observer.crash(self)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         test_print("get_distance_from_point")
@@ -99,7 +102,7 @@ class WallObject(IObserver, ICrashableSubject):
         self.notify_observers()
 
 def test():
-    
+    pass
 
 def test_get_distance_from_point():
     from random import randint

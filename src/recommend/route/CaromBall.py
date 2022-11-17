@@ -14,11 +14,9 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
         print("action cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
 
-class CaromBall(ICrashObserver, IMovableSubject):
+class CaromBall(ICrashObserver, IMoveableSubject):
     def __init__(self) -> None:
-        #IMoveable.__init__()
-        ICrashObserver.__init__(self)
-        IMovableSubject.__init__(self)
+        IMoveableSubject.__init__(self)
         self.xy = []
         self.vector = {"x": 0, "y": 0}
         self.radius = 8.6
@@ -50,24 +48,29 @@ class CaromBall(ICrashObserver, IMovableSubject):
     def notify_observers(self):
         self.crash_list = []
         for ob in self.observer_list:
-            if ob.update(self.xy[-1]):
+            if ob.update():
                 self.crash_list.append(ob)
         return len(self.crash_list) > 0
+
+    def crash(self, crashable:ICrashable):
+        print("crash")
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5
         return True if dist < self.radius * 2 else False
 
+    def notify_filltered_observer(self, observer:IObserver)->None:
+        pass
+
     def get_normal_vector(self, x:float, y:float)-> np.array:
         pass
     
-    def crash(self, normal_vec:np.array):
-        pass
     def get_reflect_closure(self):
         pass
+
     def get_xy(self)->list:
-        return self.xy[-1]
+        return self.xy[-1]['x'], self.xy[-1]['y']
 
     def set_xy(self, x:float, y:float):
         temp = {"x": x, "y": y, "elapsed": 0}
@@ -135,10 +138,10 @@ class CaromBall(ICrashObserver, IMovableSubject):
         return 0
     
 def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
-    cue_pos = cue.get_xy()
-    tar_pos = tar.get_xy()
+    cue_x, cue_y = cue.get_xy()
+    tar_x, tar_y = tar.get_xy()
 
-    cue_tar = {'x':(cue_pos['x'] - tar_pos['x']), 'y':(cue_pos['y'] - tar_pos['y'])}
+    cue_tar = {'x':(cue_x - tar_x), 'y':(cue_y - tar_y)}
     new_x = thickness/8 * cue.radius
     new_y = (cue.radius**2 - new_x**2)**0.5
 
@@ -151,10 +154,10 @@ def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     cos = cue_tar['y'] / cue_tar_l
     sin = -cue_tar['x'] / cue_tar_l
 
-    new_t['x'] = new_x * cos - new_y * sin + tar_pos['x']
-    new_t['y'] = new_x * sin + new_y * cos + tar_pos['y']
+    new_t['x'] = new_x * cos - new_y * sin + tar_x
+    new_t['y'] = new_x * sin + new_y * cos + tar_y
 
-    vector = {"x": new_t["x"] - cue_pos["x"], "y": new_t["y"] - cue_pos["y"]}
+    vector = {"x": new_t["x"] - cue_x, "y": new_t["y"] - cue_y}
 
     length = (vector["x"]**2 + vector["y"]**2)**0.5
     vector["x"] *= 3/5 / length * cue.power / 50
