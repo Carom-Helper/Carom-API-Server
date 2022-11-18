@@ -119,7 +119,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         ]
         direct_vec = - direct_vec
         radian = angle(direct_vec, normal_vec)
-        direct_normal_degree = radian2degree(radian)
+        # direct_normal_degree = radian2degree(radian)
         thick = self.thick
         cue_degree = crash_degree_table[abs(thick)]
         bias_table = []
@@ -205,7 +205,36 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         else:
             raise TypeError("get_reflect_closure+Ball")
         
+        split_table = []
         
+        
+        def simple_reflect_ball2ball(data:dict):
+            # 방향벡터와 노멀벡터를 통해 반사벡터를 구함
+            reflect_vec = (2*np.dot(direct_vec, normal_vec))*normal_vec - direct_vec
+            
+            # 편이 각 구하기
+            power = data["power"]
+            upspin = data["upspin"]
+            upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
+            
+            bias_degree = bias_table[upspin_lv]
+            radian = np.deg2rad(bias_degree)
+            
+            # set new vector
+            cos = np.cos(radian)
+            sin = np.sin(radian)
+            
+            x = direct_vec[0]
+            y = direct_vec[1]
+            direct_vec[0] = x * cos - y * sin
+            direct_vec[1] = x * sin + y * cos
+            
+            # set power
+            
+            return (direct_vec, data)
+        return simple_reflect_ball2ball
+            
+            
 
     def get_xy(self)->list:
         return self.xy[-1]['x'], self.xy[-1]['y']
