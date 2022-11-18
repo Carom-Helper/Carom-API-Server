@@ -47,7 +47,7 @@ def test(
     w4 = wall_list[3]
 
     cue.start_param(power = power, clock = clock, tip = tip)
-    cue.print_param()
+    #cue.print_param()
 
     cue.set_xy(*cue_coord)
     tar1.set_xy(*tar1_coord)
@@ -99,15 +99,14 @@ def test(
             break
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
-            print("all ball stoped")
             break
-    print(success)
-    print(cue.colpoint)
+    #print(success)
+    #print(cue.colpoint)
     #if False:
     if True:
         show(cue, tar1, tar2)
 
-    return success, cue, tar1, tar2
+    return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
 def show(cue, tar1, tar2):
     img = np.zeros((800,400,3), np.uint8)
@@ -127,28 +126,55 @@ def show(cue, tar1, tar2):
     cv2.imshow('simulate', img)
     cv2.waitKey()
     
+def simulation(
+    cue_coord=(300,400), 
+    tar1_coord=(100,750),
+    tar2_coord=(300,300)
+    ):
+
+    success_list = []
+
+    for c in range(12):
+        for t in range(1,4):
+            for p in range(10, 60, 10):
+                for th in range(-7, 8):
+                    for _ in range(2):
+                        success, cue, tar1, tar2 = test(cue_coord=cue_coord,
+                                                        tar1_coord=tar1_coord,
+                                                        tar2_coord=tar2_coord,
+                                                        power=p,
+                                                        clock=c,
+                                                        tip=t,
+                                                        thick=th)
+                        if success:
+                            result = {"power": p,
+                                        "clock": c,
+                                        "tip": t,
+                                        "cue": cue, 
+                                        "tar1": tar1,
+                                        "tar2": tar2}
+                            success_list.append(result)
+                            if len(success_list) >= 3:
+                                return success_list
+                        
+                        temp = tar1_coord
+                        tar1_coord = tar2_coord
+                        tar2_coord = temp
+    return success_list
+
 def runner(args):
     print_args(vars(args))
     
-    # for c in range(12):
-    #     for t in range(1,4):
-    #         for p in range(10, 60, 10):
-    #             for th in range(-7, 8):
-    #                 # c = 5
-    #                 # p = 50
-    #                 # th = 0
-    #                 print(c, t, p, th)
-    #                 #test(args.cue, args.tar1, power=p, clock=c, tip=t, thick=th)
-    #                 test(power=p, clock=c, tip=t, thick=th)
-    
-    test(power = 30, clock = 0, tip = 3, thick = 0)
+    simulation(cue_coord=args.cue, tar1_coord=args.tar1, tar2_coord=args.tar2)
+
     #run(args.src, args.device)
     # detect(args.src, args.device)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cue', default=(300,400))
-    parser.add_argument('--tar1', default=(350,450))
+    parser.add_argument('--tar1', default=(100,750))
+    parser.add_argument('--tar2', default=(300,300))
     # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     # parser.add_argument('--display', action="store_true")
     args = parser.parse_args()

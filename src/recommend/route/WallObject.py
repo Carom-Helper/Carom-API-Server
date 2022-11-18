@@ -362,7 +362,7 @@ class WallObject(IObserver, ICrashableSubject):
         
         test_print(f"\n{bias_table}")
         
-        def simple_reflect(data:dict):
+        def simple_reflect_ball2wall(data:dict):
             # reflect vec 구하기
             x , y = normal_vec.tolist()
             if y==0:
@@ -381,7 +381,7 @@ class WallObject(IObserver, ICrashableSubject):
                 if float(power) < float(speed_guide):
                     pick_key = speed_guide
             table = bias_table[str(pick_key)]
-            test_print("===============table=============\n", table)
+            # test_print("===============table=============\n", table)
             
             # sidespin 선택
             #   역회전 확인
@@ -404,7 +404,7 @@ class WallObject(IObserver, ICrashableSubject):
             direct_vec[1] = x * sin + y * cos
             
             return (direct_vec, data)
-        return simple_reflect
+        return simple_reflect_ball2wall
     
     def update(self, event:dict=None) -> None:
         # crash 이벤트를 전파해야한다.

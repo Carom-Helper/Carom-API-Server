@@ -5,6 +5,7 @@ import cv2
 
 from route_utills import is_test, print_args
 from action_cls import *
+from route_utills import angle, radian2degree
 
 def is_test_caromball()->bool:
     return True and is_test()
@@ -23,6 +24,7 @@ sidespinrange = sidespinmax - sidespinmin
 
 
 class CaromBall(ICrashObserver, IMoveableSubject):
+    elapse = 1.0
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
         self.name=f'{name}'
@@ -32,6 +34,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         self.colpoint = []
         self.last_crashable = None
         self.crash_list = []
+        self.thick = 0
         
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
@@ -87,13 +90,151 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         return dist
 
     def notify_filltered_observer(self, observer:IObserver)->None:
-        pass
+        # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
+        # 움직임을 확인하고
+        if type(observer) is CaromBall:
+        #   1. ICrashObserver가 들어오면,
+            #if observer is ICrashable:
+        #       충돌을 확인하고,
+            distance = observer.get_distance_from_point(*self.get_xy())
+            if (distance - radius < self.elapse): # 충돌
+        #       충돌을 전파한다.
+                observer.crash(self)
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
-        pass
+        x0, y0 = self.get_xy()
+        vec = np.array[ x-x0, y-y0]
+        vec = vec / np.linalg.norm(vec)
+        return vec
     
-    def get_reflect_closure(self):
-        pass
+    def get_reflect_closure(self, direct_vec, normal_vec):
+        crash_degree_table = [
+            29,
+            41,
+            51,
+            60,
+            68,
+            75,
+            83
+        ]
+        direct_vec = - direct_vec
+        radian = angle(direct_vec, normal_vec)
+        # direct_normal_degree = radian2degree(radian)
+        thick = self.thick
+        cue_degree = crash_degree_table[abs(thick)]
+        bias_table = []
+        if cue_degree < 20:
+            bias_table = [
+                -6.794786453,
+                5.675224304,
+                17.71131229,
+                20.55949783,
+                22.92873287,
+                30.92001724,
+                35.10299683,
+                38.13070297,
+                39.05358505,
+                41.48766327
+            ]
+        elif cue_degree < 26:
+            bias_table = [
+                1.101851463,
+                6.09233284,
+                9.714725685,
+                14.03004494,
+                15.45781517,
+                18.12297783,
+                20.83201427,
+                22.78761215,
+                25.74553318,
+                28.90215111
+            ]
+        elif cue_degree < 35:
+            bias_table = [
+                2.255041504,
+                7.60682106,
+                9.58551178,
+                11.45974808,
+                13.11029053,
+                14.67814026,
+                17.26420975,
+                18.74237976,
+                21.18320007,
+                28.51823425
+
+            ]
+        elif cue_degree < 44:
+            bias_table = [
+                3.138310242,
+                6.402128601,
+                8.470178604,
+                9.664089966,
+                11.30900574,
+                12.51847,
+                14.27773552,
+                15.99832077,
+                18.13723202,
+                28.72849083
+            ]
+        elif cue_degree < 55:
+            bias_table = [
+                -0.430860901,
+                4.952252579,
+                6.974358368,
+                8.682728577,
+                10.11644363,
+                11.26008301,
+                12.23267441,
+                13.2471981,
+                14.67285652,
+                26.29415512
+            ]
+        elif cue_degree <= 90.1:
+            bias_table = [
+                -1.001932144,
+                3.712745857,
+                5.213981628,
+                6.175741959,
+                7.22426033,
+                8.593474197,
+                9.567179108,
+                10.51088638,
+                11.51598625,
+                28.40719414
+            ]
+        else:
+            raise TypeError("get_reflect_closure+Ball")
+        
+        split_table = []
+        
+        
+        def simple_reflect_ball2ball(data:dict):
+            # 방향벡터와 노멀벡터를 통해 반사벡터를 구함
+            reflect_vec = (2*np.dot(direct_vec, normal_vec))*normal_vec - direct_vec
+            
+            # 편이 각 구하기
+            power = data["power"]
+            upspin = data["upspin"]
+            upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
+            
+            bias_degree = bias_table[upspin_lv]
+            radian = np.deg2rad(bias_degree)
+            
+            # set new vector
+            cos = np.cos(radian)
+            sin = np.sin(radian)
+            
+            x = direct_vec[0]
+            y = direct_vec[1]
+            direct_vec[0] = x * cos - y * sin
+            direct_vec[1] = x * sin + y * cos
+            
+            # set power
+            
+            return (direct_vec, data)
+        return simple_reflect_ball2ball
+            
+            
 
     def get_xy(self)->list:
         return self.xy[-1]['x'], self.xy[-1]['y']
@@ -191,6 +332,7 @@ def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     
     cue.vector["x"] = vector["x"]
     cue.vector["y"] = vector["y"]
+    cue.thick = thickness
     
 
 def test(
