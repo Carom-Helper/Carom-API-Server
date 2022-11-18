@@ -67,7 +67,7 @@ class NPUDetectObjectWeight(IWeight):
         self.lock = Lock()
         
         framework = device
-        weights = self.yolo_weights / "weights.onnx"
+        weights = self.yolo_weights / "weights_i8.onnx"
         cfg_file = self.yolo_weights / "cfg.yaml"
         calib_data = CAROM_BASE_DIR / 'media' / 'test'
         calib_data_count = 10
