@@ -19,6 +19,10 @@ run:
 stop:
 	@echo 'stop docker $(APP_NAME)'
 	docker stop $(APP_NAME)
+start :
+	docker start $(APP_NAME)
+exec :
+	docker exec -it $(APP_NAME)
 attach:
 	docker start $(APP_NAME)
 	docker attach $(APP_NAME)
@@ -26,9 +30,9 @@ rm:
 	@echo 'rm docker $(APP_NAME)'
 	docker rm -f $(APP_NAME)
 
-rmi:
-	@echo 'rmi docker $(IMAGE_NAME)'
-	docker rmi $(IMAGE_NAME)
+# rmi:
+#	@echo 'rmi docker $(IMAGE_NAME)'
+#	docker rmi $(IMAGE_NAME)
 
 rmrmi:
 	docker stop $(APP_NAME) && docker rm $(APP_NAME)
