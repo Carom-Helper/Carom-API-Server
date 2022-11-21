@@ -54,11 +54,14 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
     
     def update(self, event:dict=None) -> None:
         test_print("update move", self.get_xy())
-        crashable = event["crashable"]
-        self.crash(crashable)
+        if "elapsed" in event: # 움직인다.
+            self.move(event["elapsed"]) # elapsed = t(float)
+        if "crashable" in event: # crash 를 일으킨다
+            self.crash(event["crashable"])
 
     def crash(self, crashable:ICrashable):
         if self.last_crashable is not crashable:
+            test_print("Cue crachable : ", str(crashable))
             v = np.array([self.vector['x'], self.vector['y']])
             #x, y = self.get_xy()
             closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
@@ -83,11 +86,22 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
         return dist
-
+    
+    def move(self, t:float)->float:
+        self.crash_list = []
+        dist, next_t = self.mover(t)
+        if dist > 0:
+            self.notify_observers()
+            cue_hit = self.crash_list
+            return cue_hit, dist, next_t
+        else:
+            return None, 0, t
+        
     def notify_filltered_observer(self, observer:IObserver)->None:
         if not isinstance(observer, IObserver):
             print("Not in IObserver")
             return
+        event = dict()
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
         if isinstance(observer,ICrashable):
@@ -98,9 +112,12 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
                 if isinstance(observer, ICrashAction):
-                    observer.update({"crashable":self})
-        else:
-            observer.update({"moveable":self})
+                    test_print("notify_filltered_observer", "====== crash ======")
+                    self.crash_list.append(observer)
+                    self.last_crashable = observer
+                    event["crashable"] = self
+                    
+        observer.update(event)
             
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
@@ -110,6 +127,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         return vec
     
     def get_reflect_closure(self, direct_vec, normal_vec):
+        print("================hi ===================")
         crash_degree_table = [
             29,
             41,
@@ -248,15 +266,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
     def add_xy(self, xy:dict):
         self.xy.append(xy)
 
-    def move(self, t:float)->float:
-        self.crash_list = []
-        dist, next_t = self.mover(t)
-        if dist > 0:
-            self.notify_observers()
-            cue_hit = self.crash_list
-            return cue_hit, dist, next_t
-        else:
-            return None, 0, t
+    
 
     def move_by_time(self, elapsed:float)->float:
         decrease = [

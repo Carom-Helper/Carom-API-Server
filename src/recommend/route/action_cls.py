@@ -4,7 +4,7 @@ import numpy as np
 from route_utills import is_test
 
 def is_test_action_cls()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_action_cls():

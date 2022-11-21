@@ -60,12 +60,16 @@ def test(
     cue.register_observer(w2)
     cue.register_observer(w3)
     cue.register_observer(w4)
+    cue.register_observer(tar1)
+    cue.register_observer(tar2)
     
     w1.register_observer(cue)
     w2.register_observer(cue)
     w3.register_observer(cue)
     w4.register_observer(cue)
-
+    tar1.register_observer(cue)
+    tar2.register_observer(cue)
+    
     set_vec(cue, tar1, thick)
     cue.set_mover(cue.move_by_time)
     tar1.set_mover(tar1.move_stay)

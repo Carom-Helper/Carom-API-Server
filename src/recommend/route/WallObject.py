@@ -40,6 +40,7 @@ class WallObject(IObserver, ICrashableSubject):
         if not isinstance(observer, IObserver):
             print("Not in IObserver")
             return
+        event = dict()
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
         if isinstance(observer,ICrashable):
@@ -57,7 +58,9 @@ class WallObject(IObserver, ICrashableSubject):
             if (distance < self.elapse): # 충돌
         #       충돌을 전파한다.
                 if isinstance(observer, ICrashAction):
-                    observer.update({"crashable":self})
+                    event["crashable"] = self
+        
+        observer.update(event)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         test_print("get_distance_from_point")
@@ -412,10 +415,8 @@ class WallObject(IObserver, ICrashableSubject):
     
     def update(self, event:dict=None) -> None:
         # crash 이벤트를 전파해야한다.
-        self.notify_observers()
-
-def test():
-    pass
+        if "moveable" in event:
+            self.notify_observers()
 
 def test_get_distance_from_point():
     from random import randint
@@ -451,7 +452,6 @@ def test_get_distance_from_point():
         result["name"] = wall.name
         result["orth"] = wall.orth_vec
         result["distance"] = wall.get_distance_from_point(*point)
-        result["xy"] = wall.get_xy()
         
         print(result)
 def test():
