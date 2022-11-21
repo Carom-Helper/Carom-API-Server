@@ -6,7 +6,7 @@ from CaromBall import (
     radius, upspinmax, upspinmin, upsinrange, sidespinmax, sidespinmin, sidespinrange
 )
 def is_test_wallobject()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
@@ -37,9 +37,12 @@ class WallObject(IObserver, ICrashableSubject):
     
     # 특정 옵져버에 대해서 해야할 행동을 정의한다.
     def notify_filltered_observer(self, observer:IObserver)->None:
+        if not isinstance(observer, IObserver):
+            print("Not in IObserver")
+            return
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
-        if type(observer) is CaromBall:
+        if isinstance(observer,ICrashable):
         #   1. ICrashObserver가 들어오면,
             #if observer is ICrashable:
         #       충돌을 확인하고,
@@ -53,7 +56,8 @@ class WallObject(IObserver, ICrashableSubject):
             distance = observer.get_distance_from_point(x,y)
             if (distance < self.elapse): # 충돌
         #       충돌을 전파한다.
-                observer.crash(self)
+                if isinstance(observer, ICrashAction):
+                    observer.update({"crashable":self})
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         test_print("get_distance_from_point")

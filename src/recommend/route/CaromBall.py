@@ -23,7 +23,7 @@ sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
 
 
-class CaromBall(ICrashObserver, IMoveableSubject):
+class CaromBall(IObserver, ICrash, IMoveableSubject):
     elapse = 1.0
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
@@ -52,15 +52,10 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
         print(f'upspin_lv: {self.upspin_lv}, sidespin_lv: {self.sidespin_lv}\n')
     
-    def update(self, event:dict=None) -> bool:
-        return self.get_distance_from_point(x=event['x'], y=event['y'])
-
-    def notify_observers(self):
-        self.crash_list = []
-        for ob in self.observer_list:
-            if ob.update():
-                self.crash_list.append(ob)
-        return len(self.crash_list) > 0
+    def update(self, event:dict=None) -> None:
+        test_print("update move", self.get_xy())
+        crashable = event["crashable"]
+        self.crash(crashable)
 
     def crash(self, crashable:ICrashable):
         if self.last_crashable is not crashable:
@@ -90,16 +85,23 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         return dist
 
     def notify_filltered_observer(self, observer:IObserver)->None:
+        if not isinstance(observer, IObserver):
+            print("Not in IObserver")
+            return
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
-        if type(observer) is CaromBall:
+        if isinstance(observer,ICrashable):
         #   1. ICrashObserver가 들어오면,
             #if observer is ICrashable:
         #       충돌을 확인하고,
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
-                observer.crash(self)
+                if isinstance(observer, ICrashAction):
+                    observer.update({"crashable":self})
+        else:
+            observer.update({"moveable":self})
+            
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
         x0, y0 = self.get_xy()
