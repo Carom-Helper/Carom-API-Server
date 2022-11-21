@@ -58,22 +58,20 @@ class WallObject(IObserver, ICrashableSubject):
             if (distance < self.elapse): # 충돌
         #       충돌을 전파한다.
                 if isinstance(observer, ICrashAction):
+                    test_print(f"crash wall - {observer.name}")
                     event["crashable"] = self
         
         observer.update(event)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
-        test_print("get_distance_from_point")
+        # test_print("get_distance_from_point")
         p = np.array(self.pos1)
         vec = self.orth_vec
         input = [x,y]
         input = np.array(input)
         
-        test_print(p, input)
         result = ((p - input)*vec).tolist()
-        test_print("list", result)
         result = sum(result)
-        test_print("sum", result)
         return abs(result)
         
 
@@ -84,13 +82,12 @@ class WallObject(IObserver, ICrashableSubject):
     def get_reflect_closure(self, direct_vec, normal_vec):
         # 정방향 좌우회전 구하기
         right_side =  direct_vec[0] * (normal_vec.sum())
-        test_print("right side", right_side)
         # 입사각을 구한다.
         direct_vec = - direct_vec
         radian = angle(direct_vec, normal_vec)
         direct_normal_degree = radian2degree(radian)
         degree = 90.0 - direct_normal_degree
-        bias_table = {"key":[0.5, 4, 7, 11, 100]}
+        bias_table = {"key":[0.5, 4, 7, 11, 10000]}
         #if power < 0.5:
         if degree < 30:
             bias_table["0.5"] = [
@@ -313,7 +310,7 @@ class WallObject(IObserver, ICrashableSubject):
             raise ValueError("Over 90 degree.+get_reflect_closure")
         #else:
         if degree < 30:
-            bias_table["100"] = [
+            bias_table["10000"] = [
                 -2.25999999,
                 0.699999988,
                 2.299999952,
@@ -326,7 +323,7 @@ class WallObject(IObserver, ICrashableSubject):
                 23.79999924
             ]
         elif degree < 45:
-            bias_table["100"] = [
+            bias_table["10000"] = [
                 0,
                 5.599999905,
                 7.800000191,
@@ -339,7 +336,7 @@ class WallObject(IObserver, ICrashableSubject):
                 35.5
             ]
         elif degree < 80:
-            bias_table["100"] = [
+            bias_table["10000"] = [
                 -1.170000041,
                 6.900000095,
                 11.10000038,
@@ -352,7 +349,7 @@ class WallObject(IObserver, ICrashableSubject):
                 53.20000076
             ]
         elif degree <= 90.1:
-            bias_table["100"] = [
+            bias_table["10000"] = [
                 -15.19999981,
                 -6.900000095,
                 -4.400000095,
@@ -367,15 +364,15 @@ class WallObject(IObserver, ICrashableSubject):
         else:
             raise ValueError("Over 90 degree.+get_reflect_closure")
         
-        test_print(f"\n{bias_table}")
-        
         def simple_reflect_ball2wall(data:dict):
             # reflect vec 구하기
             x , y = normal_vec.tolist()
+            reflect_vec = direct_vec.copy()
             if y==0:
-                direct_vec[0] = -direct_vec[0]
+                reflect_vec[0] = -direct_vec[0]
             else:
-                direct_vec[1] = -direct_vec[1]
+                reflect_vec[1] = -direct_vec[1]
+            
             
             power = data["power"]
             sidespin = data["sidespin"]
@@ -387,7 +384,10 @@ class WallObject(IObserver, ICrashableSubject):
             for speed_guide in bias_table["key"]:
                 if float(power) < float(speed_guide):
                     pick_key = speed_guide
-            table = bias_table[str(pick_key)]
+            try:
+                table = bias_table[str(pick_key)]
+            except:
+                print("error degree : ",degree, str(pick_key))
             # test_print("===============table=============\n", table)
             
             # sidespin 선택
@@ -405,18 +405,17 @@ class WallObject(IObserver, ICrashableSubject):
             cos = np.cos(radian)
             sin = np.sin(radian)
             
-            x = direct_vec[0]
-            y = direct_vec[1]
-            direct_vec[0] = x * cos - y * sin
-            direct_vec[1] = x * sin + y * cos
+            x = reflect_vec[0]
+            y = reflect_vec[1]
+            reflect_vec[0] = x * cos - y * sin
+            reflect_vec[1] = x * sin + y * cos
             
-            return (direct_vec, data)
+            return (reflect_vec, data)
         return simple_reflect_ball2wall
     
     def update(self, event:dict=None) -> None:
         # crash 이벤트를 전파해야한다.
-        if "moveable" in event:
-            self.notify_observers()
+        self.notify_observers()
 
 def test_get_distance_from_point():
     from random import randint

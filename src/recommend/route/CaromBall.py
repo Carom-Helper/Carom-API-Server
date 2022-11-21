@@ -8,7 +8,7 @@ from action_cls import *
 from route_utills import angle, radian2degree
 
 def is_test_caromball()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_caromball():
@@ -24,7 +24,7 @@ sidespinrange = sidespinmax - sidespinmin
 
 
 class CaromBall(IObserver, ICrash, IMoveableSubject):
-    elapse = 1.0
+    elapse = 0
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
         self.name=f'{name}'
@@ -39,7 +39,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         self.upspin=0
         self.sidespin=0
     def __str__(self) -> str:
-        return f"{self.name}"+super().__str__()
+        return f"[{self.name}]"+super().__str__()
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
         self.theta = clock % 12 * (-30) + 90
@@ -59,9 +59,9 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
     def update(self, event:dict=None) -> None:
         # test_print("update move", self.get_xy())
         if "elapsed" in event: # 움직인다.
-            return self.move(event["elapsed"]) # elapsed = t(float)
+            self.move(event["elapsed"]) # elapsed = t(float)
         if "crashable" in event: # crash 를 일으킨다
-            return self.crash(event["crashable"])
+            self.crash(event["crashable"])
 
     def crash(self, crashable:ICrashable):
         if self.last_crashable is not crashable:
@@ -131,6 +131,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         x0, y0 = self.get_xy()
         vec = np.array([ x-x0, y-y0])
         vec = vec / np.linalg.norm(vec)
+        test_print("nomal", vec)
         return vec
     
     def get_reflect_closure(self, direct_vec, normal_vec):
@@ -256,8 +257,9 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         
         def simple_reflect_ball2ball(data:dict):
             # 방향벡터와 노멀벡터를 통해 반사벡터를 구함
-            reflect_vec = (2*np.dot(direct_vec, normal_vec))*normal_vec - direct_vec
-            test_print("simple_reflect_ball2ball", data)
+            normal_direct_vec = direct_vec
+            reflect_vec = 2*(np.dot(direct_vec, normal_vec))*normal_vec - direct_vec
+            test_print("simple_reflect_ball2ball", data, direct_vec, normal_vec, reflect_vec)
             # 편이 각 구하기
             power = data["power"]
             upspin = data["upspin"]
@@ -270,16 +272,16 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             cos = np.cos(radian)
             sin = np.sin(radian)
             
-            x = direct_vec[0]
-            y = direct_vec[1]
-            direct_vec[0] = x * cos - y * sin
-            direct_vec[1] = x * sin + y * cos
+            x = reflect_vec[0]
+            y = reflect_vec[1]
+            reflect_vec[0] = x * cos - y * sin
+            reflect_vec[1] = x * sin + y * cos
             
             # set power
             data["power"] = power * (100 -bias_power) * 0.1
             test_print("simple_reflect_ball2ball", data)
             
-            return (direct_vec, data)
+            return (reflect_vec, data)
         return simple_reflect_ball2ball
             
     def crash(self, crashable:ICrashable):
@@ -342,6 +344,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             self.moved -= 1
             upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
             upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
+            decreaserate=1
             for i, j in enumerate([1, 2.5, 4.5, 7, 100]):
                 if self.power < j:
                     decreaserate = (1-decrease[i][self.upspin_lv if self.upspin_lv < 10 else 9])
