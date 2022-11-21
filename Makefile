@@ -30,10 +30,10 @@ rm:
 	@echo 'rm docker $(APP_NAME)'
 	docker rm -f $(APP_NAME)
 
-# rmi:
-#	@echo 'rmi docker $(IMAGE_NAME)'
-#	docker rmi $(IMAGE_NAME)
-
-rmrmi:
-	docker stop $(APP_NAME) && docker rm $(APP_NAME)
+rmi:
+	@echo 'rmi docker $(IMAGE_NAME)'
 	docker rmi $(IMAGE_NAME)
+
+# rmrmi:
+#	docker stop $(APP_NAME) && docker rm $(APP_NAME)
+#	docker rmi $(IMAGE_NAME)
