@@ -83,10 +83,25 @@ def run_carom_simulate(
     is_tar1_hit = False
     is_tar2_hit = False
     #while True:
-    for _ in range(100000):
+    for tick in range(100000):
         cue_hit, cue_dist, cue_elapsed = cue.move(elapsed)
         _, tar1_dist, tar1_elapsed = tar1.move(elapsed)
         _, tar2_dist, tar2_elapsed = tar2.move(elapsed)
+
+        if cue_dist > 0:
+            for observer in cue.observer_list:
+                cue.notify_filltered_observer(observer)
+        if tar1_dist > 0:
+            for observer in tar1.observer_list:
+                tar1.notify_filltered_observer(observer)
+        if tar2_dist > 0:
+            for observer in tar2.observer_list:
+                tar2.notify_filltered_observer(observer)
+        cue.update()
+        tar1.update()
+        tar2.update()
+        print(tick)
+
 
         elapsed = cue_elapsed
 
@@ -109,7 +124,7 @@ def run_carom_simulate(
     #print(success)
     #print(cue.colpoint)
     #if False:
-    if True:
+    if success:
         if display:
             show(cue, tar1, tar2)
 

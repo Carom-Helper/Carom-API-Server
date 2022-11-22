@@ -37,6 +37,8 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         self.power=0
         self.upspin=0
         self.sidespin=0
+        self.new_v = None
+        self.data = None
     def __str__(self) -> str:
         return f"[{self.name}]"+super().__str__()
     def start_param(self, power = 50, clock = 12, tip = 0):
@@ -57,10 +59,22 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
     
     def update(self, event:dict=None) -> None:
         # test_print("update move", self.get_xy())
-        if "elapsed" in event: # 움직인다.
-            self.move(event["elapsed"]) # elapsed = t(float)
-        if "crashable" in event: # crash 를 일으킨다
-            self.crash(event["crashable"])
+        # if "elapsed" in event: # 움직인다.
+        #     self.move(event["elapsed"]) # elapsed = t(float)
+        # if "crashable" in event: # crash 를 일으킨다
+        #     self.crash(event["crashable"])
+        if self.new_v is not None:
+            self.vector['x'] = self.new_v[0]
+            self.vector['y'] = self.new_v[1]
+
+        if self.data is not None:
+            self.power = self.data['power']
+
+            self.upspin = self.data['upspin']
+            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+
+            self.sidespin = self.data['sidespin']
+            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
@@ -71,7 +85,8 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         self.crash_list = []
         dist, next_t = self.mover(t)
         if dist > 0:
-            self.notify_observers()
+            # for observer in self.observer_list:
+            #     self.notify_filltered_observer()
             cue_hit = self.crash_list
             return cue_hit, dist, next_t
         else:
@@ -99,7 +114,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
                     event["crashable"] = self
                     
                     
-        observer.update(event)
+        #observer.update(event)
             
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
@@ -127,103 +142,30 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         cue_degree = crash_degree_table[abs(thick)]
         bias_table = []
         if cue_degree < 20:
-            bias_table = [
-                -6.794786453,
-                5.675224304,
-                17.71131229,
-                20.55949783,
-                22.92873287,
-                30.92001724,
-                35.10299683,
-                38.13070297,
-                39.05358505,
-                41.48766327
-            ]
+            bias_table = [-6.794786453, 5.675224304, 17.71131229, 20.55949783, 22.92873287,
+            30.92001724, 35.10299683, 38.13070297, 39.05358505, 41.48766327]
         elif cue_degree < 26:
-            bias_table = [
-                1.101851463,
-                6.09233284,
-                9.714725685,
-                14.03004494,
-                15.45781517,
-                18.12297783,
-                20.83201427,
-                22.78761215,
-                25.74553318,
-                28.90215111
-            ]
+            bias_table = [ 1.101851463, 6.09233284, 9.714725685, 14.03004494, 15.45781517,
+                18.12297783, 20.83201427, 22.78761215,  25.74553318, 28.90215111]
         elif cue_degree < 35:
-            bias_table = [
-                2.255041504,
-                7.60682106,
-                9.58551178,
-                11.45974808,
-                13.11029053,
-                14.67814026,
-                17.26420975,
-                18.74237976,
-                21.18320007,
-                28.51823425
-
-            ]
+            bias_table = [2.255041504, 7.60682106, 9.58551178, 11.45974808, 13.11029053,
+                14.67814026, 17.26420975, 18.74237976, 21.18320007, 28.51823425]
         elif cue_degree < 44:
-            bias_table = [
-                3.138310242,
-                6.402128601,
-                8.470178604,
-                9.664089966,
-                11.30900574,
-                12.51847,
-                14.27773552,
-                15.99832077,
-                18.13723202,
-                28.72849083
-            ]
+            bias_table = [3.138310242, 6.402128601, 8.470178604, 9.664089966, 11.30900574,
+                12.51847, 14.27773552, 15.99832077, 18.13723202, 28.72849083]
         elif cue_degree < 55:
-            bias_table = [
-                -0.430860901,
-                4.952252579,
-                6.974358368,
-                8.682728577,
-                10.11644363,
-                11.26008301,
-                12.23267441,
-                13.2471981,
-                14.67285652,
-                26.29415512
-            ]
+            bias_table = [-0.430860901, 4.952252579, 6.974358368, 8.682728577, 10.11644363,
+                11.26008301, 12.23267441, 13.2471981, 14.67285652, 26.29415512]
         elif cue_degree <= 90.1:
-            bias_table = [
-                -1.001932144,
-                3.712745857,
-                5.213981628,
-                6.175741959,
-                7.22426033,
-                8.593474197,
-                9.567179108,
-                10.51088638,
-                11.51598625,
-                28.40719414
-            ]
+            bias_table = [-1.001932144, 3.712745857, 5.213981628, 6.175741959, 7.22426033,
+                8.593474197, 9.567179108, 10.51088638, 11.51598625, 28.40719414]
         else:
             raise TypeError("get_reflect_closure+Ball")
         
         split_table = {
             "key":[20, 21, 25,30,35,40,45,50,55,60,65,70,75],
-            "20":80,
-            "21":70,
-            "25":60,
-            "30":50,
-            "35":40,
-            "40":33,
-            "45":30,
-            "50":25,
-            "55":20,
-            "60":14,
-            "65":12,
-            "70":10,
-            "75":10,
-            }
+            "20":80, "21":70, "25":60, "30":50, "35":40, "40":33, "45":30, "50":25,
+            "55":20, "60":14, "65":12, "70":10, "75":10,}
         bias_power = 0
         for value in split_table["key"]:
             if cue_degree < int(value):
@@ -258,7 +200,36 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             
             return (reflect_vec, data)
         return simple_reflect_ball2ball
-        
+
+       
+    def crash(self, crashable:ICrashable):
+        if self.last_crashable is not crashable:
+            test_print("Cue crachable : ", str(crashable), self.power)
+            v = np.array([self.vector['x'], self.vector['y']])
+            
+            #x, y = self.get_xy()
+            closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
+            self.new_v, self.data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
+
+            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
+            self.last_crashable = crashable
+            self.crash_list.append(self.last_crashable.name)
+            """
+            self.vector['x'] = self.new_v[0]
+            self.vector['y'] = self.new_v[1]
+
+            self.power = self.data['power']
+
+            self.upspin = self.data['upspin']
+            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+
+            self.sidespin = self.data['sidespin']
+            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+
+            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
+            self.last_crashable = crashable
+            self.crash_list.append(self.last_crashable.name)
+            """
 
     def get_xy(self)->list:
         return self.xy[-1]['x'], self.xy[-1]['y']
