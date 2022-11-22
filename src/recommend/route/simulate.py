@@ -96,8 +96,9 @@ def test(
                 else:
                     wall_count += 1
             
-        if is_tar1_hit and is_tar2_hit and wall_count >= 3:
-            success = True
+        if is_tar1_hit and is_tar2_hit:
+            if wall_count >= 3:
+                success = True
             break
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
