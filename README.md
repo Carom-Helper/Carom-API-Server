@@ -10,7 +10,7 @@ cd src/detection/detect/npu_yolov5/utils/box_decode/cbox_decode
 python setup.py build_ext --inplace
 cd ../../../../../../..
 ```
-#### Next Step. Set {$ROOT}/src/secrets.json
+#### Next Step. Set {$ROOT}/src/secrets.json && {$ROOT}/src/settings.json
 ```bash
 # set +H
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
