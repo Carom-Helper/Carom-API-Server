@@ -1,5 +1,5 @@
 USR=tglee
-PORT_NUM=8000
+PORT_NUM=7576
 SRC_NAME=caromapi
 APP_NAME=${SRC_NAME}_${USR}
 IMAGE_NAME=${SRC_NAME}_image
@@ -19,6 +19,10 @@ run:
 stop:
 	@echo 'stop docker $(APP_NAME)'
 	docker stop $(APP_NAME)
+start :
+	docker start $(APP_NAME)
+exec :
+	docker exec -it $(APP_NAME)
 attach:
 	docker start $(APP_NAME)
 	docker attach $(APP_NAME)
@@ -30,6 +34,6 @@ rmi:
 	@echo 'rmi docker $(IMAGE_NAME)'
 	docker rmi $(IMAGE_NAME)
 
-rmrmi:
-	docker stop $(APP_NAME) && docker rm $(APP_NAME)
-	docker rmi $(IMAGE_NAME)
+# rmrmi:
+#	docker stop $(APP_NAME) && docker rm $(APP_NAME)
+#	docker rmi $(IMAGE_NAME)
