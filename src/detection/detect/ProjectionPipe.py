@@ -74,8 +74,10 @@ class ProjectionPipe(One2OnePipe):
         input.im = result.copy()
         input.images["projected"] = result
         output = input
-        cv2.imshow("origin", origin)
-        cv2.imshow("proj", output.im)
+        try:
+            cv2.imshow("origin", origin)
+            cv2.imshow("proj", output.im)
+        except:pass
 
         return output
 
@@ -143,8 +145,10 @@ class ProjectionCoordPipe(One2OnePipe):
         if self.display :
             output.print()
             if is_test_projection():
-                cv2.imshow("proj", output.im)
-                cv2.imshow("proj2", projected)
+                try:
+                    cv2.imshow("proj", output.im)
+                    cv2.imshow("proj2", projected)
+                except:pass
         return output
 
     def get_regist_type(self, idx=0) -> str:
@@ -187,8 +191,10 @@ def test(src, display=True):
             origin = input.images["origin"].copy()
             for i in range(4):
                 origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
-            cv2.imshow("origin", origin)
-            cv2.waitKey(1000)
+            try:
+                cv2.imshow("origin", origin)
+                cv2.waitKey(1000)
+            except:pass
     bag_split.print()
 
 def runner(args):

@@ -131,4 +131,3 @@ dmypy.json
 # secrets
 src/secrets.json
 src/settings.json
-src/settings.json

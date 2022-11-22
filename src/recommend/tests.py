@@ -1,14 +1,19 @@
 from django.test import TestCase, LiveServerTestCase
 from .views import *
-from threading import Thread
+from random import randint
+
+def ball_creater():
+    x = randint(7, 393)
+    y = randint(7, 793)
+    return [x,y]
 
 # Create your tests here.
 class RouteTestClass(LiveServerTestCase):
     def setUp(self):
         coord = {
-            "cue":[300,400], 
-            "obj1":[100,750],
-            "obj2":[300,300],
+            "cue":ball_creater(), 
+            "obj1":ball_creater(),
+            "obj2":ball_creater(),
         }
         position(coord=coord).save()
         

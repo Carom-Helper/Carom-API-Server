@@ -9,22 +9,23 @@ class DetectTestClass(LiveServerTestCase):
     def setUp(self):
         #DB에 이미지 삽입
         guide =  {
-            "TL": [
-                549,
-                109
-            ],
             "BR": [
                 1270,
                 580
             ],
+            "TL": [
+                549,
+                109
+            ],
+            
             "TR": [
+                180,
+                565
+            ],
+            "BL": [
                 942,
                 112
             ],
-            "BL": [
-                180,
-                565
-            ]
         }
         #C:/Users/qjrm6/inte/Carom-API-Server/src/media/carom/2022/11/15/
         img = carom_img(img='carom/sample.jpg')
@@ -41,6 +42,16 @@ class DetectTestClass(LiveServerTestCase):
         img = carom_img.objects.last()
         test_make_coord(img.id, display=True)
         self.assertEqual(len(balls_coord.objects.all()), 1)
+        ball = balls_coord.objects.last()
+        print("=========== detect ball ==================")
+        print(ball.coord)
+        x,y = ball.coord["1"]
+        self.assertEqual(x*y > 0, True)
+        x,y = ball.coord["2"]
+        self.assertEqual(x*y > 0, True)
+        x,y = ball.coord["3"]
+        self.assertEqual(x*y > 0, True)
+        
 
     def test_framework(self):
         self.assertEqual(FRAME_WORK, 'furiosa')
