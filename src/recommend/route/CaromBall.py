@@ -23,7 +23,7 @@ sidespinrange = sidespinmax - sidespinmin
 
 
 class CaromBall(IObserver, ICrash, IMoveableSubject):
-    elapse = 0.5
+    elapse = 0
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
         self.name=f'{name}'
@@ -108,7 +108,9 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
+                print(observer.name, isinstance(observer, ICrashAction))
                 if isinstance(observer, ICrashAction):
+                    print(observer.name)
                     self.crash(observer)
                     test_print("notify_filltered_observer", f"====== {str(observer)} ======")
                     #self.crash_list.append(observer)
