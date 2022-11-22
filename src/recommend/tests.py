@@ -26,7 +26,7 @@ class RouteTestClass(LiveServerTestCase):
     def test_make_route(self):
         pos = position.objects.last()
         try:
-            test_make_route(pos.id, display=False if FRAME_WORK=='furiossa' else True)
+            test_make_route(pos.id, display=False if FRAME_WORK=='furiosa' else True)
         except:
             pass
         
