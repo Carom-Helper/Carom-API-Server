@@ -13,6 +13,9 @@ from time import sleep
 # add our project
 from .serializers import *
 
+# calc route
+from route.simulate import simulation
+
 
 # Create your views here.
 class PositionViewSet(viewsets.ModelViewSet):
@@ -52,37 +55,30 @@ def test_make_route(issue_id, usr, t=1):
     pos.state="P"
     pos.save()
     print("======== start Process ============")
-    sleep(t*3)
+    #좌표 받아오기 cue, 목적구, 목적구2
+    cue = pos.coord["cue"]
+    obj1 =  pos.coord["obj1"]
+    obj2 =  pos.coord["obj2"]
+    cue = (cue[0], cue[1])
+    obj1 = (obj1[0],obj1[1])
+    obj2 = (obj2[0],obj2[1])
+    soultion_list = simulation(cue, obj1, obj2)
     print("======== detect done ============")
-    soultion_route(issue_id=issue_id, route={
-			"power": 2.4,
-			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
-			"obj1": [(600, 200), (700, 120)],
-			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSION).save()
-    soultion_route(issue_id=issue_id, route={
-			"power": 5.4,
-			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
-			"obj1": [(600, 200), (700, 120)],
-			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSION).save()
-    soultion_route(issue_id=issue_id, route={
-			"power": 9,
-			"cue": [(200, 200), (590, 200), (680, 10), (780, 150), (480, 390), (210, 150), (200, 120)],
-			"obj1": [(600, 200), (700, 120)],
-			"obj2": [(200, 150), (150, 130)]
-		}, algorithm_ver=ROUTE_ALGORITHM_VERSION).save()
+    for soultion in soultion_list:
+        soultion_route(
+            issue_id=issue_id, 
+            route=soultion, 
+            algorithm_ver=ROUTE_ALGORITHM_VERSION
+            ).save()
     pos.state="D"
     pos.save()
     print("======== save ball_coord ============")
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
-        import threading
         #detect PIPE
         try:
-            runner = threading.Thread(target=test_make_route, args=(issue_id, usr))
-            runner.start()
+            test_make_route(issue_id, usr)
         except Exception as ex:
             print("make_route ex : "+ str(ex))
     
