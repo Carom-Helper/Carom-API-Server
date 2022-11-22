@@ -76,7 +76,7 @@ python clear_migrate.py & python manage.py makemigrations & python manage.py mak
 ```
 #### Fro Linux
 ```bash
-python clear_migrate.py && python manage.py makemigrations && python manage.py makeviewmigrations && python manage.py migrate && echo import init_setter > python manage.py shell_plus
+python clear_migrate.py && python manage.py makemigrations && python manage.py makeviewmigrations && python manage.py migrate && echo "import init_setter" | python manage.py shell_plus
 ```
 
 # How to test
