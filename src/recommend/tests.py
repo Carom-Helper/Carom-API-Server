@@ -1,6 +1,7 @@
 from django.test import TestCase, LiveServerTestCase
 from .views import *
 from random import randint
+from carom_api.settings import FRAME_WORK
 
 def ball_creater():
     x = randint(7, 393)
@@ -25,7 +26,7 @@ class RouteTestClass(LiveServerTestCase):
     def test_make_route(self):
         pos = position.objects.last()
         try:
-            test_make_route(pos.id, display=True)
+            test_make_route(pos.id, display=False if FRAME_WORK=='furiossa' else True)
         except:
             pass
         
