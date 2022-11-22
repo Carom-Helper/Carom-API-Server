@@ -100,13 +100,14 @@ def run_carom_simulate(
         cue.update()
         tar1.update()
         tar2.update()
-        print(tick)
+        #print(tick)
 
 
         elapsed = cue_elapsed
 
         if cue_hit is not None:
             for hit in cue_hit:
+                print(hit)
                 if hit == 'tar1':
                     is_tar1_hit = True
                 elif hit == 'tar2':
@@ -124,7 +125,7 @@ def run_carom_simulate(
     #print(success)
     #print(cue.colpoint)
     #if False:
-    if success:
+    if True:
         if display:
             show(cue, tar1, tar2)
 
@@ -161,7 +162,7 @@ def simulation(
 
     for c in range(12):
         for t in range(1,4):
-            for p in range(10, 60, 10):
+            for p in range(50, 10, -10):
                 for th in range(-7, 8):
                     for _ in range(2):
                         success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,

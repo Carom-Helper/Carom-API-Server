@@ -23,7 +23,7 @@ sidespinrange = sidespinmax - sidespinmin
 
 
 class CaromBall(IObserver, ICrash, IMoveableSubject):
-    elapse = 0
+    elapse = 0.5
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
         self.name=f'{name}'
@@ -66,6 +66,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         if self.new_v is not None:
             self.vector['x'] = self.new_v[0]
             self.vector['y'] = self.new_v[1]
+            self.new_v = None
 
         if self.data is not None:
             self.power = self.data['power']
@@ -75,6 +76,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
             self.sidespin = self.data['sidespin']
             self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+            self.data = None
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
@@ -109,8 +111,8 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
                 if isinstance(observer, ICrashAction):
                     self.crash(observer)
                     test_print("notify_filltered_observer", f"====== {str(observer)} ======")
-                    self.crash_list.append(observer)
-                    self.last_crashable = observer
+                    #self.crash_list.append(observer)
+                    #self.last_crashable = observer
                     event["crashable"] = self
                     
                     
@@ -206,7 +208,8 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         if self.last_crashable is not crashable:
             test_print("Cue crachable : ", str(crashable), self.power)
             v = np.array([self.vector['x'], self.vector['y']])
-            
+            if crashable.name == 'bottom':
+                print('bottom')
             #x, y = self.get_xy()
             closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
             self.new_v, self.data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
@@ -274,6 +277,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             next_power = self.power * decreaserate
             
             reduce = next_power / self.power
+            #print(next_power, reduce)
             
             self.vector["x"] = self.vector["x"] * reduce
             self.vector["y"] = self.vector["y"] * reduce
