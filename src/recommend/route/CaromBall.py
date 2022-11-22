@@ -3,16 +3,15 @@ import numpy as np
 import math
 import cv2
 
-from route_utills import is_test, print_args
+# import route
+from route_utills import is_test, print_args, angle
 from action_cls import *
-from route_utills import angle, radian2degree
-
 def is_test_caromball()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_caromball():
-        print("action cls exe : ", s, s1, s2, s3, s4, s5, end=end)
+        print("Carom Ball cls exe : ", s, s1, s2, s3, s4, s5, end=end)
 
 radius = 8.6
 upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
@@ -23,8 +22,8 @@ sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
 
 
-class CaromBall(ICrashObserver, IMoveableSubject):
-    elapse = 1.0
+class CaromBall(IObserver, ICrash, IMoveableSubject):
+    elapse = 0
     def __init__(self, name="cue") -> None:
         IMoveableSubject.__init__(self)
         self.name=f'{name}'
@@ -35,7 +34,11 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         self.last_crashable = None
         self.crash_list = []
         self.thick = 0
-        
+        self.power=0
+        self.upspin=0
+        self.sidespin=0
+    def __str__(self) -> str:
+        return f"[{self.name}]"+super().__str__()
     def start_param(self, power = 50, clock = 12, tip = 0):
         self.power = power
         self.theta = clock % 12 * (-30) + 90
@@ -52,63 +55,63 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
         print(f'upspin_lv: {self.upspin_lv}, sidespin_lv: {self.sidespin_lv}\n')
     
-    def update(self, event:dict=None) -> bool:
-        return self.get_distance_from_point(x=event['x'], y=event['y'])
-
-    def notify_observers(self):
-        self.crash_list = []
-        for ob in self.observer_list:
-            if ob.update():
-                self.crash_list.append(ob)
-        return len(self.crash_list) > 0
-
-    def crash(self, crashable:ICrashable):
-        if self.last_crashable is not crashable:
-            v = np.array([self.vector['x'], self.vector['y']])
-            #x, y = self.get_xy()
-            closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
-            new_v, data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
-            
-            self.vector['x'] = new_v[0]
-            self.vector['y'] = new_v[1]
-
-            self.power = data['power']
-
-            self.upspin = data['upspin']
-            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
-
-            self.sidespin = data['sidespin']
-            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-
-            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
-            self.last_crashable = crashable
-            self.crash_list.append(self.last_crashable.name)
+    def update(self, event:dict=None) -> None:
+        # test_print("update move", self.get_xy())
+        if "elapsed" in event: # 움직인다.
+            self.move(event["elapsed"]) # elapsed = t(float)
+        if "crashable" in event: # crash 를 일으킨다
+            self.crash(event["crashable"])
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
         return dist
-
+    
+    def move(self, t:float)->float:
+        self.crash_list = []
+        dist, next_t = self.mover(t)
+        if dist > 0:
+            self.notify_observers()
+            cue_hit = self.crash_list
+            return cue_hit, dist, next_t
+        else:
+            return None, 0, t
+        
     def notify_filltered_observer(self, observer:IObserver)->None:
+        if not isinstance(observer, IObserver):
+            print("Not in IObserver")
+            return
+        event = dict()
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
-        if type(observer) is CaromBall:
+        if isinstance(observer,ICrashable):
         #   1. ICrashObserver가 들어오면,
             #if observer is ICrashable:
         #       충돌을 확인하고,
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
-                observer.crash(self)
+                if isinstance(observer, ICrashAction):
+                    self.crash(observer)
+                    test_print("notify_filltered_observer", f"====== {str(observer)} ======")
+                    self.crash_list.append(observer)
+                    self.last_crashable = observer
+                    event["crashable"] = self
+                    
+                    
+        observer.update(event)
+            
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
         x0, y0 = self.get_xy()
-        vec = np.array[ x-x0, y-y0]
+        vec = np.array([ x-x0, y-y0])
         vec = vec / np.linalg.norm(vec)
+        test_print("nomal", vec)
         return vec
     
     def get_reflect_closure(self, direct_vec, normal_vec):
         crash_degree_table = [
+            0,
             29,
             41,
             51,
@@ -205,13 +208,33 @@ class CaromBall(ICrashObserver, IMoveableSubject):
         else:
             raise TypeError("get_reflect_closure+Ball")
         
-        split_table = []
+        split_table = {
+            "key":[20, 21, 25,30,35,40,45,50,55,60,65,70,75],
+            "20":80,
+            "21":70,
+            "25":60,
+            "30":50,
+            "35":40,
+            "40":33,
+            "45":30,
+            "50":25,
+            "55":20,
+            "60":14,
+            "65":12,
+            "70":10,
+            "75":10,
+            }
+        bias_power = 0
+        for value in split_table["key"]:
+            if cue_degree < int(value):
+                bias_power = split_table[str(value)]
         
         
         def simple_reflect_ball2ball(data:dict):
             # 방향벡터와 노멀벡터를 통해 반사벡터를 구함
-            reflect_vec = (2*np.dot(direct_vec, normal_vec))*normal_vec - direct_vec
-            
+            normal_direct_vec = direct_vec
+            reflect_vec = 2*(np.dot(direct_vec, normal_vec))*normal_vec - direct_vec
+            test_print("simple_reflect_ball2ball", data, direct_vec, normal_vec, reflect_vec)
             # 편이 각 구하기
             power = data["power"]
             upspin = data["upspin"]
@@ -224,17 +247,42 @@ class CaromBall(ICrashObserver, IMoveableSubject):
             cos = np.cos(radian)
             sin = np.sin(radian)
             
-            x = direct_vec[0]
-            y = direct_vec[1]
-            direct_vec[0] = x * cos - y * sin
-            direct_vec[1] = x * sin + y * cos
+            x = reflect_vec[0]
+            y = reflect_vec[1]
+            reflect_vec[0] = x * cos - y * sin
+            reflect_vec[1] = x * sin + y * cos
             
             # set power
+            data["power"] = power * (100 -bias_power) * 0.01
+            test_print("simple_reflect_ball2ball", data)
             
-            return (direct_vec, data)
+            return (reflect_vec, data)
         return simple_reflect_ball2ball
             
+    def crash(self, crashable:ICrashable):
+        if self.last_crashable is not crashable:
+            test_print("Cue crachable : ", str(crashable), self.power)
+            v = np.array([self.vector['x'], self.vector['y']])
             
+            #x, y = self.get_xy()
+            closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
+            new_v, data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
+            
+            self.vector['x'] = new_v[0]
+            self.vector['y'] = new_v[1]
+
+            self.power = data['power']
+
+            self.upspin = data['upspin']
+            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+
+            self.sidespin = data['sidespin']
+            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+
+            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
+            self.last_crashable = crashable
+            self.crash_list.append(self.last_crashable.name)
+        
 
     def get_xy(self)->list:
         return self.xy[-1]['x'], self.xy[-1]['y']
@@ -246,15 +294,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
     def add_xy(self, xy:dict):
         self.xy.append(xy)
 
-    def move(self, t:float)->float:
-        self.crash_list = []
-        dist, next_t = self.mover(t)
-        if dist > 0:
-            self.notify_observers()
-            cue_hit = self.crash_list
-            return cue_hit, dist, next_t
-        else:
-            return None, 0, t
+    
 
     def move_by_time(self, elapsed:float)->float:
         decrease = [
@@ -279,6 +319,7 @@ class CaromBall(ICrashObserver, IMoveableSubject):
             self.moved -= 1
             upspinmax = 3  * math.sin(math.pi * (90 / 180)) * 50 * radius
             upspinmin = 3  * math.sin(math.pi * (-60 / 180)) * 50 * radius
+            decreaserate=1
             for i, j in enumerate([1, 2.5, 4.5, 7, 100]):
                 if self.power < j:
                     decreaserate = (1-decrease[i][self.upspin_lv if self.upspin_lv < 10 else 9])

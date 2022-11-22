@@ -14,7 +14,7 @@ from time import sleep
 from .serializers import *
 
 # calc route
-from route.simulate import simulation
+from .route import *
 
 
 # Create your views here.
@@ -49,12 +49,21 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = soultion_route.objects.all()
     serializer_class = RouteSerializer
     
-def test_make_route(issue_id, usr, t=1):
-    print("======== test ============")
+def get_ball_state(issue_id):
+    # issue id 상태확인 - 연산 완료 상태 확인
+    try:
+        pos = position.objects.get(id=issue_id)
+    except position.DoesNotExist: # 초기 배치가 아직 저장 안된 경우
+        return  Response({"message":"Position doesn't exist"},status=status.HTTP_404_NOT_FOUND)
+    
+    # pos의 state확인
+    return pos.state
+
+def test_make_route(issue_id, display=False):
     pos = position.objects.get(id=issue_id)
     pos.state="P"
-    pos.save()
-    print("======== start Process ============")
+    if not display:
+        pos.save()
     #좌표 받아오기 cue, 목적구, 목적구2
     cue = pos.coord["cue"]
     obj1 =  pos.coord["obj1"]
@@ -62,42 +71,39 @@ def test_make_route(issue_id, usr, t=1):
     cue = (cue[0], cue[1])
     obj1 = (obj1[0],obj1[1])
     obj2 = (obj2[0],obj2[1])
-    soultion_list = simulation(cue, obj1, obj2)
-    print("======== detect done ============")
+    soultion_list = simulation(cue, obj1, obj2, display=display)
     for soultion in soultion_list:
-        soultion_route(
+        # if display:
+        print("=============== add route =======================")
+        for key, value in soultion.items():
+            print(f"==={key}===\n{value}")
+        route = soultion_route(
             issue_id=issue_id, 
             route=soultion, 
             algorithm_ver=ROUTE_ALGORITHM_VERSION
-            ).save()
+            )
+        if not display:
+            route.save()
     pos.state="D"
-    pos.save()
-    print("======== save ball_coord ============")
+    if not display:
+        pos.save()
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
         #detect PIPE
         try:
-            test_make_route(issue_id, usr)
+            test_make_route(issue_id, False)
         except Exception as ex:
             print("make_route ex : "+ str(ex))
-    
-    
     def get(self, request, issue_id, usr, format=None):
-        # issue id 상태확인 - 연산 완료 상태 확인
-        try:
-            pos = position.objects.get(id=issue_id)
-        except position.DoesNotExist: # 초기 배치가 아직 저장 안된 경우
-            return  Response({"message":"Position doesn't exist"},status=status.HTTP_404_NOT_FOUND)
+        state = get_ball_state(issue_id=issue_id)
         
-        # pos의 state확인
-        state = pos.state
         #   None - A로 변경후 경로찾기
         #   Accepted - 경로찾기 
         if state == "A" or state == "N":
             self.make_route(issue_id, usr)
-            return Response({"state":"Accepted"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
-        
+            # return Response({"state":"Accepted"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
+        state = get_ball_state(issue_id=issue_id)
         
         #   Done - solution_route issue_id로 검색하여 결과반환 && 요청로그 남기기
         if state == "D":
@@ -115,6 +121,16 @@ class RouteRequestAPIView(APIView):
                 #존재 하지 않으면 새로 생성
                 rr = route_request(issue_id=issue_id, requester=usr).save()
             return Response(serializer.data, status=http_status)
-        
         #   Progress - 기다리라고 하기 
         return Response({"state":"Progress"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
+
+
+def lastpos_route(user):
+    pos = position.objects.last()
+    print(f"=== {pos.id} : start ===")
+    route = RouteRequestAPIView()
+    response = route.get(request=None ,issue_id=pos.id, usr=user, format=None)
+    print(f"=== {user}, {response} ===")
+    for data in response.data:
+        print(data)
+    return response

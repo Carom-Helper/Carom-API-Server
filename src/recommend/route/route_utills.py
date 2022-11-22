@@ -87,7 +87,6 @@ def thickness_prediction(cue, tar, thickness = 0):
 def angle(x,y):
     v=np.inner(x,y) / (np.linalg.norm(x) * np.linalg.norm(y))
     theta = np.arccos(v)
-    test_print("angle", theta)
     return theta
 def radian2degree(theta):
     return np.rad2deg(theta)

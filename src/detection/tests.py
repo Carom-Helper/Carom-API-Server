@@ -5,7 +5,7 @@ from carom_api.settings import FRAME_WORK
 import cv2
 
 # Create your tests here.
-class testclass(LiveServerTestCase):
+class DetectTestClass(LiveServerTestCase):
     def setUp(self):
         #DB에 이미지 삽입
         guide =  {
