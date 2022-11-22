@@ -27,4 +27,4 @@ COPY . .
 
 RUN pip install -r requirements.txt
 WORKDIR /${fname}/src
-RUN /bin/bash -c
+RUN ["/bin/bash"]
