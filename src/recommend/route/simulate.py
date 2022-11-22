@@ -7,6 +7,8 @@ from action_cls import *
 from CaromBall import CaromBall, set_vec
 from WallObject import WallObject
 
+DETECT_ROUTE_NUM=3
+
 def run_carom_simulate(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
@@ -160,7 +162,7 @@ def simulation(
                                         "tar1": tar1,
                                         "tar2": tar2}
                             success_list.append(result)
-                            if len(success_list) >= 10:
+                            if len(success_list) >= DETECT_ROUTE_NUM:
                                 return success_list
                         
                         temp = tar1_coord
