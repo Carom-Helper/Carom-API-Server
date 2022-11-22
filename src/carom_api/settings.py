@@ -135,7 +135,6 @@ if SETTINGS_BASE_FILE.exists():
     print("Complete to Set settings.json")
     print(FRAME_WORK)
     print(ALLOWED_HOSTS)
-    print(CORS_ORIGIN_WHITELIST)
 else:
     FRAME_WORK = 'cpu'
     port_num = 8000
@@ -152,7 +151,7 @@ CORS_ORIGIN_WHITELIST = CORS_ORIGIN_WHITELIST + [
     f'http://10.0.2.2:{port_num}'
     #'http://192.168.0.2:{port_num}',
 ]
-
+print(CORS_ORIGIN_WHITELIST)
 
 
 # Internationalization
