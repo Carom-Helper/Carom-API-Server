@@ -6,7 +6,7 @@ from CaromBall import (
     radius, upspinmax, upspinmin, upsinrange, sidespinmax, sidespinmin, sidespinrange
 )
 def is_test_wallobject()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
