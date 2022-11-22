@@ -14,7 +14,7 @@ cd ../../../../../../..
 ```bash
 # set +H
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
-echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"192.168.0.2"}' > settings.json
+echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"192.168.0.216"}' > settings.json
 echo '{json contents}' > secrets.json
 cd ..
 ```
