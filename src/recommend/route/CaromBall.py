@@ -62,30 +62,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         if "crashable" in event: # crash 를 일으킨다
             self.crash(event["crashable"])
 
-    def crash(self, crashable:ICrashable):
-        if self.last_crashable is not crashable:
-            test_print("Cue crachable : ", str(crashable), self.power)
-            v = np.array([self.vector['x'], self.vector['y']])
-            
-            #x, y = self.get_xy()
-            closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
-            new_v, data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
-            
-            self.vector['x'] = new_v[0]
-            self.vector['y'] = new_v[1]
-
-            self.power = data['power']
-
-            self.upspin = data['upspin']
-            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
-
-            self.sidespin = data['sidespin']
-            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-
-            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
-            self.last_crashable = crashable
-            self.crash_list.append(self.last_crashable.name)
-
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
