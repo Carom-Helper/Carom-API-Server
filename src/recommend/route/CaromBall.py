@@ -253,7 +253,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             reflect_vec[1] = x * sin + y * cos
             
             # set power
-            data["power"] = power * (100 -bias_power) * 0.1
+            data["power"] = power * (100 -bias_power) * 0.01
             test_print("simple_reflect_ball2ball", data)
             
             return (reflect_vec, data)
