@@ -7,14 +7,15 @@ from action_cls import *
 from CaromBall import CaromBall, set_vec
 from WallObject import WallObject
 
-def test(
+def run_carom_simulate(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
     tar2_coord=(300,300),
     power = 50,
     clock = 12,
     tip = 1,
-    thick = 0
+    thick = 0,
+    display=True
     ):
     cue = CaromBall("cue")
     tar1 = CaromBall("tar1")
@@ -106,7 +107,8 @@ def test(
     #print(cue.colpoint)
     #if False:
     if True:
-        show(cue, tar1, tar2)
+        if display:
+            show(cue, tar1, tar2)
 
     return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
@@ -126,12 +128,13 @@ def show(cue, tar1, tar2):
     for t in t2list:
         img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
     cv2.imshow('simulate', img)
-    cv2.waitKey()
+    cv2.waitKey(1000)
     
 def simulation(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
-    tar2_coord=(300,300)
+    tar2_coord=(300,300),
+    display=True
     ):
 
     success_list = []
@@ -141,13 +144,14 @@ def simulation(
             for p in range(10, 60, 10):
                 for th in range(-7, 8):
                     for _ in range(2):
-                        success, cue, tar1, tar2 = test(cue_coord=cue_coord,
+                        success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
                                                         tar1_coord=tar1_coord,
                                                         tar2_coord=tar2_coord,
                                                         power=p,
                                                         clock=c,
                                                         tip=t,
-                                                        thick=th)
+                                                        thick=th,
+                                                        display=display)
                         if success:
                             result = {"power": p,
                                         "clock": c,
@@ -156,7 +160,7 @@ def simulation(
                                         "tar1": tar1,
                                         "tar2": tar2}
                             success_list.append(result)
-                            if len(success_list) >= 3:
+                            if len(success_list) >= 10:
                                 return success_list
                         
                         temp = tar1_coord

@@ -6,7 +6,7 @@ from CaromBall import (
     radius, upspinmax, upspinmin, upsinrange, sidespinmax, sidespinmin, sidespinrange
 )
 def is_test_wallobject()->bool:
-    return False and is_test()
+    return True and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
@@ -58,7 +58,6 @@ class WallObject(IObserver, ICrashableSubject):
             if (distance < self.elapse): # 충돌
         #       충돌을 전파한다.
                 if isinstance(observer, ICrashAction):
-                    test_print(f"crash wall - {observer.name}")
                     event["crashable"] = self
         
         observer.update(event)
@@ -87,7 +86,7 @@ class WallObject(IObserver, ICrashableSubject):
         radian = angle(direct_vec, normal_vec)
         direct_normal_degree = radian2degree(radian)
         degree = 90.0 - direct_normal_degree
-        bias_table = {"key":[0.5, 4, 7, 11, 10000]}
+        bias_table = {"key":[0.5, 4, 7, 11, 1000000]}
         #if power < 0.5:
         if degree < 30:
             bias_table["0.5"] = [
@@ -310,7 +309,7 @@ class WallObject(IObserver, ICrashableSubject):
             raise ValueError("Over 90 degree.+get_reflect_closure")
         #else:
         if degree < 30:
-            bias_table["10000"] = [
+            bias_table["1000000"] = [
                 -2.25999999,
                 0.699999988,
                 2.299999952,
@@ -323,7 +322,7 @@ class WallObject(IObserver, ICrashableSubject):
                 23.79999924
             ]
         elif degree < 45:
-            bias_table["10000"] = [
+            bias_table["1000000"] = [
                 0,
                 5.599999905,
                 7.800000191,
@@ -336,7 +335,7 @@ class WallObject(IObserver, ICrashableSubject):
                 35.5
             ]
         elif degree < 80:
-            bias_table["10000"] = [
+            bias_table["1000000"] = [
                 -1.170000041,
                 6.900000095,
                 11.10000038,
@@ -349,7 +348,7 @@ class WallObject(IObserver, ICrashableSubject):
                 53.20000076
             ]
         elif degree <= 90.1:
-            bias_table["10000"] = [
+            bias_table["1000000"] = [
                 -15.19999981,
                 -6.900000095,
                 -4.400000095,
@@ -383,6 +382,7 @@ class WallObject(IObserver, ICrashableSubject):
             #power 선택
             for speed_guide in bias_table["key"]:
                 if float(power) < float(speed_guide):
+                    test_print("speed_guide",power,speed_guide)
                     pick_key = speed_guide
             try:
                 table = bias_table[str(pick_key)]

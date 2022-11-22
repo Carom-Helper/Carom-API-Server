@@ -3,10 +3,9 @@ import numpy as np
 import math
 import cv2
 
-from route_utills import is_test, print_args
+# import route
+from route_utills import is_test, print_args, angle
 from action_cls import *
-from route_utills import angle, radian2degree
-
 def is_test_caromball()->bool:
     return False and is_test()
 
