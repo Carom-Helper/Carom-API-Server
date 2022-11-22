@@ -108,14 +108,13 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
-                print(observer.name, isinstance(observer, ICrashAction))
-                if isinstance(observer, ICrashAction):
-                    print(observer.name)
-                    self.crash(observer)
-                    test_print("notify_filltered_observer", f"====== {str(observer)} ======")
-                    #self.crash_list.append(observer)
-                    #self.last_crashable = observer
-                    event["crashable"] = self
+                # if observer.name == 'left':
+                #     print(self.get_xy())
+                self.crash(observer)
+                test_print("notify_filltered_observer", f"====== {str(observer)} ======")
+                #self.crash_list.append(observer)
+                #self.last_crashable = observer
+                event["crashable"] = self
                     
                     
         #observer.update(event)
@@ -210,8 +209,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         if self.last_crashable is not crashable:
             test_print("Cue crachable : ", str(crashable), self.power)
             v = np.array([self.vector['x'], self.vector['y']])
-            if crashable.name == 'bottom':
-                print('bottom')
             #x, y = self.get_xy()
             closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
             self.new_v, self.data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})

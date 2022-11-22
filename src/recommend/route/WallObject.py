@@ -327,7 +327,7 @@ class WallObject(IObserver, ICrashableSubject):
             # reflect vec 구하기
             x , y = normal_vec.tolist()
             reflect_vec = direct_vec.copy()
-            if y==0:
+            if x==0:
                 reflect_vec[0] = -direct_vec[0]
             else:
                 reflect_vec[1] = -direct_vec[1]
