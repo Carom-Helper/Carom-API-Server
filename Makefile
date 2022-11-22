@@ -10,7 +10,7 @@ MODEL_VOLUME = ${TARGET_PATH}:/$(SRC_NAME)
 build:
 	@echo "====<PORT_NUM=${PORT_NUM}> <VIDEO_TARGET_PATH=${VIDEO_TARGET_PATH}>==="
 	@echo 'docker image build'
-	docker image build --build-arg fname=$(SRC_NAME) --build-arg portnum=$(PORT_NUM) -t $(IMAGE_NAME) .
+	docker image build --build-arg fname=$(SRC_NAME) -t $(IMAGE_NAME) .
 
 run:
 	@echo 'docker run -tiu --name="$(APP_NAME)" $(IMAGE_NAME)'
