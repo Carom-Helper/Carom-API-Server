@@ -95,24 +95,19 @@ def run_carom_simulate(
         tar1_dist, tar1_elapsed = tar1.move(elapsed)
         tar2_dist, tar2_elapsed = tar2.move(elapsed)
 
-        #if cue_dist > 0:
         for observer in cue.observer_list:
             cue.notify_filltered_observer(observer)
-        #if tar1_dist > 0:
+            
         for observer in tar1.observer_list:
             tar1.notify_filltered_observer(observer)
-        #if tar2_dist > 0:
+            
         for observer in tar2.observer_list:
             tar2.notify_filltered_observer(observer)
-        # print(cue.power, tar1.power, tar2.power)
+        
         cue.update()
         tar1.update()
         tar2.update()
-        # print(cue_dist * elapsed, tar1_dist * elapsed, tar2_dist * elapsed, elapsed)
-        # cv2.waitKey(10)
 
-        # print(cue_elapsed, tar1_elapsed, tar2_elapsed, '\n')
-        #elapsed = cue_elapsed
         elapsed = min(cue_elapsed, tar1_elapsed, tar2_elapsed)
 
         cue_hit = cue.crash_list
@@ -132,11 +127,9 @@ def run_carom_simulate(
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
-    # print(success)
-    #print(cue.colpoint)
+        
     # if False:
     if True:
-        print(success)
         if display:
             show(cue, tar1, tar2)
 
@@ -159,7 +152,7 @@ def show(cue, tar1, tar2):
         img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
     try:
         cv2.imshow('simulate', img)
-        cv2.waitKey(0)
+        cv2.waitKey(1000)
     except:pass
 
 def show_ani(cue, tar1, tar2):

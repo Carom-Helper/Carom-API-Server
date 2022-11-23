@@ -4,7 +4,7 @@ import math
 import cv2
 
 # import route
-from route_utills import is_test, print_args, angle
+from route_utills import is_test, print_args
 from action_cls import *
 def is_test_caromball()->bool:
     return False and is_test()
@@ -88,8 +88,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         self.crash_list.clear()
         dist, next_elapsed = self.mover(elapsed)
         return dist, next_elapsed
-        # else:
-        #     return None, 0, next_t
         
     def notify_filltered_observer(self, observer:IObserver)->None:
         if not isinstance(observer, IObserver):
@@ -105,16 +103,10 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
-                # if observer.name == 'left':
-                #     print(self.get_xy())
+        
                 self.crash(observer)
                 test_print("notify_filltered_observer", f"====== {str(observer)} ======")
-                #self.crash_list.append(observer)
-                #self.last_crashable = observer
                 event["crashable"] = self
-                    
-                    
-        #observer.update(event)
             
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
@@ -136,8 +128,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             83
         ]
         direct_vec = - direct_vec
-        radian = angle(direct_vec, normal_vec)
-        # direct_normal_degree = radian2degree(radian)
         thick = self.thick
         cue_degree = crash_degree_table[abs(thick)]
         bias_table = []
@@ -181,9 +171,18 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             power = data["power"]
             upspin = data["upspin"]
             upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
+
+            reflect_vec = [normal_vec[1], normal_vec[0]]
             
             bias_degree = bias_table[upspin_lv]
             radian = np.deg2rad(bias_degree)
+            dot = np.dot(normal_vec, reflect_vec)
+            if dot < 0:
+                reflect_vec = [-reflect_vec[0], -reflect_vec[1]]
+
+            print('dot', dot)
+            print(upspin_lv)
+            print('bias_degree', bias_degree)
             
             # set new vector
             cos = np.cos(radian)
@@ -207,7 +206,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             reflect_vec = []
             reflect_vec.append(normal_vec[0] * data["power"])
             reflect_vec.append(normal_vec[1] * data["power"])
-            #print(reflect_vec, data)
+
             return reflect_vec, data
 
         if direct_vec[0] == 0 and direct_vec[1] == 0:
@@ -227,7 +226,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
             self.last_crashable = crashable
             self.crash_list.append(crashable.name)
-            # self.crash_list.append(self.last_crashable.name)
             if isinstance(crashable, IMoveableSubject):
                 crashable.set_mover(crashable.move_by_time)
             """
@@ -262,7 +260,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         temp = {"x": x, "y": y, "elapsed": 0}
         self.set_colpoint(x,y)
         self.xy.append(temp)
-        self.crash_list
 
     def add_xy(self, xy:dict):
         self.xy.append(xy)
@@ -302,7 +299,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
                 next_power = 0
                 self.set_mover(self.move_stay)
             #print(self.name, self.moved, next_power, self.power, self.vector)
-            reduce = next_power / self.power
+            reduce = (next_power / self.power) if next_power > 0 else 1
             #print(next_power, reduce)
             
             self.vector["x"] = self.vector["x"] * reduce
