@@ -22,7 +22,7 @@ stop:
 start :
 	docker start $(APP_NAME)
 exec :
-	docker exec -it $(APP_NAME)
+	docker exec -it $(APP_NAME) /bin/bash
 attach:
 	docker start $(APP_NAME)
 	docker attach $(APP_NAME)
