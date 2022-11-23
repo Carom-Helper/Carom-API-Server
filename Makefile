@@ -35,7 +35,7 @@ rmi:
 	docker rmi $(IMAGE_NAME)
 save:
 	docker container commit ${APP_NAME} $(IMAGE_NAME)
-	docker save -o ${SRC_NAME}.tar IMAGE_NAME
+	docker save -o ${SRC_NAME}.tar $(IMAGE_NAME)
 load:
 	docker load -i ${SRC_NAME}.tar
 	docker image ls
