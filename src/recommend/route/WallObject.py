@@ -86,60 +86,20 @@ class WallObject(IObserver, ICrashableSubject):
         radian = angle(direct_vec, normal_vec)
         direct_normal_degree = radian2degree(radian)
         degree = 90.0 - direct_normal_degree
-        bias_table = {"key":[0.5, 4, 7, 11, 1000000]}
+        bias_table = {"key":[0.5, 4, 7, 11, 1000]}
         #if power < 0.5:
         if degree < 30:
-            bias_table["0.5"] = [
-                8.839999962, 
-                10.08000002, 
-                11.32000008, 
-                12.56000013, 
-                13.80000019, 
-                15.5, 
-                17.19999981, 
-                18.89999962, 
-                20.59999943, 
-                22.29999924
-            ]
+            bias_table["0.5"] = [8.839999962, 10.08000002, 11.32000008, 12.56000013,
+            13.80000019, 15.5, 17.19999981, 18.89999962, 20.59999943, 22.29999924]
         elif degree < 45:
-            bias_table["0.5"] = [
-                0, 
-                3.380000019, 
-                4.300000095, 
-                5.240000057, 
-                6.599999905, 
-                6.599999905, 
-                7.259999847, 
-                8.460000038, 
-                10.26000023, 
-                12.89999962
-            ]
+            bias_table["0.5"] = [0, 3.380000019, 4.300000095, 5.240000057, 6.599999905, 
+                6.599999905, 7.259999847, 8.460000038, 10.26000023, 12.89999962]
         elif degree < 60:
-            bias_table["0.5"] = [
-                -23.77999954, 
-                -19.70000076, 
-                -10.16000042, 
-                -3.080000114, 
-                -2.099999905, 
-                1.7, 
-                7.259999943, 
-                9.719999886, 
-                13.72000027, 
-                23
-            ]
+            bias_table["0.5"] = [-23.77999954, -19.70000076, -10.16000042, -3.080000114,
+            -2.099999905, 1.7, 7.259999943, 9.719999886, 13.72000027, 23]
         elif degree <= 90:
-            bias_table["0.5"] = [
-                -18.26000061,
-                -17.35999947,
-                -12.54000006,
-                -3.139999986,
-                0.550000012,
-                4.420000076,
-                5.429999876,
-                24.99999924,
-                26.66000042,
-                31.39999962
-            ]
+            bias_table["0.5"] = [-18.26000061, -17.35999947, -12.54000006, -3.139999986,
+                0.550000012, 4.420000076, 5.429999876, 24.99999924, 26.66000042, 31.39999962]
         else:
             raise ValueError("Over 90 degree.+get_reflect_closure")
         #elif power < 4:
@@ -309,7 +269,7 @@ class WallObject(IObserver, ICrashableSubject):
             raise ValueError("Over 90 degree.+get_reflect_closure")
         #else:
         if degree < 30:
-            bias_table["1000000"] = [
+            bias_table["1000"] = [
                 -2.25999999,
                 0.699999988,
                 2.299999952,
@@ -322,7 +282,7 @@ class WallObject(IObserver, ICrashableSubject):
                 23.79999924
             ]
         elif degree < 45:
-            bias_table["1000000"] = [
+            bias_table["1000"] = [
                 0,
                 5.599999905,
                 7.800000191,
@@ -335,7 +295,7 @@ class WallObject(IObserver, ICrashableSubject):
                 35.5
             ]
         elif degree < 80:
-            bias_table["1000000"] = [
+            bias_table["1000"] = [
                 -1.170000041,
                 6.900000095,
                 11.10000038,
@@ -348,7 +308,7 @@ class WallObject(IObserver, ICrashableSubject):
                 53.20000076
             ]
         elif degree <= 90.1:
-            bias_table["1000000"] = [
+            bias_table["1000"] = [
                 -15.19999981,
                 -6.900000095,
                 -4.400000095,
@@ -367,7 +327,7 @@ class WallObject(IObserver, ICrashableSubject):
             # reflect vec 구하기
             x , y = normal_vec.tolist()
             reflect_vec = direct_vec.copy()
-            if y==0:
+            if x==0:
                 reflect_vec[0] = -direct_vec[0]
             else:
                 reflect_vec[1] = -direct_vec[1]
