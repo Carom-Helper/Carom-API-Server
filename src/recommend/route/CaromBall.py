@@ -84,16 +84,12 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
         return dist
     
-    def move(self, t:float)->float:
-        self.crash_list = []
-        dist, next_t = self.mover(t)
-        if dist > 0:
-            # for observer in self.observer_list:
-            #     self.notify_filltered_observer()
-            cue_hit = self.crash_list
-            return cue_hit, dist, next_t
-        else:
-            return None, 0, t
+    def move(self, elapsed:float)->float:
+        self.crash_list.clear()
+        dist, next_elapsed = self.mover(elapsed)
+        return dist, next_elapsed
+        # else:
+        #     return None, 0, next_t
         
     def notify_filltered_observer(self, observer:IObserver)->None:
         if not isinstance(observer, IObserver):
@@ -203,9 +199,23 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             test_print("simple_reflect_ball2ball", data)
             
             return (reflect_vec, data)
-        return simple_reflect_ball2ball
+        
+        def first_crash_ball2ball(data:dict):
+            power = self.power - self.data['power']
+            data["power"] = power
+            data['upspin'] = 5
+            reflect_vec = []
+            reflect_vec.append(normal_vec[0] * data["power"])
+            reflect_vec.append(normal_vec[1] * data["power"])
+            #print(reflect_vec, data)
+            return reflect_vec, data
 
-       
+        if direct_vec[0] == 0 and direct_vec[1] == 0:
+            return first_crash_ball2ball
+        else:
+            return simple_reflect_ball2ball
+        
+
     def crash(self, crashable:ICrashable):
         if self.last_crashable is not crashable:
             test_print("Cue crachable : ", str(crashable), self.power)
@@ -216,7 +226,10 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
             self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
             self.last_crashable = crashable
-            self.crash_list.append(self.last_crashable.name)
+            self.crash_list.append(crashable.name)
+            # self.crash_list.append(self.last_crashable.name)
+            if isinstance(crashable, IMoveableSubject):
+                crashable.set_mover(crashable.move_by_time)
             """
             self.vector['x'] = self.new_v[0]
             self.vector['y'] = self.new_v[1]
@@ -285,7 +298,10 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
                     decreaserate = (1-decrease[i][self.upspin_lv if self.upspin_lv < 10 else 9])
                     break
             next_power = self.power * decreaserate
-            
+            if next_power < 0.0005:
+                next_power = 0
+                self.set_mover(self.move_stay)
+            #print(self.name, self.moved, next_power, self.power, self.vector)
             reduce = next_power / self.power
             #print(next_power, reduce)
             
@@ -304,7 +320,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
         xy = {"x": x, "y": y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
         self.add_xy(xy)
-        return 0, elapsed
+        return 0, 100000
     
 def set_vec(cue:CaromBall, tar:CaromBall, thickness:float)->dict:
     cue_x, cue_y = cue.get_xy()
