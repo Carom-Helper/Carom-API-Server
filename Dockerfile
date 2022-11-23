@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y sudo \
     && apt-get install -y libgl1-mesa-glx git locales \
     && locale-gen ko_KR.UTF-8 \
     && apt-get upgrade \
-    && apt-get install vim
+    && sudo apt-get install vim
 RUN apt-get install libglib2.0-0 -y
 
 ENV LC_ALL ko_KR.UTF-8
