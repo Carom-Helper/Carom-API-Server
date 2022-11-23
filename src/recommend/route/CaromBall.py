@@ -51,6 +51,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
         self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
         self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+        
 
     def print_param(self):
         print(f'theta: {self.theta}, tip: {self.tip}/3')
@@ -227,18 +228,28 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
             self.sidespin = self.data['sidespin']
             self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-
-            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
+            
+            self.set_colpoint(self.xy[-1]['x'],self.xy[-1]['y'])
             self.last_crashable = crashable
             self.crash_list.append(self.last_crashable.name)
             """
-
+        
+    def set_colpoint(self, x:float, y:float):
+        if len(self.colpoint) > 0:
+            px, py = self.colpoint[-1]
+            if px != int(x) or py != int(y):
+                self.colpoint.append([int(x), int(y)])
+        else:
+            self.colpoint.append([int(x), int(y)])
+        
     def get_xy(self)->list:
         return self.xy[-1]['x'], self.xy[-1]['y']
 
     def set_xy(self, x:float, y:float):
         temp = {"x": x, "y": y, "elapsed": 0}
+        self.set_colpoint(x,y)
         self.xy.append(temp)
+        self.crash_list
 
     def add_xy(self, xy:dict):
         self.xy.append(xy)
