@@ -48,9 +48,13 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
         self.upspin = math.sin(math.pi * (self.theta/180)) * tip * self.power * radius
         self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+        if self.upspin_lv == 10:
+            self.upspin_lv = 9
 
         self.sidespin = math.cos(math.pi * (self.theta/180)) * tip * self.power * radius
         self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+        if self.sidespin_lv == 10:
+            self.sidespin_lv = 9
         
 
     def print_param(self):
@@ -65,8 +69,8 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         # if "crashable" in event: # crash 를 일으킨다
         #     self.crash(event["crashable"])
         if self.new_v is not None:
-            self.vector['x'] = self.new_v[0]
-            self.vector['y'] = self.new_v[1]
+            self.vector['x'] = self.new_v[0] * (3/5) * self.data["power"] / 50
+            self.vector['y'] = self.new_v[1] * (3/5) * self.data["power"] / 50
             self.new_v = None
 
         if self.data is not None:
@@ -74,9 +78,13 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
             self.upspin = self.data['upspin']
             self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+            if self.upspin_lv == 10:
+                self.upspin_lv = 9
 
             self.sidespin = self.data['sidespin']
             self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+            if self.sidespin_lv == 10:
+                self.sidespin_lv = 9
             self.data = None
 
     def get_distance_from_point(self, x:float, y:float)-> float:
@@ -160,6 +168,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         for value in split_table["key"]:
             if cue_degree < int(value):
                 bias_power = split_table[str(value)]
+        bias_power = 50
         
         
         def simple_reflect_ball2ball(data:dict):
@@ -171,18 +180,16 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             power = data["power"]
             upspin = data["upspin"]
             upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
+            if upspin_lv == 10:
+                upspin_lv = 9
 
-            reflect_vec = [normal_vec[1], normal_vec[0]]
+            reflect_vec = [normal_vec[1], -normal_vec[0]]
             
             bias_degree = bias_table[upspin_lv]
             radian = np.deg2rad(bias_degree)
-            dot = np.dot(normal_vec, reflect_vec)
-            if dot < 0:
+            dot = np.dot(direct_vec, reflect_vec)
+            if dot > 0:
                 reflect_vec = [-reflect_vec[0], -reflect_vec[1]]
-
-            print('dot', dot)
-            print(upspin_lv)
-            print('bias_degree', bias_degree)
             
             # set new vector
             cos = np.cos(radian)
@@ -202,10 +209,10 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         def first_crash_ball2ball(data:dict):
             power = self.power - self.data['power']
             data["power"] = power
-            data['upspin'] = 5
+            data['upspin'] = (upspinmax + upspinmin)/2
             reflect_vec = []
-            reflect_vec.append(normal_vec[0] * data["power"])
-            reflect_vec.append(normal_vec[1] * data["power"])
+            reflect_vec.append(normal_vec[0])
+            reflect_vec.append(normal_vec[1])
 
             return reflect_vec, data
 
@@ -292,7 +299,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             decreaserate=1
             for i, j in enumerate([1, 2.5, 4.5, 7, 100]):
                 if self.power < j:
-                    decreaserate = (1-decrease[i][self.upspin_lv if self.upspin_lv < 10 else 9])
+                    decreaserate = (1-decrease[i][self.upspin_lv])
                     break
             next_power = self.power * decreaserate
             if next_power < 0.0005:
