@@ -229,8 +229,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             #x, y = self.get_xy()
             closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
             self.new_v, self.data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin})
-
-            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
+            self.set_colpoint(self.xy[-1]['x'], self.xy[-1]['y'])
             self.last_crashable = crashable
             self.crash_list.append(crashable.name)
             if isinstance(crashable, IMoveableSubject):
@@ -289,8 +288,11 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
 
         xy = {"x": new_x, "y": new_y, "elapsed": self.xy[-1]["elapsed"] + elapsed}
         self.add_xy(xy)
-
-        next_elapsed = (3/5) / (dist/elapsed)
+        
+        if dist == 0:
+            next_elapsed = elapsed
+        else:
+            next_elapsed = (3/5) / (dist/elapsed)
 
         if self.moved > 1:
             self.moved -= 1
