@@ -65,7 +65,14 @@ def run_carom_simulate(
     cue.register_observer(w4)
     cue.register_observer(tar1)
     cue.register_observer(tar2)
-    
+
+    tar1.register_observer(w1)
+    tar1.register_observer(w2)
+    tar1.register_observer(w3)
+    tar1.register_observer(w4)
+    tar1.register_observer(cue)
+    tar1.register_observer(tar2)
+
     w1.register_observer(cue)
     w2.register_observer(cue)
     w3.register_observer(cue)
@@ -77,19 +84,38 @@ def run_carom_simulate(
     tar2.set_mover(tar2.move_stay)
 
     elapsed = 1
-    i=0
+    
     success = False
     wall_count = 0
     is_tar1_hit = False
     is_tar2_hit = False
-    #while True:
-    for _ in range(100000):
-        cue_hit, cue_dist, cue_elapsed = cue.move(elapsed)
-        _, tar1_dist, tar1_elapsed = tar1.move(elapsed)
-        _, tar2_dist, tar2_elapsed = tar2.move(elapsed)
+    while True:
+    # for tick in range(10000):
+        cue_dist, cue_elapsed = cue.move(elapsed)
+        tar1_dist, tar1_elapsed = tar1.move(elapsed)
+        tar2_dist, tar2_elapsed = tar2.move(elapsed)
 
-        elapsed = cue_elapsed
+        #if cue_dist > 0:
+        for observer in cue.observer_list:
+            cue.notify_filltered_observer(observer)
+        #if tar1_dist > 0:
+        for observer in tar1.observer_list:
+            tar1.notify_filltered_observer(observer)
+        #if tar2_dist > 0:
+        for observer in tar2.observer_list:
+            tar2.notify_filltered_observer(observer)
+        # print(cue.power, tar1.power, tar2.power)
+        cue.update()
+        tar1.update()
+        tar2.update()
+        # print(cue_dist * elapsed, tar1_dist * elapsed, tar2_dist * elapsed, elapsed)
+        # cv2.waitKey(10)
 
+        # print(cue_elapsed, tar1_elapsed, tar2_elapsed, '\n')
+        #elapsed = cue_elapsed
+        elapsed = min(cue_elapsed, tar1_elapsed, tar2_elapsed)
+
+        cue_hit = cue.crash_list
         if cue_hit is not None:
             for hit in cue_hit:
                 if hit == 'tar1':
@@ -99,16 +125,18 @@ def run_carom_simulate(
                 else:
                     wall_count += 1
             
-        if is_tar1_hit and is_tar2_hit and wall_count >= 3:
-            success = True
+        if is_tar1_hit and is_tar2_hit:
+            if wall_count >= 3:
+                success = True
             break
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
-    #print(success)
+    # print(success)
     #print(cue.colpoint)
-    #if False:
+    # if False:
     if True:
+        print(success)
         if display:
             show(cue, tar1, tar2)
 
@@ -131,8 +159,30 @@ def show(cue, tar1, tar2):
         img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
     try:
         cv2.imshow('simulate', img)
-        cv2.waitKey(1000)
+        cv2.waitKey(0)
     except:pass
+
+def show_ani(cue, tar1, tar2):
+    img = np.zeros((800,400,3), np.uint8)
+    clist = cue.xy
+    img = cv2.line(img, (int(clist[0]['x']), int(clist[0]['y'])), (int(clist[0]['x']), int(clist[0]['y'])), (255, 255, 255), 3)
+    t1list = tar1.xy
+    img = cv2.line(img, (int(t1list[0]['x']), int(t1list[0]['y'])), (int(t1list[0]['x']), int(t1list[0]['y'])), (0, 0, 255), 3)
+    t2list = tar2.xy
+    img = cv2.line(img, (int(t2list[0]['x']), int(t2list[0]['y'])), (int(t2list[0]['x']), int(t2list[0]['y'])), (0, 255, 0), 3)
+    i=1
+    while i < min(len(clist), len(t1list), len(t2list)):
+        for c in clist[:i]:
+            img = cv2.line(img, (int(c['x']), int(c['y'])), (int(c['x']), int(c['y'])), (255, 255, 255), 1)
+        for t in t1list[:i]:
+            img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 0, 255), 1)
+        for t in t2list[:i]:
+            img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
+        try:
+            cv2.imshow('simulate', img)
+            cv2.waitKey(1)
+        except:pass
+        i+=1
     
 def simulation(
     cue_coord=(300,400), 
@@ -143,10 +193,10 @@ def simulation(
 
     success_list = []
 
-    for c in range(12):
-        for t in range(1,4):
-            for p in range(10, 60, 10):
-                for th in range(-7, 8):
+    for c in [1, 2, 11, 10, 12, 9, 3, 4, 8]:
+        for t in [3]:
+            for p in [20, 30]:
+                for th in [-4, 4, -3, 3, -2, 2]:
                     for _ in range(2):
                         success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
                                                         tar1_coord=tar1_coord,
