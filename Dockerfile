@@ -12,6 +12,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo \
     && apt-get install -y libgl1-mesa-glx git locales \
     && locale-gen ko_KR.UTF-8
+RUN sudo apt-get upgrade -y\
+    && sudo apt-get install vim -y
 RUN apt-get install libglib2.0-0 -y
 
 ENV LC_ALL ko_KR.UTF-8

@@ -15,7 +15,7 @@ cd ../../../../../../
 ```bash
 # set +H
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
-echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"192.168.0.216", "PORT_NUM":"7576"}' > settings.json
+echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"223.255.200.120", "PORT_NUM":"7576"}' > settings.json
 echo '{json contents}' > secrets.json
 cd ..
 ```
@@ -85,6 +85,7 @@ python clear_migrate.py && python manage.py makemigrations && python manage.py m
 # error npu_yolov5/utils/inference_engine.py InferenceEngineFuriosa.__init__
 # compile_config change to compiler_config
 python manage.py test
+python manage.py runserver 0.0.0.0:7576
 ```
 
 # How to stop Docker container
