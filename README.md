@@ -85,6 +85,7 @@ python clear_migrate.py && python manage.py makemigrations && python manage.py m
 # error npu_yolov5/utils/inference_engine.py InferenceEngineFuriosa.__init__
 # compile_config change to compiler_config
 python manage.py test
+python manage.py runserver 0.0.0.0:7576
 ```
 
 # How to stop Docker container
