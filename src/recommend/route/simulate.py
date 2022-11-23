@@ -72,6 +72,13 @@ def run_carom_simulate(
     tar1.register_observer(w4)
     tar1.register_observer(cue)
     tar1.register_observer(tar2)
+    
+    tar2.register_observer(w1)
+    tar2.register_observer(w2)
+    tar2.register_observer(w3)
+    tar2.register_observer(w4)
+    tar2.register_observer(cue)
+    tar2.register_observer(tar1)
 
     w1.register_observer(cue)
     w2.register_observer(cue)
@@ -127,7 +134,6 @@ def run_carom_simulate(
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
-        
     # if False:
     if True:
         if display:
@@ -188,7 +194,7 @@ def simulation(
 
     for c in [1, 2, 11, 10, 12, 9, 3, 4, 8]:
         for t in [3]:
-            for p in [20, 30]:
+            for p in [40, 50]:
                 for th in [-4, 4, -3, 3, -2, 2]:
                     for _ in range(2):
                         success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
@@ -218,7 +224,13 @@ def simulation(
 def runner(args):
     print_args(vars(args))
     
-    simulation(cue_coord=args.cue, tar1_coord=args.tar1, tar2_coord=args.tar2)
+    x, y = map(int, args.cue.split(','))
+    cue_xy = (x, y)
+    x, y = map(int, args.tar1.split(','))
+    tar1_xy = (x, y)
+    x, y = map(int, args.tar2.split(','))
+    tar2_xy = (x, y)
+    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True)
 
     #run(args.src, args.device)
     # detect(args.src, args.device)
