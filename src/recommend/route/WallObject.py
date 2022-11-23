@@ -354,6 +354,8 @@ class WallObject(IObserver, ICrashableSubject):
             #   역회전 확인
             if sidespin * right_side > 0: #정회전
                 sidespin_lv = int((sidespin - sidespinmin) / (sidespinrange) * 10)
+                if sidespin_lv == 10:
+                    sidespin_lv = 9 
             else:#역회전
                 sidespin_lv = int(1)
             

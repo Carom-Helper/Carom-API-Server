@@ -134,7 +134,6 @@ def run_carom_simulate(
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
-
     # if False:
     if True:
         if display:
@@ -225,7 +224,13 @@ def simulation(
 def runner(args):
     print_args(vars(args))
     
-    simulation(cue_coord=args.cue, tar1_coord=args.tar1, tar2_coord=args.tar2)
+    x, y = map(int, args.cue.split(','))
+    cue_xy = (x, y)
+    x, y = map(int, args.tar1.split(','))
+    tar1_xy = (x, y)
+    x, y = map(int, args.tar2.split(','))
+    tar2_xy = (x, y)
+    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True)
 
     #run(args.src, args.device)
     # detect(args.src, args.device)

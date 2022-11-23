@@ -85,9 +85,13 @@ def thickness_prediction(cue, tar, thickness = 0):
 # input x,y는 2차원 벡터
 # return 되는 각도는 radian
 def angle(x,y):
-    v=np.inner(x,y) / (np.linalg.norm(x) * np.linalg.norm(y))
-    theta = np.arccos(v)
-    return theta
+    try:
+        v=np.inner(x,y) / (np.linalg.norm(x) * np.linalg.norm(y))
+        theta = np.arccos(v)
+        return theta
+    except ZeroDivisionError:
+        print("angle : divide zero")
+        return 0
 def radian2degree(theta):
     return np.rad2deg(theta)
 
