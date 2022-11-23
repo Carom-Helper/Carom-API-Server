@@ -9,9 +9,10 @@ ARG fname
 ENV DEBIAN_FRONTEND=noninteractive
 
 # install
-RUN apt-get update && apt-get upgrade && apt-get install -y sudo \
+RUN apt-get update && apt-get install -y sudo \
     && apt-get install -y libgl1-mesa-glx git locales \
     && locale-gen ko_KR.UTF-8 \
+    && apt-get upgrade \
     && apt-get install vim
 RUN apt-get install libglib2.0-0 -y
 
