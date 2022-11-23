@@ -180,9 +180,9 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             if dot < 0:
                 reflect_vec = [-reflect_vec[0], -reflect_vec[1]]
 
-            print('dot', dot)
-            print(upspin_lv)
-            print('bias_degree', bias_degree)
+            test_print('dot', dot)
+            test_print(upspin_lv)
+            test_print('bias_degree', bias_degree)
             
             # set new vector
             cos = np.cos(radian)
