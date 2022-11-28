@@ -38,7 +38,7 @@ from detect_utills import (
     select_device, Path, check_img_size, make_padding_image
 )
 
-class GPUDetectObjectWeight(IWeight):
+class GPUDetectObjectWeight(IWeight, Singleton):
     def __init__(
         self,
         conf_thres=0.25,

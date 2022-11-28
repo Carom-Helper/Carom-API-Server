@@ -41,7 +41,7 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     bottomLeft = img_data.guide["BL"]
     
     print(FRAME_WORK)
-    pipe, _ = pipe_factory(device=FRAME_WORK, display=display, inDB=True)
+    pipe = PipeFactory(device=FRAME_WORK, display=display, inDB=True).pipe
     
     ### Dataloader ###
     img = carom_img.objects.get(id=carom_id)

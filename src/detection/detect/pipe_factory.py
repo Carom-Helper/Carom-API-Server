@@ -42,6 +42,7 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
 
 class PipeFactory(metaclass=Singleton):
     def __init__(self, start_pipe=None, device='furiosa', display = True, inDB=True):
+        if display: print("PipeFactory Init")
         self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
 
 def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
