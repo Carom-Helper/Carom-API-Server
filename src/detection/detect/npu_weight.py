@@ -13,10 +13,6 @@ from pathlib import Path
 import os
 
 
-from npu_yolov5.utils.nms import nms
-from npu_yolov5.utils.inference_engine import InferenceEngineOnnx, InferenceEngineFuriosa
-from npu_yolov5.utils.transforms import letterbox
-
 CAROM_BASE_DIR=Path(__file__).resolve().parent.parent.parent
 FILE = Path(__file__).resolve()
 ROOT = FILE.parent
@@ -37,7 +33,7 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
     WEIGHT_DIR= (tmp)  # add Weights ROOT to PATH
 
 from IWeight import IWeight
-from Singleton import Singleton
+from Singleton import NPU_YOLO_Singleton
 from detect_utills import (
     select_device, Path
 )
@@ -130,6 +126,13 @@ class InferenceEngineFuriosa(InferenceEngine):
         self.sess.close()
 
 
+class Predictor:
+    def __init__(self) -> None:
+        pass
+
+    def get_calib_dataset(self):
+        raise NotADirectoryError
+
 class Yolov5Detector(Predictor):
     def __init__(self, model_file, enf_file, cfg_file, framework, conf_thres=0.25, iou_thres=0.45, 
         input_color_format="bgr", box_decoder="c") -> None:
@@ -214,6 +217,8 @@ class Yolov5Detector(Predictor):
         return strides
 
     def _resize(self, img):
+        from npu_yolov5.utils.transforms import letterbox
+        
         w, h = self.input_size
         return letterbox(img, (h, w), auto=False)
 
@@ -256,6 +261,9 @@ class Yolov5Detector(Predictor):
         return img, (scale, (padw, padh))
 
     def postproc(self, feats_batched, preproc_params):
+        from npu_yolov5.utils.nms import nms    
+        
+        
         boxes_batched = []
 
         for i, (scale, (padw, padh)) in enumerate(preproc_params):
@@ -290,7 +298,7 @@ class Yolov5Detector(Predictor):
     def close(self):
         self.infer.close()
 
-class NPUDetectObjectWeight(IWeight):
+class NPUDetectObjectWeight(metaclass=NPU_YOLO_Singleton):
     def __init__(
         self,
         conf_thres=0.25,

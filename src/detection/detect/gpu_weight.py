@@ -33,12 +33,12 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 
 
 from IWeight import IWeight
-from Singleton import Singleton
+from Singleton import GPU_YOLO_Singleton
 from detect_utills import (
     select_device, Path, check_img_size, make_padding_image
 )
 
-class GPUDetectObjectWeight(IWeight, Singleton):
+class GPUDetectObjectWeight(metaclass=GPU_YOLO_Singleton):
     def __init__(
         self,
         conf_thres=0.25,
@@ -46,14 +46,13 @@ class GPUDetectObjectWeight(IWeight, Singleton):
         max_det=20,
         label_name=[0, 1],
         imgsz=(640,640),
-        device= 'furiosa'
+        device= 'cpu'
         ) -> None:
         if str(NPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(NPU_YOLO_DIR))
         if str(GPU_YOLO_DIR) not in sys.path:
             sys.path.append(str(GPU_YOLO_DIR))  # add yolov5 ROOT to PATH
         from gpu_yolov5.models.common import DetectMultiBackend
-        
         t1 = time.time()
         # 고정값
         # WEIGHTS = "yolo_ball.pt"
@@ -82,6 +81,7 @@ class GPUDetectObjectWeight(IWeight, Singleton):
             self.imgsz, s=32)  # check image size
         name = device if device != '0' else 'gpu'
         t2 = time.time()
+        
         print( f'[{str(name).upper()} YOLOv5 init {(t2-t1):.1f}s]')
         if str(GPU_YOLO_DIR) in sys.path:
             sys.path.remove(str(GPU_YOLO_DIR))

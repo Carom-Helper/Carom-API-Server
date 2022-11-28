@@ -40,7 +40,7 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     topRight = img_data.guide["TR"]
     bottomLeft = img_data.guide["BL"]
     
-    print(FRAME_WORK)
+    
     pipe = PipeFactory(device=FRAME_WORK, display=display, inDB=True).pipe
     
     ### Dataloader ###

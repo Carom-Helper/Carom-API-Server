@@ -53,20 +53,22 @@ from threading import Lock
 
 class DetectObjectPipe(One2OnePipe):
     cls_list = ["EDGE", "BALL"]
-    def __init__(self, device, framework="furiosa", display=True):
+    def __init__(self, device="furiosa", display=True):
         super().__init__()
         self.display = display
         t1 = time.time()
-        
         #load model
-        instance = NPUDetectObjectWeight(device=device) if device=="furiosa" or device=='onnx' else GPUDetectObjectWeight(device=device)
+        if device=="furiosa" or device=='onnx':
+            instance = NPUDetectObjectWeight(device=device)
+        else :
+            instance = GPUDetectObjectWeight(device=device)
         self.model = instance
         self.lock = instance.lock
         self.framework = device
         
         t2 = time.time()
         if display:
-            print(f'[{str(framework).upper()} YOLOv5 init {(t2-t1):.1f}s]')
+            print(f'[{str(device).upper()} YOLOv5 init {(t2-t1):.1f}s]')
 
     @torch.no_grad()
     def exe(
