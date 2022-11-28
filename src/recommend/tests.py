@@ -30,6 +30,8 @@ class RouteTestClass(LiveServerTestCase):
         except:
             pass
         
+        
+        
     def test_get_route(self):
         response = lastpos_route("tglee")
         self.assertNotEqual(response , Response({"state":"Progress"}, status=status.HTTP_202_ACCEPTED))

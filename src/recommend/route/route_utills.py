@@ -92,6 +92,8 @@ def angle(x,y):
     except ZeroDivisionError:
         print("angle : divide zero")
         return 0
+    except:
+        return 0
 def radian2degree(theta):
     return np.rad2deg(theta)
 
