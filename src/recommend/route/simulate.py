@@ -137,6 +137,7 @@ def run_carom_simulate(
     # if False:
     if True:
         if display:
+            if success: print(success, cue.colpoint)
             show(cue, tar1, tar2)
 
     return success, cue.colpoint, tar1.colpoint, tar2.colpoint

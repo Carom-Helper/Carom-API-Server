@@ -73,10 +73,10 @@ def test_make_route(issue_id, display=False):
     obj2 = (obj2[0],obj2[1])
     soultion_list = simulation(cue, obj1, obj2, display=display)
     for soultion in soultion_list:
-        # if display:
-        print("=============== add route =======================")
-        for key, value in soultion.items():
-            print(f"==={key}===\n{value}")
+        if display:
+            print("=============== add route =======================")
+            for key, value in soultion.items():
+                print(f"==={key}===\n{value}")
         route = soultion_route(
             issue_id=issue_id, 
             route=soultion, 

@@ -2,6 +2,8 @@ from django.test import TestCase, LiveServerTestCase
 from u_img.models import carom_img, carom_data
 from .views import test_make_coord, balls_coord
 from carom_api.settings import FRAME_WORK
+from .detect.pipe_factory import PipeFactory
+
 import cv2
 
 # Create your tests here.
@@ -36,8 +38,23 @@ class DetectTestClass(LiveServerTestCase):
 
         data = carom_data.objects.get(img_id=self.img_id)
         self.assertEquals(data.img_id, self.img_id)
-
-    def test_test(self):
+        
+    def test_singleton(self):
+        print("===================== HI =======================")
+        print("Call PipeFactory ",end="|")
+        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        print("Call PipeFactory ",end="|")
+        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        print("Call PipeFactory ",end="|")
+        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        print("Call PipeFactory ",end="|")
+        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        print("Call PipeFactory ",end="|")
+        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        print("Call PipeFactory ",end="|")
+        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+    
+    def test_detect(self):
         self.assertEqual(len(balls_coord.objects.all()), 0)
         img = carom_img.objects.last()
         test_make_coord(img.id, display=False if FRAME_WORK=='furiosa' else True)
