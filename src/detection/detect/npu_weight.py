@@ -290,8 +290,6 @@ class Yolov5Detector(Predictor):
     def close(self):
         self.infer.close()
 
-
-
 class NPUDetectObjectWeight(IWeight):
     def __init__(
         self,
