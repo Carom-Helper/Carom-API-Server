@@ -61,9 +61,14 @@ def get_ball_state(issue_id):
 
 def test_make_route(issue_id, display=False):
     pos = position.objects.get(id=issue_id)
+    if pos.state == 'P' or pos.state == 'D':
+        return
+    print(f'test_make_route : ', end=' ')
+    
     pos.state="P"
     if not display:
         pos.save()
+        print(f'state(Progress)', end='[ ')
     #좌표 받아오기 cue, 목적구, 목적구2
     cue = pos.coord["cue"]
     obj1 =  pos.coord["obj1"]
@@ -84,9 +89,11 @@ def test_make_route(issue_id, display=False):
             )
         if not display:
             route.save()
+            print(f'add route',end=', ')
     pos.state="D"
     if not display:
         pos.save()
+        print(f']state(Done)', end='|')
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
@@ -116,7 +123,7 @@ class RouteRequestAPIView(APIView):
             # requester 로그 쌓기
             try:
                 # request를 찾고
-                requester = route_request.objects.get(issue_id=issue_id, requester=usr)
+                requester = route_request.objects.filter(issue_id=issue_id, requester=usr)
             except route_request.DoesNotExist:
                 #존재 하지 않으면 새로 생성
                 rr = route_request(issue_id=issue_id, requester=usr).save()

@@ -41,7 +41,7 @@ from detect_utills import (PipeResource, LoadImages, copy_piperesource,
                            is_test, cv2, print_args)
 
 def is_test_detect_object()->bool:
-    return True and is_test()
+    return False and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_detect_object():

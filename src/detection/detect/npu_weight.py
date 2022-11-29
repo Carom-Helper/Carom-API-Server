@@ -35,9 +35,15 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 from IWeight import IWeight
 from Singleton import NPU_YOLO_Singleton
 from detect_utills import (
-    select_device, Path
+    select_device, Path, is_test
 )
 
+def is_test_npu_weights()->bool:
+    return True and is_test()
+
+def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
+    if is_test_npu_weights():
+        print("npu weights test : ", s, s1, s2, s3, s4, s5, end=end)
 
 
 class InferenceEngine:
@@ -98,11 +104,32 @@ class InferenceEngineOnnx(InferenceEngine):
         pass
     
 class InferenceEngineFuriosa(InferenceEngine):
-    def __init__(self, enf_file, device=None) -> None:
+    def __init__(self,enf_file, device=None) -> None:
         super().__init__()
-
+        test_print("InferenceEngineFuriosa, 109:",enf_file)
         from furiosa.runtime import session
-        self.sess = session.create(enf_file, device=device)
+        
+        input_format = "hwc"
+        input_prec = "i8"
+        
+        assert input_prec in ("f32", "i8")
+        assert input_format in ("chw", "hwc")
+
+        assert not (input_prec == "f32" and input_format != "chw")
+        assert input_prec == "i8", "Nothing to do"
+        
+        compile_config = {
+                "without_quantize": {
+                    "parameters": [
+                        {
+                            "input_min": 0.0, "input_max": 1.0, 
+                            "permute": [0, 2, 3, 1] if input_format == "hwc" else [0, 1, 2, 3]
+                        }
+                    ]
+                },
+            }
+        
+        self.sess = session.create(enf_file, compiler_config = compile_config)
 
     def get_input_shapes(self):
         inputs = self.sess.inputs()
@@ -116,8 +143,10 @@ class InferenceEngineFuriosa(InferenceEngine):
 
     def infer(self, *x):
         x = list(x)
+        test_print("start infer")
+        print(x, type(x))
         outputs = self.sess.run(x)
-
+        test_print("end infer")
         outputs = [outputs[i].numpy() for i in range(len(outputs))]
 
         return outputs
@@ -165,7 +194,7 @@ class Yolov5Detector(Predictor):
         self.input_size = w, h
 
         if framework == "furiosa":
-            infer = InferenceEngineFuriosa(self, enf_file)
+            infer = InferenceEngineFuriosa( enf_file )
         elif framework == "onnx":
             infer = InferenceEngineOnnx(self, model_file)
 
@@ -281,17 +310,24 @@ class Yolov5Detector(Predictor):
         return boxes_batched
 
     def __call__(self, imgs):
+        test_print("================start inference==========")
         single_input = not isinstance(imgs, (tuple, list))
         if single_input:
             imgs = [imgs]
+        test_print("================image preprocess 1==========")
 
         inputs, preproc_params = zip(*[self.preproc(img) for img in imgs])
+        test_print("================image preprocess 2==========")
         inputs = np.stack(inputs)
+        test_print("================image preprocess 3==========")
         feats = self.infer(inputs)
+        test_print("================infer==========")
         res = self.postproc(feats, preproc_params)
-
+        test_print("================postproc==========")
         if single_input:
             res = res[0]
+        
+        test_print("================end inference==========")
 
         return res
 
@@ -329,6 +365,7 @@ class NPUDetectObjectWeight(metaclass=NPU_YOLO_Singleton):
         cfg_file = weights_dir / "cfg.yaml"
         
         ### load model ### Yolov5Detector가 들어가야함
+        test_print("======weights=====", onnx, enf)
         model = Yolov5Detector(
             model_file= onnx, 
             enf_file = enf, 
