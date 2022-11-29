@@ -23,6 +23,8 @@ start :
 	docker start $(APP_NAME)
 exec :
 	docker exec -it $(APP_NAME) /bin/bash
+runserver :
+	docker exec -it $(APP_NAME) python manage.py runserver 0.0.0.0:$(PORT_NUM)
 attach:
 	docker start $(APP_NAME)
 	docker attach $(APP_NAME)
