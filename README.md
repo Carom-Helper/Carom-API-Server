@@ -51,6 +51,8 @@ python manage.py runserver
 # Check if the pytorch works well
 cd detection/detect
 python DetectObjectPipe.py
+cd npu_yolov5
+python demo.py --calib-data /caromapi/src/media/test --framework furiosa --input /caromapi/src/media/test2/sample.jpg --model /caromapi/src/detection/detect/weights/npu_yolo_ball
 ```
 
 # How to Set  Development Environment with Docker
