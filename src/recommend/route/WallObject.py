@@ -101,6 +101,7 @@ class WallObject(IObserver, ICrashableSubject):
             bias_table["0.5"] = [-18.26000061, -17.35999947, -12.54000006, -3.139999986,
                 0.550000012, 4.420000076, 5.429999876, 24.99999924, 26.66000042, 31.39999962]
         else:
+            print(direct_vec, normal_vec)
             raise ValueError("Over 90 degree.+get_reflect_closure")
         #elif power < 4:
         if degree < 10:

@@ -97,10 +97,10 @@ def run_carom_simulate(
     is_tar1_hit = False
     is_tar2_hit = False
     while True:
-    # for tick in range(10000):
-        cue_dist, cue_elapsed = cue.move(elapsed)
-        tar1_dist, tar1_elapsed = tar1.move(elapsed)
-        tar2_dist, tar2_elapsed = tar2.move(elapsed)
+    # for _ in range(10000):
+        cue_dist, _ = cue.move(elapsed)
+        tar1_dist, _ = tar1.move(elapsed)
+        tar2_dist, _ = tar2.move(elapsed)
 
         for observer in cue.observer_list:
             cue.notify_filltered_observer(observer)
@@ -111,9 +111,9 @@ def run_carom_simulate(
         for observer in tar2.observer_list:
             tar2.notify_filltered_observer(observer)
         
-        cue.update()
-        tar1.update()
-        tar2.update()
+        cue_elapsed = cue.update()
+        tar1_elapsed = tar1.update()
+        tar2_elapsed = tar2.update()
 
         elapsed = min(cue_elapsed, tar1_elapsed, tar2_elapsed)
 
@@ -191,8 +191,34 @@ def simulation(
     ):
 
     success_list = []
-
-    for c in [1, 2, 11, 10, 12, 9, 3, 4, 8]:
+    success_clock = []
+    clock_sequence = [1, 3, 11, 10, 12, 9, 3, 4, 8]
+    """
+    #test area ###################################################################################
+    p, c, t, th = 50, 2, 3, 0
+    success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
+                                                            tar1_coord=tar1_coord,
+                                                            tar2_coord=tar2_coord,
+                                                            power=p,
+                                                            clock=c,
+                                                            tip=t,
+                                                            thick=th,
+                                                            display=display)
+    if success:
+        result = {"power": p,
+                    "clock": c,
+                    "tip": t,
+                    "thick": th,
+                    "cue": cue, 
+                    "tar1": tar1,
+                    "tar2": tar2}
+        success_list.append(result)
+        success_clock.append(c)
+        if len(success_list) >= DETECT_ROUTE_NUM:
+            return success_list
+    #test area ###################################################################################
+    """
+    for c in clock_sequence:
         for t in [3]:
             for p in [40, 50]:
                 for th in [-4, 4, -3, 3, -2, 2]:
@@ -209,26 +235,82 @@ def simulation(
                             result = {"power": p,
                                         "clock": c,
                                         "tip": t,
+                                        "thick": th,
                                         "cue": cue, 
                                         "tar1": tar1,
                                         "tar2": tar2}
                             success_list.append(result)
+                            success_clock.append(c)
                             if len(success_list) >= DETECT_ROUTE_NUM:
                                 return success_list
                         
                         temp = tar1_coord
                         tar1_coord = tar2_coord
                         tar2_coord = temp
+
+                    if c in success_clock:
+                        break
+                if c in success_clock:
+                    break
+            if c in success_clock:
+                break
+
+    for c in [x for x in clock_sequence if x not in success_clock]:
+        for t in [2, 3]:
+            for th in [-5, 5, -6, 6, -7, 7, -4, 4, -3, 3, -2, 2]:
+                if t == 3 and abs(th) < 5:
+                    pass
+                for _ in range(2):
+                    success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
+                                                        tar1_coord=tar1_coord,
+                                                        tar2_coord=tar2_coord,
+                                                        power=40,
+                                                        clock=c,
+                                                        tip=t,
+                                                        thick=th,
+                                                        display=display)
+                    if success:
+                        result = {"power": p,
+                                    "clock": c,
+                                    "tip": t,
+                                    "thick": th,
+                                    "cue": cue, 
+                                    "tar1": tar1,
+                                    "tar2": tar2}
+                        success_list.append(result)
+                        success_clock.append(c)
+                        if len(success_list) >= DETECT_ROUTE_NUM:
+                            return success_list
+                    
+                    temp = tar1_coord
+                    tar1_coord = tar2_coord
+                    tar2_coord = temp
+
+                    if c in success_clock:
+                        break
+                if c in success_clock:
+                    break
+    
+
+    print(success_list)
     return success_list
 
 def runner(args):
     print_args(vars(args))
-    
-    x, y = map(int, args.cue.split(','))
+    if type(args.cue) is tuple:
+        x, y = args.cue
+    else:
+        x, y = map(int, args.cue.split(','))
     cue_xy = (x, y)
-    x, y = map(int, args.tar1.split(','))
+    if type(args.tar1) is tuple:
+        x, y = args.tar1
+    else:
+        x, y = map(int, args.tar1.split(','))
     tar1_xy = (x, y)
-    x, y = map(int, args.tar2.split(','))
+    if type(args.tar2) is tuple:
+        x, y = args.tar2
+    else:
+        x, y = map(int, args.tar2.split(','))
     tar2_xy = (x, y)
     simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True)
 
