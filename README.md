@@ -96,5 +96,6 @@ make rm
 
 #furiosa compile 
 ```bash
- furiosa compile 파일명.onnx -o 파일명.enf
+ # furiosa compile 파일명.onnx -o 파일명.enf
+ NPU_COMPILER_CONFIG_PATH=compiler_config.yaml furiosa compile weights_i8.onnx -o weights.enf
 ```
