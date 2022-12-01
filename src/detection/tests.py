@@ -40,7 +40,6 @@ class DetectTestClass(LiveServerTestCase):
         self.assertEquals(data.img_id, self.img_id)
         
     def test_singleton(self):
-        print("===================== HI =======================")
         print("Call PipeFactory ",end="|")
         pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
         print("Call PipeFactory ",end="|")

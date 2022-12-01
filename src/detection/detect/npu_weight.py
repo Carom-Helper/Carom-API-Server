@@ -112,6 +112,9 @@ class InferenceEngineFuriosa(InferenceEngine):
         input_format = "hwc"
         input_prec = "i8"
         
+        self.input_format = input_format
+        self.input_prec = input_prec
+        
         assert input_prec in ("f32", "i8")
         assert input_format in ("chw", "hwc")
 
@@ -123,13 +126,13 @@ class InferenceEngineFuriosa(InferenceEngine):
                     "parameters": [
                         {
                             "input_min": 0.0, "input_max": 1.0, 
-                            "permute": [0, 2, 3, 1] if input_format == "hwc" else [0, 1, 2, 3]
+                            "permute": [0, 2, 3, 1]
                         }
                     ]
                 },
             }
         
-        self.sess = session.create(enf_file, compiler_config = compile_config)
+        self.sess = session.create(str(enf_file), compiler_config = compile_config)
 
     def get_input_shapes(self):
         inputs = self.sess.inputs()
@@ -144,7 +147,7 @@ class InferenceEngineFuriosa(InferenceEngine):
     def infer(self, *x):
         x = list(x)
         test_print("start infer")
-        print(x, type(x))
+        # print(x, type(x))
         outputs = self.sess.run(x)
         test_print("end infer")
         outputs = [outputs[i].numpy() for i in range(len(outputs))]
@@ -175,15 +178,9 @@ class Yolov5Detector(Predictor):
         
         self.input_color_format = input_color_format
 
-        if framework == "furiosa":
-            input_format = "hwc"
-            input_prec = "i8"
-        elif framework == "onnx":
-            input_format = "chw"
-            input_prec = "f32"
 
-        self.input_format = input_format
-        self.input_prec = input_prec
+        self.input_format = input_format= "hwc"
+        self.input_prec = input_prec = "i8"
 
         # load input name and shape in advance from onnx file
         input_name, input_shape = Yolov5Detector._get_input_name_shape(model_file)
@@ -198,8 +195,8 @@ class Yolov5Detector(Predictor):
         elif framework == "onnx":
             infer = InferenceEngineOnnx(self, model_file)
 
-        assert input_format in ("chw", "hwc")
-        assert input_prec in ("f32", "i8")
+        assert input_format in ( "hwc")
+        assert input_prec in ("i8")
         assert input_color_format in ("rgb", "bgr")
         assert box_decoder in ("pytorch", "c")
 
@@ -272,7 +269,7 @@ class Yolov5Detector(Predictor):
 
         if input_prec is None:
             input_prec = self.input_prec
-
+        
         img, (sx, sy), (padw, padh) = self._resize(img)
 
         if self.input_color_format == "bgr":
@@ -283,7 +280,6 @@ class Yolov5Detector(Predictor):
 
         if input_prec == "f32":
             img = self._normalize(img)
-
         assert sx == sy
         scale = sx
 
@@ -291,8 +287,6 @@ class Yolov5Detector(Predictor):
 
     def postproc(self, feats_batched, preproc_params):
         from npu_yolov5.utils.nms import nms    
-        
-        
         boxes_batched = []
 
         for i, (scale, (padw, padh)) in enumerate(preproc_params):
@@ -314,12 +308,9 @@ class Yolov5Detector(Predictor):
         single_input = not isinstance(imgs, (tuple, list))
         if single_input:
             imgs = [imgs]
-        test_print("================image preprocess 1==========")
 
         inputs, preproc_params = zip(*[self.preproc(img) for img in imgs])
-        test_print("================image preprocess 2==========")
         inputs = np.stack(inputs)
-        test_print("================image preprocess 3==========")
         feats = self.infer(inputs)
         test_print("================infer==========")
         res = self.postproc(feats, preproc_params)
