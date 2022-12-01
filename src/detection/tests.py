@@ -52,6 +52,7 @@ class DetectTestClass(LiveServerTestCase):
         pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
         print("Call PipeFactory ",end="|")
         pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        print()
     
     def test_detect(self):
         self.assertEqual(len(balls_coord.objects.all()), 0)
