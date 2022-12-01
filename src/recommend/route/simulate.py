@@ -222,20 +222,32 @@ def simulation(
                         tar2_coord = temp
     return success_list
 
+def get_ball_coord(ball):
+    from ast import literal_eval
+    if isinstance(ball, str):
+        x,y=map(int, ball.split(','))
+        ball = (x,y)
+    
+    
+    if isinstance(ball, tuple):
+        pass
+    elif isinstance(ball, list):
+        x,y = ball
+        ball = (x,y)
+    else:
+        raise TypeError
+    print(ball, type(ball))
+    return ball
 def runner(args):
     print_args(vars(args))
-    
-    x, y = map(int, args.cue.split(','))
-    cue_xy = (x, y)
-    x, y = map(int, args.tar1.split(','))
-    tar1_xy = (x, y)
-    x, y = map(int, args.tar2.split(','))
-    tar2_xy = (x, y)
+    cue_xy = get_ball_coord(args.cue)
+    tar1_xy = get_ball_coord(args.tar1)
+    tar2_xy = get_ball_coord(args.tar2)
     simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True)
 
     #run(args.src, args.device)
     # detect(args.src, args.device)
-    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cue', default=(300,400))
