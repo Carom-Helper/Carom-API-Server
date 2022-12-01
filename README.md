@@ -52,7 +52,7 @@ python manage.py runserver
 cd detection/detect
 python DetectObjectPipe.py
 cd npu_yolov5
-python demo.py --calib-data /caromapi/src/media/test --framework furiosa --input /caromapi/src/media/test2/sample.jpg --model /caromapi/src/detection/detect/weights/npu_yolo_ball
+python demo.py --calib-data /caromapi/src/media/test --framework furiosa --input /caromapi/src/media/test2/sample.jpg --model /caromapi/src/detection/detect/weights/npu_yolo_ball --no-display
 ```
 
 # How to Set  Development Environment with Docker
