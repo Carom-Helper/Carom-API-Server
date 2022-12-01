@@ -236,7 +236,6 @@ def get_ball_coord(ball):
         ball = (x,y)
     else:
         raise TypeError
-    print(ball, type(ball))
     return ball
 def runner(args):
     print_args(vars(args))
