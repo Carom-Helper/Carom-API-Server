@@ -1,6 +1,5 @@
 def is_test()->bool:
-    return True
-
+    return False
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
         print("pipe cls exe : ", s, s1, s2, s3, s4, s5, end=end)

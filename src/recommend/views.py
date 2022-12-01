@@ -93,7 +93,7 @@ def test_make_route(issue_id, display=False):
     pos.state="D"
     if not display:
         pos.save()
-        print(f']state(Done)', end='|')
+        print(f']state(Done)')
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
