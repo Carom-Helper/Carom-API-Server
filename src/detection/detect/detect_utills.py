@@ -321,6 +321,9 @@ class PipeResource:
     def print(self, on=True):
         if on:
             print("==============================================")
+            print("matadata :[",end="")
+            for key, value in self.metadata.items():
+                print(f"({key}:{value})", end=" ")
             print(f'{self.s}',"dets")
             for i, det in enumerate(self.dets):
                 print(f'det {i} :', str(det))
