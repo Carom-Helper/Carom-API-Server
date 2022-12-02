@@ -14,7 +14,7 @@ build:
 
 run:
 	@echo 'docker run -tiu --name="$(APP_NAME)" $(IMAGE_NAME)'
-	docker run -ti --name "$(APP_NAME)" --shm-size 32gb --privileged -p $(PORT_NUM):$(PORT_NUM) -v $(MODEL_VOLUME) $(IMAGE_NAME)
+	docker run -ti --name "$(APP_NAME)" --shm-size 32gb --privileged -p $(PORT_NUM):$(PORT_NUM) -v $(MODEL_VOLUME) $(IMAGE_NAME) python manage.py runserver 0.0.0.0:$(PORT_NUM)
 
 stop:
 	@echo 'stop docker $(APP_NAME)'
@@ -26,7 +26,6 @@ exec :
 runserver :
 	docker exec -it $(APP_NAME) python manage.py runserver 0.0.0.0:$(PORT_NUM)
 attach:
-	docker start $(APP_NAME)
 	docker attach $(APP_NAME)
 rm:
 	@echo 'rm docker $(APP_NAME)'
