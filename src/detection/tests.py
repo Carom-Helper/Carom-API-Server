@@ -60,7 +60,6 @@ class DetectTestClass(LiveServerTestCase):
         test_make_coord(img.id, display=False if FRAME_WORK=='furiosa' else True)
         self.assertEqual(len(balls_coord.objects.all()), 1)
         ball = balls_coord.objects.last()
-        cv2.waitKey(5000)
         print("=========== detect ball ==================")
         print(ball.coord)
         x,y = ball.coord["1"]

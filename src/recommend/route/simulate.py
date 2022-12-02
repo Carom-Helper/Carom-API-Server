@@ -9,6 +9,7 @@ from WallObject import WallObject
 
 DETECT_ROUTE_NUM=3
 
+
 def run_carom_simulate(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
@@ -17,7 +18,8 @@ def run_carom_simulate(
     clock = 12,
     tip = 1,
     thick = 0,
-    display=True
+    display=True,
+    save=False
     ):
     cue = CaromBall("cue")
     tar1 = CaromBall("tar1")
@@ -137,12 +139,14 @@ def run_carom_simulate(
     # if False:
     if True:
         if display:
-            if success: print(success, cue.colpoint)
-            show(cue, tar1, tar2)
+            if success:
+                print(success, cue.colpoint)
+            name = f"({cue_coord[0]}-{cue_coord[1]})({tar1_coord[0]}-{tar1_coord[1]})({power}-{clock}-{tip})({thick}).jpg"
+            show(cue, tar1, tar2, name, success and save)
 
     return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
-def show(cue, tar1, tar2):
+def show(cue, tar1, tar2, name, save=False):
     img = np.zeros((800,400,3), np.uint8)
     clist = cue.xy
     img = cv2.line(img, (int(clist[0]['x']), int(clist[0]['y'])), (int(clist[0]['x']), int(clist[0]['y'])), (255, 255, 255), 3)
@@ -157,9 +161,15 @@ def show(cue, tar1, tar2):
         img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 0, 255), 1)
     for t in t2list:
         img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
+    
+    if save:
+        print("save : ", name)
+        cv2.imwrite(name ,img)
     try:
         cv2.imshow('simulate', img)
         cv2.waitKey(1000)
+    except InterruptedError:
+        raise InterruptedError()
     except:pass
 
 def show_ani(cue, tar1, tar2):
@@ -188,7 +198,8 @@ def simulation(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
     tar2_coord=(300,300),
-    display=True
+    display=True,
+    save=False
     ):
 
     success_list = []
@@ -231,7 +242,8 @@ def simulation(
                                                         clock=c,
                                                         tip=t,
                                                         thick=th,
-                                                        display=display)
+                                                        display=display,
+                                                        save=save)
                         if success:
                             result = {"power": p,
                                         "clock": c,
@@ -269,7 +281,8 @@ def simulation(
                                                         clock=c,
                                                         tip=t,
                                                         thick=th,
-                                                        display=display)
+                                                        display=display,
+                                                        save=save)
                     if success:
                         result = {"power": p,
                                     "clock": c,
@@ -316,7 +329,7 @@ def runner(args):
     cue_xy = get_ball_coord(args.cue)
     tar1_xy = get_ball_coord(args.tar1)
     tar2_xy = get_ball_coord(args.tar2)
-    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True)
+    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True, save=args.save)
 
     #run(args.src, args.device)
     # detect(args.src, args.device)
@@ -326,6 +339,8 @@ if __name__ == '__main__':
     parser.add_argument('--cue', default=(300,400))
     parser.add_argument('--tar1', default=(100,750))
     parser.add_argument('--tar2', default=(300,300))
+    parser.add_argument('--save', default=False, action="store_true")
+    
     # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     # parser.add_argument('--display', action="store_true")
     args = parser.parse_args()
