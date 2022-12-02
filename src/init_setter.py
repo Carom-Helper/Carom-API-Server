@@ -7,23 +7,23 @@ print("==== Start ====")
 #Create projection_method
 print("===== Create sample Image ====")
 guide =  {
-            "BR": [
-                1270,
-                580
-            ],
             "TL": [
                 549,
                 109
             ],
             
             "TR": [
-                180,
-                565
-            ],
-            "BL": [
                 942,
                 112
             ],
+            "BL": [
+                180,
+                565
+            ],
+            "BR": [
+                1270,
+                580
+            ]
         }
 
 img = carom_img(img='carom/sample.jpg')

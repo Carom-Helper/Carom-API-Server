@@ -495,7 +495,7 @@ def show(cue, tar1, tar2):
     for t in t2list:
         img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
     cv2.imshow('simulate', img)
-    cv2.waitKey()
+    cv2.waitKey(1000)
     
 def runner(args):
     print_args(vars(args))

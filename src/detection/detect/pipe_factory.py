@@ -109,13 +109,18 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         pipe.push_src(input)
         
         input.print()
+        result = ball_bag.src
         # 원본 정사영 영역 표시
         if display:
-            origin = input.get_image()
+            origin = result.get_image()
             for i in range(4):
-                origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
+                origin = cv2.line(origin, 
+                        (int(pts[i][0]), int(pts[i][1])), 
+                        (int(pts[(i+1)%4][0]), int(pts[(i+1)%4][1])), 
+                        (0, 255, 0), 2)
+            result.imshow_table()
             cv2.imshow("origin", origin)
-            cv2.waitKey()
+            cv2.waitKey(9000)
     return ball_bag
     
 def test(
@@ -123,14 +128,14 @@ def test(
     device = '0',
     display=True
     ):
-    ball_bag = detect(src, device, display=display, inDB=True)
+    ball_bag = detect(src, device, display=display, inDB=False)
      
     title = "test"
     ball_bag.print()
     
 def runner(args):
     print_args(vars(args))
-    test(args.src, args.device)
+    test(args.src, args.device, display=not args.no_display)
     #run(args.src, args.device)
     # detect(args.src, args.device)
     
@@ -138,6 +143,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "test2" / "sample.jpg")
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--display', action="store_true")
+    parser.add_argument('--no_display', default=False, action="store_true")
     args = parser.parse_args()
     runner(args) 

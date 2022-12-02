@@ -127,14 +127,10 @@ class IOne2OnePipe(IObserverPipe, metaclass=ABCMeta):
         return False
     
     def call_next_pipe(self, output : PipeResource, observer_idx=0) -> None:
-        try:
-            if isinstance(output, PipeResource):                                #check input valid
-                if isinstance(self.next_pipe, IPipeObserver):                   #check next pipe valid
-                    test_print(self.__str__() + f" call_next_pipe({self.next_pipe.__str__()})")
-                    self.next_pipe.push_src(output)
-        except KeyboardInterrupt:sys.exit()
-        except Exception as ex:
-            print(f'{str(self)} One2OnePipe call_next_pipe : {str(ex)}')
+        if isinstance(output, PipeResource):                                #check input valid
+            if isinstance(self.next_pipe, IPipeObserver):                   #check next pipe valid
+                test_print(self.__str__() + f" call_next_pipe({self.next_pipe.__str__()})")
+                self.next_pipe.push_src(output)
     
     
 class One2OnePipe(IOne2OnePipe, metaclass=ABCMeta):
@@ -189,16 +185,9 @@ class One2ManyPipe(IObserverPipe, metaclass=ABCMeta):
     
     def call_next_pipe(self, output : PipeResource, observer_idx=0) -> None:
         if isinstance(output, PipeResource):                                #check input valid
-            try:
-                if isinstance(self.next_pipe[observer_idx], IPipeObserver):     #check next pipe valid
-                    # test_print(self.__str__() + " call_next_pipe")
-                    self.next_pipe[observer_idx].push_src(output)
-            except KeyboardInterrupt:sys.exit()
-            except IndexError as ex:
-                pass
-                #print(self.__str__(), f" call_next_pipe({observer_idx}/{self.next_pipe.__len__()}) : ", ex.__str__())
-            except Exception as ex:
-                print(self.__str__(), " One2ManyPipe call_next_pipe : ", ex.__str__())
+            if isinstance(self.next_pipe[observer_idx], IPipeObserver):     #check next pipe valid
+                # test_print(self.__str__() + " call_next_pipe")
+                self.next_pipe[observer_idx].push_src(output)
            
     @abstractclassmethod
     def push_src(self, input: PipeResource) -> None:

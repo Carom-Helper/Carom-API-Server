@@ -125,7 +125,7 @@ def test():
         projected = cv2.circle(projected, (int(new_t['x']), int(new_t['y'])), 8, (0, 255, 0), 1)
         print(f'{i}/8')
         cv2.imshow('prediction', projected)
-        cv2.waitKey()
+        cv2.waitKey(1000)
     
 if __name__ == '__main__':
     test_degree()
