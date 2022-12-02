@@ -29,6 +29,8 @@ from pipe_cls import One2OnePipe, ConvertToxywhPipe, IObserverPipe, SplitCls, Re
 from pipe_utills import SaveBallCoordPipe
 from Singleton import Singleton
 from ProjectionPipe import ProjectionCoordPipe
+from CoordFilterPipe import CoordFilterPipe
+from BallGeneratePipe import BallGeneratePipe
 from DetectObjectPipe import DetectObjectPipe # ,NPU_YOLO_DIR, GPU_YOLO_DIR
 from detect_utills import (PipeResource, LoadImages,
                            is_test, cv2, print_args)
@@ -54,11 +56,15 @@ def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
     split_cls_pipe = SplitCls()
     edge_bag = ResourceBag()
     projection_coord_pipe = ProjectionCoordPipe(display = display)
+    coord_filter_pipe = CoordFilterPipe()
+    ball_generate_pipe = BallGeneratePipe()
     
     # - connect
     detect_cls_pipe.connect_pipe(xyxy2xywh)     #detect class - split_cls
     xyxy2xywh.connect_pipe(projection_coord_pipe)     #detect class - split_cls
-    projection_coord_pipe.connect_pipe(split_cls_pipe)
+    projection_coord_pipe.connect_pipe(coord_filter_pipe)
+    coord_filter_pipe.connect_pipe(ball_generate_pipe)
+    ball_generate_pipe.connect_pipe(split_cls_pipe)
     _ = split_cls_pipe.connect_pipe(edge_bag) # split class - edge bag
 
     test_print("connect edge pipe : ", _)        
