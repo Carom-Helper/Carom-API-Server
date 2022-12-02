@@ -107,13 +107,15 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         images = {"origin":im0}
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         pipe.push_src(input)
+        
+        input.print()
         # 원본 정사영 영역 표시
         if display:
-            origin = input.images["origin"].copy()
+            origin = input.get_image()
             for i in range(4):
                 origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
             cv2.imshow("origin", origin)
-            cv2.waitKey(3000)
+            cv2.waitKey()
     return ball_bag
     
 def test(

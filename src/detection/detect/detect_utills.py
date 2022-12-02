@@ -353,19 +353,12 @@ class PipeResource:
         det["cls"] = cls
         det["conf"] = conf
         self.dets.append(det)
-            
-    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
+    def get_image(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
         im0= self.images[images]
         annotator = Annotator(
             im0, line_width=line_thickness)
         
-        # metadata 이름
-        base_s = ""
-        for key in metadata:
-            try:
-                base_s += f"({self.metadata[key]})"
-            except:
-                pass
+        
         # Write results
         if hide_box:pass
         else:
@@ -382,6 +375,16 @@ class PipeResource:
                 except:
                     pass
         im0 = annotator.result()
+        return im0
+    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
+        im0 = self.get_image(name=name, images=images, metadata=metadata, dets_key=dets_key, line_thickness=line_thickness, hide_box=hide_box)
+        # metadata 이름
+        base_s = ""
+        for key in metadata:
+            try:
+                base_s += f"({self.metadata[key]})"
+            except:
+                pass
         window_name = base_s if name is None else str(name)
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(window_name, im0.shape[1], im0.shape[0])
