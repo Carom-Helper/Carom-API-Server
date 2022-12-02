@@ -140,6 +140,10 @@ class ProjectionCoordPipe(One2OnePipe):
         output = input
         output.set_image('table', projected)
         output.set_image("projected", result)
+        
+        print(pts1)
+        print("proj)", end="")
+        output.print()
         if self.display :
             print("proj)", end="")
             output.print()
