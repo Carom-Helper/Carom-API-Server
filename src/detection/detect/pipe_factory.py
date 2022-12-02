@@ -31,7 +31,7 @@ from Singleton import PIPE_Singleton
 from ProjectionPipe import ProjectionCoordPipe
 from DetectObjectPipe import DetectObjectPipe # ,NPU_YOLO_DIR, GPU_YOLO_DIR
 from detect_utills import (PipeResource, LoadImages,
-                           is_test, cv2, print_args)
+                           aline_corner_in_dict, is_test, cv2, print_args)
 
 def is_test_factory()->bool:
     return False and is_test()
@@ -87,23 +87,22 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
     dataset = LoadImages(src)
     ### 실행 ###
     for im0, path, s in dataset:
+        width = im0.shape[1]
+        hight = im0.shape[0]
         #point 위치 확인
-        points = [[549,109],[942,111],[1270,580],[180,565]]
-        pts = np.zeros((4, 2), dtype=np.float32)
-        for i in range(4):
-            pts[i] = points[i]
+        # points = [[549,109],[942,111],[1270,580],[180,565]]
+        points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
         
-        sm = pts.sum(axis=1)  # 4쌍의 좌표 각각 x+y 계산
-        diff = np.diff(pts, axis=1)  # 4쌍의 좌표 각각 x-y 계산
+        points.sort(key=lambda x:x[0] + x[1]*width)
 
-        topLeft = pts[np.argmin(sm)]  # x+y가 가장 값이 좌상단 좌표
-        bottomRight = pts[np.argmax(sm)]  # x+y가 가장 큰 값이 우하단 좌표
-        topRight = pts[np.argmin(diff)]  # x-y가 가장 작은 것이 우상단 좌표
-        bottomLeft = pts[np.argmax(diff)]  # x-y가 가장 큰 값이 좌하단 좌표
+        topLeft = points[0]
+        topRight = points[1]
+        bottomLeft = points[2]
+        bottomRight = points[3]
         test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
         
 
-        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
+        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":width, "HIGHT":hight}
         images = {"origin":im0}
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         pipe.push_src(input)
@@ -115,8 +114,8 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
             origin = result.get_image()
             for i in range(4):
                 origin = cv2.line(origin, 
-                        (int(pts[i][0]), int(pts[i][1])), 
-                        (int(pts[(i+1)%4][0]), int(pts[(i+1)%4][1])), 
+                        (int(points[i][0]), int(points[i][1])), 
+                        (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
                         (0, 255, 0), 2)
             result.imshow_table()
             cv2.imshow("origin", origin)

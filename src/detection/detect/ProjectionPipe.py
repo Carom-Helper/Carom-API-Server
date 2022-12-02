@@ -16,7 +16,7 @@ ROOT = FILE.parent
 
 from pipe_cls import One2OnePipe, ResourceBag
 from detect_utills import (PipeResource, LoadImages,
-                           aline_corner, is_test, cv2, print_args)
+                           aline_corner_in_dict, is_test, cv2, print_args)
 
 def is_test_projection()->bool:
     return True and is_test()
@@ -107,7 +107,7 @@ class ProjectionCoordPipe(One2OnePipe):
         # # 변환 전 4개 좌표 
         # pts1 = np.float32([topLeft, topRight, bottomRight, bottomLeft])
         
-        pts1 = np.float32(aline_corner(input.metadata))
+        pts1 = np.float32(aline_corner_in_dict(input.metadata))
 
         # 변환 후 4개 좌표
         pts2 = np.float32([[0, 0], [399, 0],

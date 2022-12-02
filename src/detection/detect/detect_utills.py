@@ -441,12 +441,12 @@ class PipeResource:
                     det['w'] = det_box[2]
                     det['h'] = det_box[3]
 
-def aline_corner(coners:dict)->list:
+def aline_corner_in_dict(metadata:dict)->list:
     # 들어온 값을 정렬하여서 [TL, TR, BL, BR] 순서로 반환한다.
     
     pts = list()
-    width = coners['WIDTH']
-    for key, value in coners.items():
+    width = metadata['WIDTH']
+    for key, value in metadata.items():
         if key == 'TL' or key == 'BL' or key == 'TR' or key == 'BR':
             pts.append(value)
     pts.sort(key=lambda x:x[0] + x[1]*width)
