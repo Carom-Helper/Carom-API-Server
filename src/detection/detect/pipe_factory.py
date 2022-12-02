@@ -90,8 +90,8 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         width = im0.shape[1]
         hight = im0.shape[0]
         #point 위치 확인
-        # points = [[549,109],[942,111],[1270,580],[180,565]]
-        points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
+        points = [[549,109],[942,111],[1270,580],[180,565]]
+        # points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
         
         points.sort(key=lambda x:x[0] + x[1]*width)
 
@@ -100,7 +100,7 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         bottomLeft = points[2]
         bottomRight = points[3]
         test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
-        
+        points = [topLeft, topRight, bottomRight, bottomLeft]
 
         metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":width, "HIGHT":hight}
         images = {"origin":im0}
