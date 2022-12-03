@@ -453,7 +453,6 @@ def aline_corner_in_dict(metadata:dict)->list:
             pts.append(value)
     pts.sort(key=lambda x:x[0] + x[1]*width)
     pts = [pts[0],pts[1],pts[3],pts[2]]
-    print(pts)
     return pts
        
 def same_box(box1, box2, iou_th=0.9) -> bool:
