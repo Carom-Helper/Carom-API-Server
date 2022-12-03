@@ -24,7 +24,7 @@ class BallGeneratePipe(One2OnePipe):
         return output
     
     def generate(self) -> dict:
-        new_ball = {'xmin': 0, 'ymin': 0, 'xmax': 0, 'ymax': 0, 'conf': 0, 'cls': 1, 'label': 'BALL', 'x': 0, 'y': 390, 'w': 0, 'h': 0}
+        new_ball = {'xmin': 0, 'ymin': 0, 'xmax': 0, 'ymax': 0, 'conf': 0, 'cls': 1, 'label': 'BALL', 'x': 0, 'y': 790, 'w': 0, 'h': 0}
         x = randint(10, 390)
         new_ball['x'] = x
         return new_ball
