@@ -49,7 +49,17 @@ class RouteViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
     queryset = soultion_route.objects.all()
     serializer_class = RouteSerializer
-    
+
+def synchronized(wrapped):
+    import threading
+    lock = threading.RLock()
+    @functools.wraps(wrapped)
+    def _wrapper(*args, **kwargs):
+        with lock:
+            return wrapped(*args, **kwargs)
+    return _wrapper
+
+@synchronized
 def get_ball_state(issue_id):
     # issue id 상태확인 - 연산 완료 상태 확인
     try:
@@ -64,14 +74,7 @@ def get_ball_state(issue_id):
     # pos의 state확인
     return state
 
-def synchronized(wrapped):
-    import threading
-    lock = threading.RLock()
-    @functools.wraps(wrapped)
-    def _wrapper(*args, **kwargs):
-        with lock:
-            return wrapped(*args, **kwargs)
-    return _wrapper
+
 
 class Make_Coordinate_Singleton(type):
     from threading import Lock
@@ -89,12 +92,16 @@ class Make_Coord(mataclass=Make_Coordinate_Singleton):
     def __init__(self) -> None:
         import threading
         lock = threading.RLock()
-        
-    @synchronized
+    
+
     def run(self, issue_id, display=False):
-        pos = position.objects.get(id=issue_id)
-        if pos.state == 'P' or pos.state == 'D':
+        # 연산 중인지 확인
+        state = get_ball_state(issue_id)
+        if state == 'P' or state == 'D':
             return
+        
+        # 연산 중이 아니라면 이제 연산 해준다.
+        pos = position.objects.get(id=issue_id)
         print(f'Make_Coord : ', end=' ')
         
         pos.state="P"
