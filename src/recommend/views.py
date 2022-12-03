@@ -9,6 +9,7 @@ from rest_framework.parsers import MultiPartParser
 # add base
 import urllib.parse as uparse
 from time import sleep
+from Lib import functools
 
 # add our project
 from .serializers import *
@@ -55,51 +56,83 @@ def get_ball_state(issue_id):
         pos = position.objects.get(id=issue_id)
     except position.DoesNotExist: # 초기 배치가 아직 저장 안된 경우
         return  Response({"message":"Position doesn't exist"},status=status.HTTP_404_NOT_FOUND)
-    
+    state = pos.state
+    # 상태가 N 이라면 A로 진행시킨다.
+    if state == 'N':
+        pos.state = 'A'
+        pos.save()
     # pos의 state확인
-    return pos.state
+    return state
 
-def test_make_route(issue_id, display=False):
-    pos = position.objects.get(id=issue_id)
-    if pos.state == 'P' or pos.state == 'D':
-        return
-    print(f'test_make_route : ', end=' ')
+def synchronized(wrapped):
+    import threading
+    lock = threading.RLock()
+    @functools.wraps(wrapped)
+    def _wrapper(*args, **kwargs):
+        with lock:
+            return wrapped(*args, **kwargs)
+    return _wrapper
+
+class Make_Coordinate_Singleton(type):
+    from threading import Lock
+    _instance =None
+    _lock = Lock()
     
-    pos.state="P"
-    if not display:
-        pos.save()
-        print(f'state(Progress)', end='[ ')
-    #좌표 받아오기 cue, 목적구, 목적구2
-    cue = pos.coord["cue"]
-    obj1 =  pos.coord["obj1"]
-    obj2 =  pos.coord["obj2"]
-    cue = (cue[0], cue[1])
-    obj1 = (obj1[0],obj1[1])
-    obj2 = (obj2[0],obj2[1])
-    soultion_list = simulation(cue, obj1, obj2, display=display)
-    for soultion in soultion_list:
-        if display:
-            print("=============== add route =======================")
-            for key, value in soultion.items():
-                print(f"==={key}===\n{value}")
-        route = soultion_route(
-            issue_id=issue_id, 
-            route=soultion, 
-            algorithm_ver=ROUTE_ALGORITHM_VERSION
-            )
+    def __call__(cls, *args, **kwargs):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super(Make_Coordinate_Singleton, cls).__call__(*args, **kwargs)
+        return cls._instance
+
+class Make_Coord(mataclass=Make_Coordinate_Singleton):
+    def __init__(self) -> None:
+        import threading
+        lock = threading.RLock()
+    
+    @synchronized
+    def run(self, issue_id, display=False):
+        pos = position.objects.get(id=issue_id)
+        if pos.state == 'P' or pos.state == 'D':
+            return
+        print(f'Make_Coord : ', end=' ')
+        
+        pos.state="P"
         if not display:
-            route.save()
-            print(f'add route',end=', ')
-    pos.state="D"
-    if not display:
-        pos.save()
-        print(f']state(Done)')
+            pos.save()
+            print(f'state(Progress)', end='[ ')
+        #좌표 받아오기 cue, 목적구, 목적구2
+        cue = pos.coord["cue"]
+        obj1 =  pos.coord["obj1"]
+        obj2 =  pos.coord["obj2"]
+        cue = (cue[0], cue[1])
+        obj1 = (obj1[0],obj1[1])
+        obj2 = (obj2[0],obj2[1])
+        soultion_list = simulation(cue, obj1, obj2, display=display)
+        for soultion in soultion_list:
+            if display:
+                print("=============== add route =======================")
+                for key, value in soultion.items():
+                    print(f"==={key}===\n{value}")
+            route = soultion_route(
+                issue_id=issue_id, 
+                route=soultion, 
+                algorithm_ver=ROUTE_ALGORITHM_VERSION
+                )
+            if not display:
+                route.save()
+                print(f'add route',end=', ')
+        pos.state="D"
+        if not display:
+            pos.save()
+            print(f']state(Done)')
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
+        make_coord = Make_Coord()
         #detect PIPE
         try:
-            test_make_route(issue_id, False)
+            Make_Coord(issue_id, False)
         except Exception as ex:
             print("make_route ex : "+ str(ex))
     def get(self, request, issue_id, usr, format=None):
