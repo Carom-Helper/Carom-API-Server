@@ -89,7 +89,7 @@ class Make_Coord(mataclass=Make_Coordinate_Singleton):
     def __init__(self) -> None:
         import threading
         lock = threading.RLock()
-    
+        
     @synchronized
     def run(self, issue_id, display=False):
         pos = position.objects.get(id=issue_id)
@@ -101,10 +101,20 @@ class Make_Coord(mataclass=Make_Coordinate_Singleton):
         if not display:
             pos.save()
             print(f'state(Progress)', end='[ ')
+        
+        self.manke_cord(postion=pos, issue_id=issue_id, display=display)
+        
+        pos.state="D"
+        if not display:
+            pos.save()
+            print(f']state(Done)')
+    
+    
+    def manke_cord(self, postion, issue_id, display=False):
         #좌표 받아오기 cue, 목적구, 목적구2
-        cue = pos.coord["cue"]
-        obj1 =  pos.coord["obj1"]
-        obj2 =  pos.coord["obj2"]
+        cue = postion.coord["cue"]
+        obj1 =  postion.coord["obj1"]
+        obj2 =  postion.coord["obj2"]
         cue = (cue[0], cue[1])
         obj1 = (obj1[0],obj1[1])
         obj2 = (obj2[0],obj2[1])
@@ -122,10 +132,6 @@ class Make_Coord(mataclass=Make_Coordinate_Singleton):
             if not display:
                 route.save()
                 print(f'add route',end=', ')
-        pos.state="D"
-        if not display:
-            pos.save()
-            print(f']state(Done)')
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
