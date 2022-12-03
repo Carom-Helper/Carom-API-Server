@@ -136,8 +136,8 @@ def run_carom_simulate(
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
-    # if False:
-    if True:
+    if False:
+    # if True:
         if display:
             if success:
                 print(success, cue.colpoint)
