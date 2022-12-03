@@ -142,8 +142,9 @@ class ProjectionCoordPipe(One2OnePipe):
         input.im = result.copy()
         input.images["projected"] = result
         output = input
+        # print("projection")
+        # output.print()
         if self.display :
-            output.print()
             if is_test_projection():
                 try:
                     cv2.imshow("proj", output.im)

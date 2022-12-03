@@ -117,7 +117,9 @@ class DetectObjectPipe(One2OnePipe):
             detect_len = "" if detect_len == 3 else f"(det ball :{str(detect_len)})"
             print(f'[{detect_len}YOLOv5 run {t2-t1:.3f}s {str(self.framework).upper()}]')
         
-        output.print(on=(is_test_detect_object()))
+        # output.print(on=(is_test_detect_object()))
+        # print('detect')
+        # output.print()
         if is_test_detect_object():
             print(f'[{str(self.framework).upper()} YOLOv5 run {t2-t1:.3f}s]')
         return output
