@@ -40,8 +40,8 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     topRight = img_data.guide["TR"]
     bottomLeft = img_data.guide["BL"]
     
-    print(FRAME_WORK)
-    pipe, _ = pipe_factory(device=FRAME_WORK, display=display, inDB=True)
+    
+    pipe = PipeFactory(device=FRAME_WORK, display=display, inDB=True).pipe
     
     ### Dataloader ###
     img = carom_img.objects.get(id=carom_id)
@@ -51,7 +51,7 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     try:
         for im0, path, s in dataset:
             # set piperesource
-            metadata = {"path": path, "carom_id":carom_id, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
+            metadata = {"path": path, "carom_id":carom_id, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":im0.shape[1], "HIGHT":im0.shape[0]}
             images = {"origin":im0}
             input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
             # push input
@@ -66,7 +66,7 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     except:
         return
     if display:
-        cv2.waitKey(0)
+        cv2.waitKey(5000)
     
 
 class DetectRequestAPIView(APIView):

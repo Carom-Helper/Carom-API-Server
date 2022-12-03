@@ -1,5 +1,5 @@
 def is_test()->bool:
-    return True
+    return False
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
@@ -92,6 +92,8 @@ def angle(x,y):
     except ZeroDivisionError:
         print("angle : divide zero")
         return 0
+    except:
+        return 0
 def radian2degree(theta):
     return np.rad2deg(theta)
 
@@ -123,7 +125,7 @@ def test():
         projected = cv2.circle(projected, (int(new_t['x']), int(new_t['y'])), 8, (0, 255, 0), 1)
         print(f'{i}/8')
         cv2.imshow('prediction', projected)
-        cv2.waitKey()
+        cv2.waitKey(1000)
     
 if __name__ == '__main__':
     test_degree()

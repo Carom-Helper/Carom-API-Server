@@ -16,10 +16,10 @@ ROOT = FILE.parent
 
 from pipe_cls import One2OnePipe, ResourceBag
 from detect_utills import (PipeResource, LoadImages,
-                           copy_piperesource, is_test, cv2, print_args)
+                           aline_corner_in_dict, is_test, cv2, print_args)
 
 def is_test_projection()->bool:
-    return False and is_test()
+    return True and is_test()
 
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_projection():
@@ -28,8 +28,9 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
 
 
 class ProjectionPipe(One2OnePipe):
-    def __init__(self):
+    def __init__(self, display=True):
         super().__init__()
+        self.display = display
         self.points = [[520,100],[970,102],[1440,650],[0,635]]
 
     @torch.no_grad()
@@ -72,11 +73,12 @@ class ProjectionPipe(One2OnePipe):
 
 
         input.im = result.copy()
-        input.images["projected"] = result
+        input.set_image("projected", result)
         output = input
         try:
-            cv2.imshow("origin", origin)
-            cv2.imshow("proj", output.im)
+            if self.display:
+                cv2.imshow("origin", origin)
+                cv2.imshow("proj", output.im)
         except:pass
 
         return output
@@ -97,13 +99,15 @@ class ProjectionCoordPipe(One2OnePipe):
 
         img = input.im.copy()
 
-        topLeft = input.metadata["TL"]  # x+y가 가장 값이 좌상단 좌표
-        bottomRight = input.metadata["BR"]  # x+y가 가장 큰 값이 우하단 좌표
-        topRight = input.metadata["TR"]  # x-y가 가장 작은 것이 우상단 좌표
-        bottomLeft = input.metadata["BL"]   # x-y가 가장 큰 값이 좌하단 좌표
+        # topLeft = input.metadata["TL"]  # x+y가 가장 값이 좌상단 좌표
+        # bottomRight = input.metadata["BR"]  # x+y가 가장 큰 값이 우하단 좌표
+        # topRight = input.metadata["TR"]  # x-y가 가장 작은 것이 우상단 좌표
+        # bottomLeft = input.metadata["BL"]   # x-y가 가장 큰 값이 좌하단 좌표
 
-        # 변환 전 4개 좌표 
-        pts1 = np.float32([topLeft, topRight, bottomRight, bottomLeft])
+        # # 변환 전 4개 좌표 
+        # pts1 = np.float32([topLeft, topRight, bottomRight, bottomLeft])
+        
+        pts1 = np.float32(aline_corner_in_dict(input.metadata))
 
         # 변환 후 4개 좌표
         pts2 = np.float32([[0, 0], [399, 0],
@@ -130,35 +134,28 @@ class ProjectionCoordPipe(One2OnePipe):
             projected = cv2.circle(projected, (projx, projy), 9, (255, 255, 255), 1)
             det['x'] = projx
             det['y'] = projy
-
-        # 원본 정사영 영역 표시
-        origin = input.images["origin"].copy()
-        for i in range(4):
-            origin = cv2.line(origin, (pts1[i][0], pts1[i][1]), (pts1[(i+1)%4][0], pts1[(i+1)%4][1]), (0, 255, 0), 2)
         
-
-
-
-        input.im = result.copy()
-        input.images["projected"] = result
+        input.im = result
+        
         output = input
-        # print("projection")
-        # output.print()
+        output.set_image('table', projected)
+        output.set_image("projected", result)
+        
         if self.display :
-            if is_test_projection():
-                try:
-                    cv2.imshow("proj", output.im)
-                    cv2.imshow("proj2", projected)
-                except:pass
+            print("proj)", end="")
+            output.print()
+            try:
+                cv2.imshow("proj", output.im)
+                cv2.imshow("proj2", projected)
+            except:pass
         return output
 
     def get_regist_type(self, idx=0) -> str:
         return "proj_coord"
     
-    
-def test(src, display=True):
-    ### Pipe 생성###
-    project_pipe = ProjectionCoordPipe(display=display)
+
+def proj_test(src, display=True):
+    project_pipe = ProjectionPipe(display=display)
     bag_split = ResourceBag()
     
     # 파이프 연결
@@ -194,20 +191,68 @@ def test(src, display=True):
                 origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
             try:
                 cv2.imshow("origin", origin)
-                cv2.waitKey(1000)
+                cv2.waitKey(10000)
             except:pass
     bag_split.print()
 
+def coord_test(src, display=True):
+    ### Pipe 생성###
+    project_pipe = ProjectionCoordPipe(display=display)
+    bag_split = ResourceBag()
+    
+    # 파이프 연결
+    project_pipe.connect_pipe(bag_split)
+    ### Dataloader ###
+    dataset = LoadImages(src)
+    ### 실행 ###
+    for im0, path, s in dataset:
+        width = im0.shape[1]
+        hight = im0.shape[0]
+        #point 위치 확인
+        points = [[549,109],[942,111],[1270,580],[180,565]]
+        # points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
+        
+        points.sort(key=lambda x:x[0] + x[1]*width)
+        
+        topLeft = points[0]
+        topRight = points[1]
+        bottomLeft = points[2]
+        bottomRight = points[3]
+        test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
+        points = [topLeft, topRight, bottomRight, bottomLeft]
+
+        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":width, "HIGHT":hight}
+        images = {"origin":im0}
+        input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
+        project_pipe.push_src(input)
+        # 원본 정사영 영역 표시
+        if display:
+            origin = input.images["origin"].copy()
+            for i in range(4):
+                origin = cv2.line(origin, 
+                        (int(points[i][0]), int(points[i][1])), 
+                        (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
+                        (0, 255, 0), 2)
+            try:
+                cv2.imshow("origin", origin)
+                # input.imshow_table()
+                input.imshow(name="proj", images="projected")
+                cv2.waitKey(10000)
+            except:pass
+    bag_split.print()
+    
+
 def runner(args):
     print_args(vars(args))
-    test(args.src, args.display)
+    coord_test(args.src, not args.no_display)
+    # proj_test(args.src, not args.no_display)
     #test_singleton()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', default= (CAROM_BASE_DIR / "media" / "test2" / "sample.jpg"))
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--display', default=True, action="store_false")
+    parser.add_argument('--no_display', default=False, action="store_true")
     args = parser.parse_args()
     runner(args) 
 

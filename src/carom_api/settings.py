@@ -121,35 +121,37 @@ ALLOWED_HOSTS = [
     'localhost'
     ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-
-CORS_ORIGIN_WHITELIST = [
-    # 'http://222.112.170.70:3333',
-    'http://localhost:3000',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://10.0.2.2:8000'
-    #'http://192.168.0.2:8000',
-]
-
-
 SETTINGS_BASE_FILE = Path(os.path.join(BASE_DIR, 'settings.json'))
+
+CORS_ORIGIN_WHITELIST=list()
 
 if SETTINGS_BASE_FILE.exists():
     setting_json = json.loads(open(SETTINGS_BASE_FILE).read())
     FRAME_WORK = setting_json["FRAME_WORK"]# 'furiosa', '0', 'cpu', 'onnx'
     host_name = setting_json["HOST_NAME"]
+    port_num = setting_json["PORT_NUM"]
     ALLOWED_HOSTS.append(host_name)
-    CORS_ORIGIN_WHITELIST.append(f'http://{host_name}:8000')
+    CORS_ORIGIN_WHITELIST.append(f'http://{host_name}:{port_num}')
     print("Complete to Set settings.json")
     print(FRAME_WORK)
     print(ALLOWED_HOSTS)
-    print(CORS_ORIGIN_WHITELIST)
 else:
     FRAME_WORK = 'cpu'
+    port_num = 8000
     print("Plese Set settings.json")
 
+CORS_ORIGIN_ALLOW_ALL = True
 
+CORS_ORIGIN_WHITELIST = CORS_ORIGIN_WHITELIST + [
+    # 'http://222.112.170.70:3333',
+    'http://localhost:3000',
+    f'http://localhost:{port_num}',
+    f'http://127.0.0.1:{port_num}',
+    f'http://0.0.0.0:{port_num}',
+    f'http://10.0.2.2:{port_num}'
+    #'http://192.168.0.2:{port_num}',
+]
+print(CORS_ORIGIN_WHITELIST)
 
 
 # Internationalization

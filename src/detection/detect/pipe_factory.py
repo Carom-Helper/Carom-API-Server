@@ -27,13 +27,13 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 
 from pipe_cls import One2OnePipe, ConvertToxywhPipe, IObserverPipe, SplitCls, ResourceOne, ResourceBag
 from pipe_utills import SaveBallCoordPipe
-from Singleton import Singleton
+from Singleton import PIPE_Singleton
 from ProjectionPipe import ProjectionCoordPipe
 from CoordFilterPipe import CoordFilterPipe
 from BallGeneratePipe import BallGeneratePipe
 from DetectObjectPipe import DetectObjectPipe # ,NPU_YOLO_DIR, GPU_YOLO_DIR
 from detect_utills import (PipeResource, LoadImages,
-                           is_test, cv2, print_args)
+                           aline_corner_in_dict, is_test, cv2, print_args)
 
 def is_test_factory()->bool:
     return False and is_test()
@@ -42,13 +42,14 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_factory():
         print("factory pipe test : ", s, s1, s2, s3, s4, s5, end=end)
 
-class PipeFactory(metaclass=Singleton):
+class PipeFactory(metaclass=PIPE_Singleton):
     def __init__(self, start_pipe=None, device='furiosa', display = True, inDB=True):
+        if display: print("PipeFactory Init", device)
         self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
 
 def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
     if display:
-        print("initialize weights")
+        print("initialize weights", device)
     #detect class and split class
     # projection_pipe = ProjectionPipe()
     detect_cls_pipe = DetectObjectPipe(device=device, display=display)
@@ -92,33 +93,39 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
     dataset = LoadImages(src)
     ### 실행 ###
     for im0, path, s in dataset:
+        width = im0.shape[1]
+        hight = im0.shape[0]
         #point 위치 확인
         points = [[549,109],[942,111],[1270,580],[180,565]]
-        pts = np.zeros((4, 2), dtype=np.float32)
-        for i in range(4):
-            pts[i] = points[i]
+        # points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
         
-        sm = pts.sum(axis=1)  # 4쌍의 좌표 각각 x+y 계산
-        diff = np.diff(pts, axis=1)  # 4쌍의 좌표 각각 x-y 계산
+        points.sort(key=lambda x:x[0] + x[1]*width)
 
-        topLeft = pts[np.argmin(sm)]  # x+y가 가장 값이 좌상단 좌표
-        bottomRight = pts[np.argmax(sm)]  # x+y가 가장 큰 값이 우하단 좌표
-        topRight = pts[np.argmin(diff)]  # x-y가 가장 작은 것이 우상단 좌표
-        bottomLeft = pts[np.argmax(diff)]  # x-y가 가장 큰 값이 좌하단 좌표
+        topLeft = points[0]
+        topRight = points[1]
+        bottomLeft = points[2]
+        bottomRight = points[3]
         test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
-        
+        points = [topLeft, topRight, bottomRight, bottomLeft]
 
-        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft}
+        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":width, "HIGHT":hight}
         images = {"origin":im0}
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         pipe.push_src(input)
+        
+        input.print()
+        result = ball_bag.src
         # 원본 정사영 영역 표시
         if display:
-            origin = input.images["origin"].copy()
+            origin = result.get_image()
             for i in range(4):
-                origin = cv2.line(origin, (pts[i][0], pts[i][1]), (pts[(i+1)%4][0], pts[(i+1)%4][1]), (0, 255, 0), 2)
+                origin = cv2.line(origin, 
+                        (int(points[i][0]), int(points[i][1])), 
+                        (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
+                        (0, 255, 0), 2)
+            result.imshow_table()
             cv2.imshow("origin", origin)
-            cv2.waitKey(3000)
+            cv2.waitKey(9000)
     return ball_bag
     
 def test(
@@ -126,14 +133,14 @@ def test(
     device = '0',
     display=True
     ):
-    ball_bag = detect(src, device, display=display, inDB=True)
+    ball_bag = detect(src, device, display=display, inDB=False)
      
     title = "test"
     ball_bag.print()
     
 def runner(args):
     print_args(vars(args))
-    test(args.src, args.device)
+    test(args.src, args.device, display=not args.no_display)
     #run(args.src, args.device)
     # detect(args.src, args.device)
     
@@ -141,6 +148,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "test2" / "sample.jpg")
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--display', action="store_true")
+    parser.add_argument('--no_display', default=False, action="store_true")
     args = parser.parse_args()
     runner(args) 

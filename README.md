@@ -8,13 +8,14 @@ cd Carom-API-Server
 git submodule update --init --recursive
 cd src/detection/detect/npu_yolov5/utils/box_decode/cbox_decode
 python setup.py build_ext --inplace
-cd ../../../../../../..
+cd ../../../../../../
+
 ```
-#### Next Step. Set {$ROOT}/src/secrets.json
+#### Next Step. Set {$ROOT}/src/secrets.json && {$ROOT}/src/settings.json
 ```bash
 # set +H
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
-echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"192.168.0.2"}' > settings.json
+echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"118.36.223.138", "PORT_NUM":"7576"}' > settings.json
 echo '{json contents}' > secrets.json
 cd ..
 ```
@@ -50,6 +51,8 @@ python manage.py runserver
 # Check if the pytorch works well
 cd detection/detect
 python DetectObjectPipe.py
+cd npu_yolov5
+python demo.py --calib-data /caromapi/src/media/test --framework furiosa --input /caromapi/src/media/test2/sample.jpg --model /caromapi/src/detection/detect/weights/npu_yolo_ball --no-display
 ```
 
 # How to Set  Development Environment with Docker
@@ -76,7 +79,7 @@ python clear_migrate.py & python manage.py makemigrations & python manage.py mak
 ```
 #### Fro Linux
 ```bash
-python clear_migrate.py && python manage.py makemigrations && python manage.py makeviewmigrations && python manage.py migrate && echo import init_setter > python manage.py shell_plus
+python clear_migrate.py && python manage.py makemigrations && python manage.py makeviewmigrations && python manage.py migrate && echo "import init_setter" | python manage.py shell_plus
 ```
 
 # How to test
@@ -84,6 +87,7 @@ python clear_migrate.py && python manage.py makemigrations && python manage.py m
 # error npu_yolov5/utils/inference_engine.py InferenceEngineFuriosa.__init__
 # compile_config change to compiler_config
 python manage.py test
+python manage.py runserver 0.0.0.0:7576
 ```
 
 # How to stop Docker container
@@ -94,5 +98,6 @@ make rm
 
 #furiosa compile 
 ```bash
- furiosa compile 파일명.onnx -o 파일명.enf
+ # furiosa compile 파일명.onnx -o 파일명.enf
+ NPU_COMPILER_CONFIG_PATH=compiler_config.yaml furiosa compile weights_i8.onnx -o weights.enf
 ```

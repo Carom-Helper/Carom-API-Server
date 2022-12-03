@@ -1,6 +1,5 @@
 def is_test()->bool:
     return False
-
 def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test():
         print("pipe cls exe : ", s, s1, s2, s3, s4, s5, end=end)
@@ -322,6 +321,9 @@ class PipeResource:
     def print(self, on=True):
         if on:
             print("==============================================")
+            print("matadata :[",end="")
+            for key, value in self.metadata.items():
+                print(f"({key}:{value})", end=" ")
             print(f'{self.s}',"dets")
             for i, det in enumerate(self.dets):
                 print(f'det {i} :', str(det))
@@ -354,19 +356,19 @@ class PipeResource:
         det["cls"] = cls
         det["conf"] = conf
         self.dets.append(det)
-            
-    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
+    
+    def set_image(self, key, image):
+        self.images[key] = image
+    
+    def imshow_table(self, scale=1.0):
+        im = self.images["table"]
+        cv2.imshow("table", im)
+        
+    def get_image(self, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
         im0= self.images[images]
         annotator = Annotator(
             im0, line_width=line_thickness)
         
-        # metadata 이름
-        base_s = ""
-        for key in metadata:
-            try:
-                base_s += f"({self.metadata[key]})"
-            except:
-                pass
         # Write results
         if hide_box:pass
         else:
@@ -383,6 +385,16 @@ class PipeResource:
                 except:
                     pass
         im0 = annotator.result()
+        return im0
+    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
+        im0 = self.get_image(images=images, metadata=metadata, dets_key=dets_key, line_thickness=line_thickness, hide_box=hide_box)
+        # metadata 이름
+        base_s = ""
+        for key in metadata:
+            try:
+                base_s += f"({self.metadata[key]})"
+            except:
+                pass
         window_name = base_s if name is None else str(name)
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(window_name, im0.shape[1], im0.shape[0])
@@ -424,11 +436,32 @@ class PipeResource:
     def update_id(self, key, value, xywh, conf, cls=1):
         for det in self.dets:
             if float(det["conf"]) == float(conf) and int(det["cls"]) == int(cls):
-                if same_box([],[]):
+                det_box = [det["x"],det["y"],det["w"],det["h"]]
+                if same_box(xywh,det_box):
                     det[key] = value
-                        
+                    det['x'] = det_box[0]
+                    det['y'] = det_box[1]
+                    det['w'] = det_box[2]
+                    det['h'] = det_box[3]
+
+def aline_corner_in_dict(metadata:dict)->list:
+    # 들어온 값을 정렬하여서 [TL, TR, BL, BR] 순서로 반환한다.
+    pts = list()
+    width = metadata['WIDTH']
+    for key, value in metadata.items():
+        if key == 'TL' or key == 'BL' or key == 'TR' or key == 'BR':
+            pts.append(value)
+    pts.sort(key=lambda x:x[0] + x[1]*width)
+    pts = [pts[0],pts[1],pts[3],pts[2]]
+    return pts
+       
 def same_box(box1, box2, iou_th=0.9) -> bool:
-    return True
+    sum =0
+    delta = 10.0
+    for b1, b2 in zip(box1, box2):
+        sum += abs(b1 -b2)
+    result = False if sum > delta else True
+    return result
 
 def xywh2xyxy(x):
     y=list(x)
@@ -456,7 +489,7 @@ def copy_piperesource(src:PipeResource)->PipeResource:
     # get dateset  (path, im0s, vid_cap, s)
     dst.metadata.update(src.metadata)
     for key, value in src.images.items():
-        dst.images[key] = value.copy()
+        dst.set_image(key, value.copy())
         
     return dst
 

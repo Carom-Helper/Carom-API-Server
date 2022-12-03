@@ -55,15 +55,22 @@ def get_ball_state(issue_id):
         pos = position.objects.get(id=issue_id)
     except position.DoesNotExist: # 초기 배치가 아직 저장 안된 경우
         return  Response({"message":"Position doesn't exist"},status=status.HTTP_404_NOT_FOUND)
-    
+    state = pos.state
+    pos.state = 'A'
+    pos.save()
     # pos의 state확인
-    return pos.state
+    return state
 
 def test_make_route(issue_id, display=False):
     pos = position.objects.get(id=issue_id)
+    if pos.state == 'P' or pos.state == 'D':
+        return
+    print(f'test_make_route : ', end=' ')
+    
     pos.state="P"
     if not display:
         pos.save()
+        print(f'state(Progress)', end='[ ')
     #좌표 받아오기 cue, 목적구, 목적구2
     cue = pos.coord["cue"]
     obj1 =  pos.coord["obj1"]
@@ -73,10 +80,10 @@ def test_make_route(issue_id, display=False):
     obj2 = (obj2[0],obj2[1])
     soultion_list = simulation(cue, obj1, obj2, display=display)
     for soultion in soultion_list:
-        # if display:
-        print("=============== add route =======================")
-        for key, value in soultion.items():
-            print(f"==={key}===\n{value}")
+        if display:
+            print("=============== add route =======================")
+            for key, value in soultion.items():
+                print(f"==={key}===\n{value}")
         route = soultion_route(
             issue_id=issue_id, 
             route=soultion, 
@@ -84,9 +91,11 @@ def test_make_route(issue_id, display=False):
             )
         if not display:
             route.save()
+            print(f'add route',end=', ')
     pos.state="D"
     if not display:
         pos.save()
+        print(f']state(Done)')
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
@@ -99,8 +108,7 @@ class RouteRequestAPIView(APIView):
         state = get_ball_state(issue_id=issue_id)
         
         #   None - A로 변경후 경로찾기
-        #   Accepted - 경로찾기 
-        if state == "A" or state == "N":
+        if state == "N":
             self.make_route(issue_id, usr)
             # return Response({"state":"Accepted"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
         state = get_ball_state(issue_id=issue_id)
@@ -116,7 +124,7 @@ class RouteRequestAPIView(APIView):
             # requester 로그 쌓기
             try:
                 # request를 찾고
-                requester = route_request.objects.get(issue_id=issue_id, requester=usr)
+                requester = route_request.objects.filter(issue_id=issue_id, requester=usr)
             except route_request.DoesNotExist:
                 #존재 하지 않으면 새로 생성
                 rr = route_request(issue_id=issue_id, requester=usr).save()
