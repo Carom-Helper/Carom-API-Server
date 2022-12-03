@@ -9,7 +9,6 @@ from rest_framework.parsers import MultiPartParser
 # add base
 import urllib.parse as uparse
 from time import sleep
-from Lib import functools
 
 # add our project
 from .serializers import *
@@ -53,7 +52,6 @@ class RouteViewSet(viewsets.ModelViewSet):
 def synchronized(wrapped):
     import threading
     lock = threading.RLock()
-    @functools.wraps(wrapped)
     def _wrapper(*args, **kwargs):
         with lock:
             return wrapped(*args, **kwargs)
