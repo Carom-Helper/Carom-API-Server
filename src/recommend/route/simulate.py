@@ -136,13 +136,11 @@ def run_carom_simulate(
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
-    if False:
-    # if True:
-        if display:
-            if success:
-                print(success, cue.colpoint)
-            name = f"({cue_coord[0]}-{cue_coord[1]})({tar1_coord[0]}-{tar1_coord[1]})({power}-{clock}-{tip})({thick}).jpg"
-            show(cue, tar1, tar2, name, success and save)
+    if display:
+        if success:
+            print(success, cue.colpoint)
+        name = f"({cue_coord[0]}-{cue_coord[1]})({tar1_coord[0]}-{tar1_coord[1]})({power}-{clock}-{tip})({thick}).jpg"
+        show(cue, tar1, tar2, name, success and save)
 
     return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
