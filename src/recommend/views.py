@@ -55,9 +55,11 @@ def get_ball_state(issue_id):
         pos = position.objects.get(id=issue_id)
     except position.DoesNotExist: # 초기 배치가 아직 저장 안된 경우
         return  Response({"message":"Position doesn't exist"},status=status.HTTP_404_NOT_FOUND)
-    
+    state = pos.state
+    pos.state = 'A'
+    pos.save()
     # pos의 state확인
-    return pos.state
+    return state
 
 def test_make_route(issue_id, display=False):
     pos = position.objects.get(id=issue_id)
@@ -106,8 +108,7 @@ class RouteRequestAPIView(APIView):
         state = get_ball_state(issue_id=issue_id)
         
         #   None - A로 변경후 경로찾기
-        #   Accepted - 경로찾기 
-        if state == "A" or state == "N":
+        if state == "N":
             self.make_route(issue_id, usr)
             # return Response({"state":"Accepted"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
         state = get_ball_state(issue_id=issue_id)
