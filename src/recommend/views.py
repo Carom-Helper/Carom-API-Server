@@ -88,7 +88,7 @@ class Make_Coordinate_Singleton(type):
                     cls._instance = super(Make_Coordinate_Singleton, cls).__call__(*args, **kwargs)
         return cls._instance
 
-class Make_Coord(mataclass=Make_Coordinate_Singleton):
+class Make_Coord(metaclass=Make_Coordinate_Singleton):
     def __init__(self) -> None:
         import threading
         lock = threading.RLock()

@@ -24,11 +24,23 @@ class RouteTestClass(LiveServerTestCase):
         self.assertDictEqual(pos.coord, coord)
         
     def test_make_route(self):
+        # 연산 돌리기 전에 경로의 수 확인
+        before_route_num = len(soultion_route.objects.all())
+        print("before) route len = ", before_route_num)
+        # 연산!
         pos = position.objects.last()
         try:
-            test_make_route(pos.id, display=False if FRAME_WORK=='furiosa' else True)
+            make_coord = Make_Coord()
+            make_coord.run(pos.id, display= False)#False if FRAME_WORK=='furiosa' else True)
         except:
             pass
+        
+        after_route_num = soultion_route.objects.all()
+        print(after_route_num, len(after_route_num))
+        print("after) route len = ", len(after_route_num))
+        self.assertEqual(before_route_num + 3, len(after_route_num))
+        
+        
         
         
         
