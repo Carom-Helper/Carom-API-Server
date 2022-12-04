@@ -318,6 +318,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             self.crash_list.append(crashable.name)
             if isinstance(crashable, IMoveableSubject):
                 crashable.set_mover(crashable.move_by_time)
+            self.remove_observer(crashable)
         
     def set_colpoint(self, x:float, y:float):
         if len(self.colpoint) > 0:
