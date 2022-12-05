@@ -264,7 +264,6 @@ def simulation(
         thread_list.append(thread)
 
     for thr in thread_list:
-        print('waiting for ', thr)
         thr.join()
         
     print(success_list)
