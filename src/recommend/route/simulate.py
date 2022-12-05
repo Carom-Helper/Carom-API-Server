@@ -206,7 +206,7 @@ def simulation(
 
     success_list = []
     success_clock = []
-    clock_sequence = [1, 3, 11, 10, 0, 9, 3, 4, 8]
+    clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8]
     """
     #test area ###################################################################################
     p, c, t, th = 50, 2, 3, 0

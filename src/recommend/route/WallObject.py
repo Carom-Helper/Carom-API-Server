@@ -80,7 +80,7 @@ class WallObject(IObserver, ICrashableSubject):
     # closure는 방향벡터와 노멀벡터를 입력으로 받는다.
     def get_reflect_closure(self, direct_vec, normal_vec):
         # 정방향 좌우회전 구하기
-        right_side =  direct_vec[0] * (normal_vec.sum())
+        right_side = direct_vec[0] * (normal_vec.sum())
         # 입사각을 구한다.
         direct_vec = - direct_vec
         radian = angle(direct_vec, normal_vec)
@@ -88,24 +88,25 @@ class WallObject(IObserver, ICrashableSubject):
         degree = 90.0 - direct_normal_degree
         bias_table = {"key":[0.5, 4, 7, 11, 1000]}
         #if power < 0.5:
+        bias_level = str(bias_table["key"][0]) #"0.5"
         if degree < 30:
-            bias_table["0.5"] = [8.839999962, 10.08000002, 11.32000008, 12.56000013,
+            bias_table[bias_level] = [8.839999962, 10.08000002, 11.32000008, 12.56000013,
             13.80000019, 15.5, 17.19999981, 18.89999962, 20.59999943, 22.29999924]
         elif degree < 45:
-            bias_table["0.5"] = [0, 3.380000019, 4.300000095, 5.240000057, 6.599999905, 
+            bias_table[bias_level] = [0, 3.380000019, 4.300000095, 5.240000057, 6.599999905, 
                 6.599999905, 7.259999847, 8.460000038, 10.26000023, 12.89999962]
         elif degree < 60:
-            bias_table["0.5"] = [-23.77999954, -19.70000076, -10.16000042, -3.080000114,
+            bias_table[bias_level] = [-23.77999954, -19.70000076, -10.16000042, -3.080000114,
             -2.099999905, 1.7, 7.259999943, 9.719999886, 13.72000027, 23]
         elif degree <= 90.2:
-            bias_table["0.5"] = [-18.26000061, -17.35999947, -12.54000006, -3.139999986,
+            bias_table[bias_level] = [-18.26000061, -17.35999947, -12.54000006, -3.139999986,
                 0.550000012, 4.420000076, 5.429999876, 24.99999924, 26.66000042, 31.39999962]
         else:
-            print(direct_vec, normal_vec)
-            raise ValueError("Over 90 degree.+get_reflect_closure")
+            raise ValueError(f"{degree},{bias_level})Over 90 degree.+get_reflect_closure")
         #elif power < 4:
+        bias_level = str(bias_table["key"][1]) #"4"
         if degree < 10:
-            bias_table["4"] = [
+            bias_table[bias_level] = [
                 -70.51999855,
                 -3.460000038,
                 -2.5,
@@ -118,7 +119,7 @@ class WallObject(IObserver, ICrashableSubject):
                 4.900000095
             ]
         elif degree < 55:
-            bias_table["4"] = [
+            bias_table[bias_level] = [
                 0,
                 7.159999847,
                 8.399999619,
@@ -131,7 +132,7 @@ class WallObject(IObserver, ICrashableSubject):
                 36.70000076
             ]
         elif degree < 85:
-            bias_table["4"] = [
+            bias_table[bias_level] = [
                 -6.950000048,
                 -1.100000024,
                 2.850000024,
@@ -143,8 +144,8 @@ class WallObject(IObserver, ICrashableSubject):
                 26.20000076,
                 40.59999847,
             ]
-        elif degree <= 90:
-            bias_table["4"] = [
+        elif degree <= 90.2:
+            bias_table[bias_level] = [
                 -29.56000061,
                 -26.20000076,
                 -18.50000076,
@@ -157,10 +158,11 @@ class WallObject(IObserver, ICrashableSubject):
                 36.20000076
             ]
         else:
-            raise ValueError("Over 90 degree.+get_reflect_closure")
+            raise ValueError(f"{degree},{bias_level})Over 90 degree.+get_reflect_closure")
         #elif power < 7:
+        bias_level = str(bias_table["key"][2]) #"7"
         if degree < 30:
-            bias_table["7"] = [
+            bias_table[bias_level] = [
                 2,
                 3.360000038,
                 4.900000095,
@@ -173,7 +175,7 @@ class WallObject(IObserver, ICrashableSubject):
                 27.20000076,
             ]
         elif degree < 55:
-            bias_table["7"] = [
+            bias_table[bias_level] = [
                 0,
                 9.300000191,
                 10.47999992,
@@ -186,7 +188,7 @@ class WallObject(IObserver, ICrashableSubject):
                 29.20000076
             ]
         elif degree < 70:
-            bias_table["7"] = [
+            bias_table[bias_level] = [
                 12.42999973,
                 15.69999981,
                 17,
@@ -199,7 +201,7 @@ class WallObject(IObserver, ICrashableSubject):
                 37,
             ]
         elif degree <= 90.1:
-            bias_table["7"] = [
+            bias_table[bias_level] = [
                 -10.69999981,
                 -0.899999976,
                 10.20000029,
@@ -212,10 +214,11 @@ class WallObject(IObserver, ICrashableSubject):
                 56
             ]
         else:
-            raise ValueError("Over 90 degree.+get_reflect_closure")
+            raise ValueError(f"{degree},{bias_level})Over 90 degree.+get_reflect_closure")
         #elif power < 11:
+        bias_level = str(bias_table["key"][3]) #"11"
         if degree < 30:
-            bias_table["11"] = [
+            bias_table[bias_level] = [
                 -0.499999994,
                 2.099999905,
                 3,
@@ -228,7 +231,7 @@ class WallObject(IObserver, ICrashableSubject):
                 16.39999962
             ]
         elif degree < 45:
-            bias_table["11"] = [
+            bias_table[bias_level] = [
                 0,
                 7.639999866,
                 9,
@@ -241,7 +244,7 @@ class WallObject(IObserver, ICrashableSubject):
                 30.60000038,
             ]
         elif degree < 70:
-            bias_table["11"] = [
+            bias_table[bias_level] = [
                 8.199999809,
                 12.47999992,
                 13.91999969,
@@ -254,7 +257,7 @@ class WallObject(IObserver, ICrashableSubject):
                 35.70000076
             ]
         elif degree <= 90.1:
-            bias_table["11"] = [
+            bias_table[bias_level] = [
                 -15.93999977,
                 -1.45999999,
                 9.119999695,
@@ -267,10 +270,11 @@ class WallObject(IObserver, ICrashableSubject):
                 69.69999695
             ]
         else:
-            raise ValueError("Over 90 degree.+get_reflect_closure")
+            raise ValueError(f"{degree},{bias_level})Over 90 degree.+get_reflect_closure")
         #else:
+        bias_level = str(bias_table["key"][4]) #"1000"
         if degree < 30:
-            bias_table["1000"] = [
+            bias_table[bias_level] = [
                 -2.25999999,
                 0.699999988,
                 2.299999952,
@@ -283,7 +287,7 @@ class WallObject(IObserver, ICrashableSubject):
                 23.79999924
             ]
         elif degree < 45:
-            bias_table["1000"] = [
+            bias_table[bias_level] = [
                 0,
                 5.599999905,
                 7.800000191,
@@ -296,7 +300,7 @@ class WallObject(IObserver, ICrashableSubject):
                 35.5
             ]
         elif degree < 80:
-            bias_table["1000"] = [
+            bias_table[bias_level] = [
                 -1.170000041,
                 6.900000095,
                 11.10000038,
@@ -309,7 +313,7 @@ class WallObject(IObserver, ICrashableSubject):
                 53.20000076
             ]
         elif degree <= 90.1:
-            bias_table["1000"] = [
+            bias_table[bias_level] = [
                 -15.19999981,
                 -6.900000095,
                 -4.400000095,
@@ -322,7 +326,7 @@ class WallObject(IObserver, ICrashableSubject):
                 40.5,
             ]
         else:
-            raise ValueError("Over 90 degree.+get_reflect_closure")
+            raise ValueError(f"{degree},{bias_level})Over 90 degree.+get_reflect_closure")
         
         def simple_reflect_ball2wall(data:dict):
             # reflect vec 구하기
@@ -333,7 +337,7 @@ class WallObject(IObserver, ICrashableSubject):
             else:
                 reflect_vec[1] = -direct_vec[1]
             
-            
+            # power, sidespin 힘
             power = data["power"]
             sidespin = data["sidespin"]
             
@@ -355,7 +359,7 @@ class WallObject(IObserver, ICrashableSubject):
             #   역회전 확인
             if sidespin * right_side > 0: #정회전
                 sidespin_lv = int((sidespin - sidespinmin) / (sidespinrange) * 10)
-                if sidespin_lv == 10:
+                if sidespin_lv >= 10:
                     sidespin_lv = 9 
             else:#역회전
                 sidespin_lv = int(1)
