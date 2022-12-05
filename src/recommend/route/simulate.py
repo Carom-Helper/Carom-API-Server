@@ -136,6 +136,9 @@ def run_carom_simulate(
 
         if cue_dist < 0.0005 and tar1_dist < 0.0005 and tar2_dist < 0.0005:
             break
+
+        if tar2_dist > 0:
+            break
     if display:
         if success:
             print(success, cue.colpoint)
@@ -293,6 +296,7 @@ def simulation(
                         success_list.append(result)
                         success_clock.append(c)
                         if len(success_list) >= DETECT_ROUTE_NUM:
+                            print(success_list)
                             return success_list
                     
                     temp = tar1_coord
