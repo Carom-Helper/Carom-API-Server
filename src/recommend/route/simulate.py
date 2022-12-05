@@ -296,7 +296,7 @@ def simulation(
                         success_list.append(result)
                         success_clock.append(c)
                         if len(success_list) >= DETECT_ROUTE_NUM:
-                            print(success_list)
+                            if display: print(success_list)
                             return success_list
                     
                     temp = tar1_coord
@@ -309,7 +309,7 @@ def simulation(
                     break
     
 
-    print(success_list)
+    if display: print(success_list)
     return success_list
 
 def get_ball_coord(ball):

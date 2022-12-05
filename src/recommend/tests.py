@@ -22,22 +22,22 @@ class RouteTestClass(LiveServerTestCase):
         print("+++++++++++++++++ position ++++++++++++++++++++")
         print(pos.coord, pos.state)
         self.assertDictEqual(pos.coord, coord)
-        
+
     def test_make_route(self):
+        import threading
         # 연산 돌리기 전에 경로의 수 확인
         before_route_num = len(soultion_route.objects.all())
         print("before) route len = ", before_route_num)
         # 연산!
         pos = position.objects.last()
         id = pos.id
-        try:
-            make_coord = Make_Coord()
-            make_coord.run(id, display= False)#False if FRAME_WORK=='furiosa' else True)
-        except:
-            pass
+        
+        thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(id, False))
+        #                                       make_coord.run(id, display= False)#False if FRAME_WORK=='furiosa' else True)
+        thrd.start()
         
         delay_time = 10
-        repeat_num = 36
+        repeat_num = 20
         max_calc_time = delay_time * repeat_num
         
         import time
@@ -52,10 +52,14 @@ class RouteTestClass(LiveServerTestCase):
                 print(f"({i}:{state})", end="")
             
         print()
-        after_route_num = soultion_route.objects.all()
-        print("\n", after_route_num, len(after_route_num))
-        print("after) route len = ", len(after_route_num))
-        self.assertEqual(before_route_num + 3, len(after_route_num))
+        after_route = soultion_route.objects.all().values_list("issue", "route", "algorithm_ver")
+        print('\n',len(after_route))
+        for route in after_route:
+            print(route)
+        print("after) route len = ", len(after_route))
+        self.assertEqual(before_route_num + 3, len(after_route))
+        for route in after_route:
+            print(route)
         
     # def test_get_route(self):
     #     response = lastpos_route("tglee")

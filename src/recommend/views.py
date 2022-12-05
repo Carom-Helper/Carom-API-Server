@@ -16,7 +16,8 @@ from .serializers import *
 # calc route
 from .route.simulate import simulation
 
-    
+def is_debug():
+    return False
 
 # Create your views here.
 class PositionViewSet(viewsets.ModelViewSet):
@@ -87,17 +88,18 @@ class Make_Coordinate_Singleton(type):
                     cls._instance = super(Make_Coordinate_Singleton, cls).__call__(*args, **kwargs)
         return cls._instance
 
-class Make_Coord(metaclass=Make_Coordinate_Singleton):
+class Simulate_route(metaclass=Make_Coordinate_Singleton):
     def __init__(self) -> None:
         import threading
         self.lock = threading.Lock()
     
+    def RUN_THREAD(issue_id, display=False):
+        simlate = Simulate_route()
+        simlate.run(issue_id, display)
+        
 
     def run(self, issue_id, display=False):
-        import threading
-        if display : print("before",self.lock)
         with self.lock:
-            if display : print(self.lock)
             # 연산 중인지 확인
             state = get_ball_state(issue_id)
             if state == 'P' or state == 'D':
@@ -110,10 +112,7 @@ class Make_Coord(metaclass=Make_Coordinate_Singleton):
             pos.state="P"
             if not display:
                 pos.save()
-        
-            thrd = threading.Thread(target=Make_Coord.make_cord, args=(issue_id, display))
-            thrd.run()
-        if display : print("after", self.lock)
+            Simulate_route.make_cord(issue_id, display)
     
     def make_cord(issue_id, display=False):
         postion = position.objects.get(id=issue_id)
@@ -125,7 +124,7 @@ class Make_Coord(metaclass=Make_Coordinate_Singleton):
         cue = (cue[0], cue[1])
         obj1 = (obj1[0],obj1[1])
         obj2 = (obj2[0],obj2[1])
-        soultion_list = simulation(cue, obj1, obj2, display=display, save=True)
+        soultion_list = simulation(cue, obj1, obj2, display=display, save=is_debug())
         for soultion in soultion_list:
             if display:
                 print("=============== add route =======================")
@@ -146,12 +145,14 @@ class Make_Coord(metaclass=Make_Coordinate_Singleton):
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
-        make_coord = Make_Coord()
         #detect PIPE
         try:
-            make_coord.run(issue_id,display=False)
+            import threading
+            thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(id, False))
+            thrd.start()
         except Exception as ex:
             print("make_route ex : "+ str(ex))
+        
     def get(self, request, issue_id, usr, format=None):
         state = get_ball_state(issue_id=issue_id)
         
