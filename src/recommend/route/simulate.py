@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import cv2
+import threading
 
 from route_utills import is_test, print_args
 from action_cls import *
@@ -195,6 +196,49 @@ def show_ani(cue, tar1, tar2):
         except:pass
         i+=1
     
+def simulate_thread(
+    cue_coord=(300,400), 
+    tar1_coord=(100,750),
+    tar2_coord=(300,300),
+    display=True,
+    save=False,
+    clock = 0,
+    success_list = []
+    ):
+
+    for t in [3]:
+        for p in [40, 50]:
+            for th in [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]:
+                    for _ in range(2):
+                        if len(success_list) >= DETECT_ROUTE_NUM:
+                            return success_list
+                        success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
+                                                        tar1_coord=tar1_coord,
+                                                        tar2_coord=tar2_coord,
+                                                        power=p,
+                                                        clock=clock,
+                                                        tip=t,
+                                                        thick=th,
+                                                        display=display,
+                                                        save=save)
+                        if len(success_list) >= DETECT_ROUTE_NUM:
+                            return
+                        if success:
+                            result = {"power": p,
+                                        "clock": clock,
+                                        "tip": t,
+                                        "thick": th,
+                                        "cue": cue, 
+                                        "tar1": tar1,
+                                        "tar2": tar2}
+                            success_list.append(result)
+                            print(success_list)
+                            return
+                        else:
+                            temp = tar1_coord
+                            tar1_coord = tar2_coord
+                            tar2_coord = temp
+
 def simulation(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
@@ -205,7 +249,26 @@ def simulation(
 
     success_list = []
     success_clock = []
-    clock_sequence = [1, 3, 11, 10, 0, 9, 3, 4, 8]
+    thread_list = []
+    clock_sequence = [1, 2, 11, 10, 0, 9, 3, 4, 8]
+    for c in clock_sequence:
+        thread = threading.Thread(target=simulate_thread, args=(
+            cue_coord,
+            tar1_coord,
+            tar2_coord,
+            display,
+            save,
+            c,
+            success_list))
+        thread.start()
+        thread_list.append(thread)
+
+    for thr in thread_list:
+        print('waiting for ', thr)
+        thr.join()
+        
+    print(success_list)
+    return success_list
     """
     #test area ###################################################################################
     p, c, t, th = 50, 2, 3, 0
@@ -234,7 +297,7 @@ def simulation(
     for c in clock_sequence:
         for t in [3]:
             for p in [40, 50]:
-                for th in [-4, 4, -3, 3, -2, 2]:
+                for th in [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]:
                     for _ in range(2):
                         success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
                                                         tar1_coord=tar1_coord,
@@ -331,7 +394,7 @@ def runner(args):
     cue_xy = get_ball_coord(args.cue)
     tar1_xy = get_ball_coord(args.tar1)
     tar2_xy = get_ball_coord(args.tar2)
-    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=True, save=args.save)
+    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=False, save=args.save)
 
     #run(args.src, args.device)
     # detect(args.src, args.device)
