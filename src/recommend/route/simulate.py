@@ -233,7 +233,7 @@ def simulate_thread(
                                         "tar1": tar1,
                                         "tar2": tar2}
                             success_list.append(result)
-                            print(success_list)
+                            print("\nsimulate_thread : ",success_list)
                             return
                         else:
                             temp = tar1_coord
@@ -267,7 +267,7 @@ def simulation(
     for thr in thread_list:
         thr.join()
         
-    print(success_list)
+    print("\nsimulation : ",success_list)
     return success_list
     
     """
