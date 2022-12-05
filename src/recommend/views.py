@@ -14,8 +14,9 @@ from time import sleep
 from .serializers import *
 
 # calc route
-from .route import *
+from .route.simulate import simulation
 
+    
 
 # Create your views here.
 class PositionViewSet(viewsets.ModelViewSet):
@@ -89,33 +90,34 @@ class Make_Coordinate_Singleton(type):
 class Make_Coord(metaclass=Make_Coordinate_Singleton):
     def __init__(self) -> None:
         import threading
-        lock = threading.RLock()
+        self.lock = threading.Lock()
     
 
     def run(self, issue_id, display=False):
-        # 연산 중인지 확인
-        state = get_ball_state(issue_id)
-        if state == 'P' or state == 'D':
-            return
+        import threading
+        if display : print("before",self.lock)
+        with self.lock:
+            if display : print(self.lock)
+            # 연산 중인지 확인
+            state = get_ball_state(issue_id)
+            if state == 'P' or state == 'D':
+                return
+            
+            # 연산 중이 아니라면 이제 연산 해준다.
+            pos = position.objects.get(id=issue_id)
+            print(f'Make_Coord : ', end=' ')
+            
+            pos.state="P"
+            if not display:
+                pos.save()
         
-        # 연산 중이 아니라면 이제 연산 해준다.
-        pos = position.objects.get(id=issue_id)
-        print(f'Make_Coord : ', end=' ')
-        
-        pos.state="P"
-        if not display:
-            pos.save()
-            print(f'state(Progress)', end='[ ')
-        
-        self.manke_cord(postion=pos, issue_id=issue_id, display=display)
-        
-        pos.state="D"
-        if not display:
-            pos.save()
-            print(f']state(Done)')
+            thrd = threading.Thread(target=Make_Coord.make_cord, args=(issue_id, display))
+            thrd.run()
+        if display : print("after", self.lock)
     
-    
-    def manke_cord(self, postion, issue_id, display=False):
+    def make_cord(issue_id, display=False):
+        postion = position.objects.get(id=issue_id)
+        
         #좌표 받아오기 cue, 목적구, 목적구2
         cue = postion.coord["cue"]
         obj1 =  postion.coord["obj1"]
@@ -123,7 +125,7 @@ class Make_Coord(metaclass=Make_Coordinate_Singleton):
         cue = (cue[0], cue[1])
         obj1 = (obj1[0],obj1[1])
         obj2 = (obj2[0],obj2[1])
-        soultion_list = simulation(cue, obj1, obj2, display=display)
+        soultion_list = simulation(cue, obj1, obj2, display=display, save=True)
         for soultion in soultion_list:
             if display:
                 print("=============== add route =======================")
@@ -137,13 +139,17 @@ class Make_Coord(metaclass=Make_Coordinate_Singleton):
             if not display:
                 route.save()
                 print(f'add route',end=', ')
+        
+        postion.state="D"
+        if not display:
+            postion.save()
 
 class RouteRequestAPIView(APIView):
     def make_route(self, issue_id, usr):
         make_coord = Make_Coord()
         #detect PIPE
         try:
-            Make_Coord(issue_id, False)
+            make_coord.run(issue_id,display=False)
         except Exception as ex:
             print("make_route ex : "+ str(ex))
     def get(self, request, issue_id, usr, format=None):

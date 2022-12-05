@@ -29,22 +29,35 @@ class RouteTestClass(LiveServerTestCase):
         print("before) route len = ", before_route_num)
         # 연산!
         pos = position.objects.last()
+        id = pos.id
         try:
             make_coord = Make_Coord()
-            make_coord.run(pos.id, display= False)#False if FRAME_WORK=='furiosa' else True)
+            make_coord.run(id, display= False)#False if FRAME_WORK=='furiosa' else True)
         except:
             pass
         
+        delay_time = 10
+        repeat_num = 36
+        max_calc_time = delay_time * repeat_num
+        
+        import time
+        for i in range(1, repeat_num):
+            time.sleep(delay_time)    
+            pos = position.objects.get(id=id)
+            state = pos.state
+            
+            if state == 'D':
+                break
+            else:
+                print(f"({i}:{state})", end="")
+            
+        print()
         after_route_num = soultion_route.objects.all()
-        print(after_route_num, len(after_route_num))
+        print("\n", after_route_num, len(after_route_num))
         print("after) route len = ", len(after_route_num))
         self.assertEqual(before_route_num + 3, len(after_route_num))
         
-        
-        
-        
-        
-    def test_get_route(self):
-        response = lastpos_route("tglee")
-        self.assertNotEqual(response , Response({"state":"Progress"}, status=status.HTTP_202_ACCEPTED))
-        self.assertNotEqual(response , Response({"message":"Route doesn't exist"}, status=status.HTTP_404_NOT_FOUND))
+    # def test_get_route(self):
+    #     response = lastpos_route("tglee")
+    #     self.assertNotEqual(response , Response({"state":"Progress"}, status=status.HTTP_202_ACCEPTED))
+    #     self.assertNotEqual(response , Response({"message":"Route doesn't exist"}, status=status.HTTP_404_NOT_FOUND))

@@ -139,12 +139,12 @@ def run_carom_simulate(
     if display:
         if success:
             print(success, cue.colpoint)
-        name = f"({cue_coord[0]}-{cue_coord[1]})({tar1_coord[0]}-{tar1_coord[1]})({power}-{clock}-{tip})({thick}).jpg"
-        show(cue, tar1, tar2, name, success and save)
+    name = f"({cue_coord[0]}cue{cue_coord[1]})({tar1_coord[0]}tar{tar1_coord[1]})({tar2_coord[0]}tar{tar2_coord[1]})(P{power}C{clock}T{tip})(thick{thick}).jpg"
+    show(cue, tar1, tar2, name, display=display, save = success and save)
 
     return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
-def show(cue, tar1, tar2, name, save=False):
+def show(cue, tar1, tar2, name, display=True, save=False):
     img = np.zeros((800,400,3), np.uint8)
     clist = cue.xy
     img = cv2.line(img, (int(clist[0]['x']), int(clist[0]['y'])), (int(clist[0]['x']), int(clist[0]['y'])), (255, 255, 255), 3)
@@ -164,8 +164,9 @@ def show(cue, tar1, tar2, name, save=False):
         print("save : ", name)
         cv2.imwrite(name ,img)
     try:
-        cv2.imshow('simulate', img)
-        cv2.waitKey(1000)
+        if display:
+            cv2.imshow('simulate', img)
+            cv2.waitKey(1000)
     except InterruptedError:
         raise InterruptedError()
     except:pass
