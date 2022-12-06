@@ -281,6 +281,44 @@ class LoadImages:
         return self.nf  # number of files
 
 
+
+def fit_resizer(img:np.ndarray, width=720, height=540)->np.ndarray:
+    h, w, _ = img.shape
+    
+    proportion = 1.0
+    w_proportion = h_proportion = 1.0
+    if w > width:
+        w_proportion = width / w
+    if h > height:
+        h_proportion = height/ h
+    
+    proportion = w_proportion if w_proportion < h_proportion else h_proportion
+    result = cv2.resize(img, (0,0), fx=proportion, fy=proportion)
+    return result
+    
+
+def draw_guide_line(img:np.ndarray, conners:list):
+    result = img.copy()
+    
+    points = [conners[0],conners[1],conners[3],conners[2]]
+    color_list = [(127, 0, 225),(127, 127, 0),(255, 127, 0),(255, 255, 225)]
+    
+    
+    for i in range(4):
+        result = cv2.line(result, 
+                (int(points[i][0]), int(points[i][1])), 
+                (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
+                (0, 255, 0), 2)
+    
+    for i in range(4):
+        result = cv2.circle(result, (points[i][0], points[i][1]), 9, color_list[i], 5)
+    
+    return fit_resizer(result)
+    
+def line_show(img:np.ndarray, conners:list, name="defalut"):
+    result = draw_guide_line(img, conners)
+    cv2.imshow(name, result)
+
 class PipeResource:
     def __init__(self, im=None, metadata=dict(), images=dict(), s=None) -> None:
         self.im = im            # target image
@@ -363,8 +401,9 @@ class PipeResource:
     def imshow_table(self, scale=1.0):
         im = self.images["table"]
         cv2.imshow("table", im)
-        
-    def get_image(self, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
+    
+    
+    def get_image(self, images="origin", metadata=[], dets_key=["cls"], guide_line=False, line_thickness=2, hide_box=False, hide_labels=False):
         im0= self.images[images]
         annotator = Annotator(
             im0, line_width=line_thickness)
@@ -385,9 +424,14 @@ class PipeResource:
                 except:
                     pass
         im0 = annotator.result()
+        
+        if guide_line:
+            meta = self.metadata
+            conners = [meta["TL"],meta["TR"],meta["BL"],meta["BR"]]
+            im0 = draw_guide_line(im0, conners)
         return im0
-    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], line_thickness=2, hide_box=False, hide_labels=False):
-        im0 = self.get_image(images=images, metadata=metadata, dets_key=dets_key, line_thickness=line_thickness, hide_box=hide_box)
+    def imshow(self, name=None, images="origin", metadata=[], dets_key=["cls"], guide_line=False, line_thickness=2, hide_box=False, hide_labels=False):
+        im0 = self.get_image(images=images, metadata=metadata, dets_key=dets_key, guide_line=guide_line, line_thickness=line_thickness, hide_box=hide_box)
         # metadata 이름
         base_s = ""
         for key in metadata:

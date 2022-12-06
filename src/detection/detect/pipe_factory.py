@@ -32,6 +32,7 @@ from ProjectionPipe import ProjectionCoordPipe
 from CoordFilterPipe import CoordFilterPipe
 from BallGeneratePipe import BallGeneratePipe
 from DetectObjectPipe import DetectObjectPipe # ,NPU_YOLO_DIR, GPU_YOLO_DIR
+from ImageRotationPipe import ImageRotationPipe, Resizeing_1080_1920
 from detect_utills import (PipeResource, LoadImages,
                            aline_corner_in_dict, is_test, cv2, print_args)
 
@@ -60,7 +61,24 @@ def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
     coord_filter_pipe = CoordFilterPipe()
     ball_generate_pipe = BallGeneratePipe()
     
+    
+    ###################### change###############################
+    rotation_pipe = ImageRotationPipe()
+    resize_pipe = Resizeing_1080_1920()
+    
+    pipe = resize_pipe
+    next_pipe = rotation_pipe
+    
+    pipe.connect_pipe(next_pipe)
+    if next_pipe == rotation_pipe:
+        print("================== Error ======================")
+        print("Delete Resizeing_1080_1920 pipe in pipe_factory")
+        print("===============================================")
+    ############################################################
+        
     # - connect
+    
+    next_pipe.connect_pipe(detect_cls_pipe)
     detect_cls_pipe.connect_pipe(xyxy2xywh)     #detect class - split_cls
     xyxy2xywh.connect_pipe(projection_coord_pipe)     #detect class - split_cls
     projection_coord_pipe.connect_pipe(coord_filter_pipe)
@@ -76,7 +94,7 @@ def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
     
     #set start_pipe end_pipe
     if start_pipe is None:
-        start_pipe = detect_cls_pipe
+        start_pipe = pipe
     elif isinstance(start_pipe, IObserverPipe):
         start_pipe.connect_pipe(detect_cls_pipe)
     else:
@@ -94,15 +112,14 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
     ### 실행 ###
     for im0, path, s in dataset:
         width = im0.shape[1]
-        hight = im0.shape[0]
+        height = im0.shape[0]
         #point 위치 확인
         # points = [[549,109],[942,111],[1270,580],[180,565]] # sample
         # points = [[549,109],[942,111],[1270,580],[180,565]]
         # points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
         
-        points = [[57, 147], [662, 452], [662, 752], [57, 1057]] # CAP3825091495947943655.jpg
+        points = [[57, 147], [662, 452], [57, 1057], [662, 752]] # CAP3825091495947943655.jpg
         sorted_point = points.copy()
-        sorted_point.sort(key=lambda x:x[0] + x[1]*width)
         
         topLeft = sorted_point[0]
         topRight = sorted_point[1]
@@ -111,7 +128,7 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
         
 
-        metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":width, "HIGHT":hight}
+        metadata = {"path": path, "carom_id":1, "TL":topLeft, "TR":topRight, "BL":bottomLeft, "BR":bottomRight,  "WIDTH":width, "HEIGHT":height}
         images = {"origin":im0}
         input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
         pipe.push_src(input)
@@ -120,15 +137,8 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         result = ball_bag.src
         # 원본 정사영 영역 표시
         if display:
-            origin = result.get_image()
-            for i in range(4):
-                origin = cv2.line(origin, 
-                        (int(points[i][0]), int(points[i][1])), 
-                        (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
-                        (0, 255, 0), 2)
             result.imshow_table()
-            
-            cv2.imshow("origin", origin)
+            result.imshow(name="orgin", guide_line=True)
             cv2.waitKey(9000)
     return ball_bag
     

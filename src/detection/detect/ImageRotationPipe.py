@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from pipe_cls import One2OnePipe
-from detect_utills import PipeResource, is_test
+from pipe_cls import One2OnePipe, ResourceOne
+from detect_utills import PipeResource, line_show, is_test
 
 def is_test_image_rotate()->bool:
     return True and is_test()
@@ -18,8 +18,6 @@ def check_aline_corners(width, top_left, top_right, bottom_left, bottom_right)->
     sorted_list = [top_left, top_right, bottom_left, bottom_right]
     sorted_list.sort(key=lambda x:x[0] + x[1]*width)
     
-    print("origin_list : ",origin_list)
-    print("sorted_list : ",sorted_list)
     for origin, sorted in zip(origin_list,sorted_list):
         if origin != sorted:
             return False
@@ -51,65 +49,98 @@ def rotate_origin_90(xy, shift_len, right_direct=False):
     """Only rotate a point around the origin (0, 0)."""
     x, y = xy
     xx = x * cos - y * sin + shift_len * x_shift
-    yy = x * sin + y * cos - shift_len * y_shift
+    yy = x * sin + y * cos + shift_len * y_shift
 
     return int(xx), int(yy)
 
-def fit_resizer(img:np.ndarray)->np.ndarray:
-    width = 1440
-    height = 1080
-    h, w, _ = img.shape
+class Resizeing_1080_1920(One2OnePipe):
+    def __init__(self) -> None:
+        super().__init__()
+        
+    def exe(self, input: PipeResource) -> PipeResource:
+        output = input
+        output.im = cv2.resize(output.im, (1080,1920))
+        output.images["origin"] = output.im
+        [ output.metadata["WIDTH"], output.metadata["HEIGHT"] ]= [1080,1920]
+        return output
     
-    proportion = 1.0
-    w_proportion = h_proportion = 1.0
-    if w > width:
-        w_proportion = width / w
-    if h > height:
-        h_proportion = height/ h
-    
-    proportion = w_proportion if w_proportion < h_proportion else h_proportion
-    result = cv2.resize(img, (0,0), fx=proportion, fy=proportion)
-    return result
-    
-
-def line_show(img:np.ndarray, conners:list, name="defalut"):
-    result = img.copy()
-    
-    points = [conners[0],conners[1],conners[3],conners[2]]
-    color_list = [(127, 0, 225),(127, 127, 0),(255, 127, 0),(255, 255, 225)]
-    
-    
-    for i in range(4):
-        result = cv2.line(result, 
-                (int(points[i][0]), int(points[i][1])), 
-                (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
-                (0, 255, 0), 2)
-    
-    for i in range(4):
-        result = cv2.circle(result, (points[i][0], points[i][1]), 9, color_list[i], 5)
-    
-    result = fit_resizer(result)
-    cv2.imshow(name, result)
-
+    def get_regist_type(self, idx=0) -> str:
+        return "Resizeing_720_1280"
 class ImageRotationPipe(One2OnePipe):
     def __init__(self) -> None:
         super().__init__()
     
     def exe(self, input: PipeResource) -> PipeResource:
+        max = 4
         output = input
         
+        #set conners
+        try:
+            conner_list = [ output.metadata["TL"], output.metadata["TR"], output.metadata["BL"], output.metadata["BR"] ]
+        except:
+            print("not a key ['TL','TR','BL','BR']ImageRotationPipe.+ input.metadata") 
+            conner_list[0,0,0,0]
+        wh = [output.im.shape[1], output.im.shape[0]]
+        direct = False
+        img_direct = cv2.ROTATE_90_CLOCKWISE if direct else cv2.ROTATE_90_COUNTERCLOCKWISE
+        now_conners = conner_list.copy()
         
         
+        #set img
+        rotated_img = output.im.copy()
         
+        count = 0
+        for cnt in range(max):
+            if is_test_image_rotate():
+                line_show(rotated_img, now_conners, "ImageRotationPipe")
+                cv2.waitKey(10000)
+            
+            # 각도가 맞는다면, 중간에 종료한다.
+            if check_aline_corners(wh[0] ,*now_conners):
+                break
+            
+            # rotation start!!!!
+            count=cnt+1
+            # 회전 방향 설정
+            if direct: idx = (cnt+1)%2
+            else: idx = (cnt)%2
+            shift_len = wh[idx]
+            
+            #corner rotation
+            for idx in range(4):
+                x, y = rotate_origin_90(now_conners[idx], shift_len, direct)
+                now_conners[idx] = [x,y]
+                
+            if direct:
+                now_conners = [now_conners[2],now_conners[0],now_conners[3],now_conners[1]]
+            else :
+                now_conners = [now_conners[1],now_conners[3],now_conners[0],now_conners[2]]
+            
+            wh = [wh[1], wh[0]] # swap
+            
+            # image rotation
+            rotated_img = cv2.rotate(rotated_img, img_direct)
+            
+
+        if not max > count:
+            print(count)
+            raise IndexError(f"ImageRotationPipe. + not collect position : {conner_list}")
+        
+        # reset corner
+        [ output.metadata["TL"], output.metadata["TR"], output.metadata["BL"], output.metadata["BR"] ] = now_conners
+        [ output.metadata["WIDTH"], output.metadata["HEIGHT"] ]= wh
+        
+        # reset image
+        output.images["origin"] = rotated_img
+        output.im = rotated_img
         
         return output
-    
     
     def get_regist_type(self, idx=0) -> str:
         return "image_rotater"
 
 
-def test_check_aline():
+def test_check_aline(direct = True):
     max = 10
     
     sample_path = np.fromfile(CAROM_BASE_DIR / "media" / "test2" / "sample.jpg", np.uint8)
@@ -142,27 +173,25 @@ def test_check_aline():
     cv2.waitKey()
     
     for cnt in range(1, max+1):
-        
-        direct = True
-        
         if direct:
             idx = (cnt)%2
         else:
             idx = (cnt+1)%2
-            
+        
         sample_shift_len = sample_wh[idx]
         ca3655_shift_len = ca3655_wh[idx]
         # rotation
-        target_list = [now_sample_points, now_ca3655_points]
-        target_shift_len_list = [sample_shift_len, ca3655_shift_len]
-        
+        target_list = [now_sample_points]#, now_ca3655_points]
+        target_shift_len_list = [sample_shift_len]#, ca3655_shift_len]
         
         # conner point rotation
-        for target_num in range(2):
+        for target_num in range(len(target_list)):
             target = target_list[target_num]
-            shfit_len = target_shift_len_list[target_num]
+            shift_len = target_shift_len_list[target_num]
+            print('Rotation : ',shift_len, target)
             for idx in range(4):
-                x, y = rotate_origin_90(target[idx], shfit_len, direct)
+                
+                x, y = rotate_origin_90(target[idx], shift_len, direct)
                 target[idx] = [x,y]
                 
             if direct:
@@ -203,16 +232,86 @@ def test_line_show():
     line_show(ca3655, ca3655_points, "CAP3825091495947943655.jpg")
     cv2.waitKey()
 
+def get_int(coord:str)->list:
+    x,y=map(int, coord.split('_'))
+    return [x,y]
+
+def test_pipe(src, top_left, top_right, bottom_left, bottom_right, display=True):
+    pipe = ImageRotationPipe()
+    path = np.fromfile(src, np.uint8)
+    im0 = cv2.imdecode(path, cv2.IMREAD_COLOR)
+    
+    topLeft = get_int( top_left )
+    topRight = get_int( top_right )
+    bottomLeft = get_int( bottom_left )
+    bottomRight = get_int( bottom_right )
+    
+    s=src
+    metadata = {"TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":im0.shape[1], "HEIGHT":im0.shape[0]}
+    images = {"origin":im0}
+    input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
+    input.print()
+    output = pipe.exe(input)
+    output.print()
+    output.imshow(name=s, guide_line=True)
+    cv2.waitKey(10000)
+
+def test_connect_pipe(src, top_left, top_right, bottom_left, bottom_right, display=True):
+    rotation_pipe = ImageRotationPipe()
+    size_pipe = Resizeing_1080_1920()
+    bag = ResourceOne()
+    
+    pipe = size_pipe
+    next_pipe = rotation_pipe
+    
+    pipe.connect_pipe(next_pipe)
+    next_pipe.connect_pipe(bag)
+    
+    path = np.fromfile(src, np.uint8)
+    im0 = cv2.imdecode(path, cv2.IMREAD_COLOR)
+    
+    topLeft = get_int( top_left )
+    topRight = get_int( top_right )
+    bottomLeft = get_int( bottom_left )
+    bottomRight = get_int( bottom_right )
+    
+    s=src
+    metadata = {"TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":im0.shape[1], "HEIGHT":im0.shape[0]}
+    images = {"origin":im0}
+    input = PipeResource(im=im0, metadata=metadata, images=images, s=s)
+    input.print()
+    pipe.push_src(input)
+    
+    output = bag.get_src()
+    
+    output.print()
+    output.imshow(name="output", guide_line=True)
+    cv2.waitKey(10000)
+
 def runner(args):
     # test_line_show()
-    test_check_aline()
+    # test_check_aline()
+    # test_pipe(args.src,
+    #           args.top_left,
+    #           args.top_right,
+    #           args.bottom_left,
+    #           args.bottom_right,
+    #           not args.no_display)
+    test_connect_pipe(args.src,
+                      args.top_left,
+                      args.top_right,
+                      args.bottom_left,
+                      args.bottom_right,
+                      not args.no_display)
     
 if __name__ == '__main__':
-    # import argparse
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "carom" / "CAP3825091495947943655.jpg")
-    # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    # parser.add_argument('--no_display', default=False, action="store_true")
-    # args = parser.parse_args()
-    args = 0
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "carom" / "CAP3825091495947943655.jpg")
+    parser.add_argument('--top_left', default='57_147', help='input x,y coord [format : x_y]')
+    parser.add_argument('--top_right', default='662_452', help='input x,y coord [format : x_y]')
+    parser.add_argument('--bottom_left', default='57_1057', help='input x,y coord [format : x_y]')
+    parser.add_argument('--bottom_right', default='662_752', help='input x,y coord [format : x_y]')
+    parser.add_argument('--no_display', default=False, action="store_true")
+    args = parser.parse_args()
     runner(args)

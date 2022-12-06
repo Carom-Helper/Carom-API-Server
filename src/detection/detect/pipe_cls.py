@@ -271,7 +271,8 @@ class ResourceOne(IPipeObserver):
         
     def push_src(self, input: PipeResource) -> None:
         self.src = input
-        
+    def get_src(self)->PipeResource:
+        return self.src
     def print(self):
         self.src.print()
 
