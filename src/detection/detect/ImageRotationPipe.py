@@ -111,10 +111,10 @@ class ImageRotationPipe(One2OnePipe):
                 x, y = rotate_origin_90(now_conners[idx], shift_len, direct)
                 now_conners[idx] = [x,y]
                 
-            if direct:
-                now_conners = [now_conners[2],now_conners[0],now_conners[3],now_conners[1]]
-            else :
-                now_conners = [now_conners[1],now_conners[3],now_conners[0],now_conners[2]]
+            # if direct:
+            #     now_conners = [now_conners[2],now_conners[0],now_conners[3],now_conners[1]]
+            # else :
+            #     now_conners = [now_conners[1],now_conners[3],now_conners[0],now_conners[2]]
             
             wh = [wh[1], wh[0]] # swap
             
