@@ -7,7 +7,7 @@ from detect_utills import PipeResource
 class CoordFilterPipe(One2OnePipe):
     def __init__(self) -> None:
         super().__init__()
-    @torch.no_grad()
+
     def exe(self, input: PipeResource) -> PipeResource:
         t1 = time.time()
         output = PipeResource()

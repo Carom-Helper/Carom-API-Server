@@ -35,6 +35,7 @@ for ball_data in reversed(ball_datas):
     img_path = CAROM_BASE_DIR / "media" / table["img"]
     if not os.path.isfile(img_path) : 
         continue
+    print(img_path)
     guide = table['guide']
     
     
@@ -45,11 +46,12 @@ for ball_data in reversed(ball_datas):
         print("x,y,key:",x,y,key)
         field = cv2.circle(field, (x, y), 9, (255, 255, 255), 1)
     
+    
     # 가이드 라인 띄우기
     img_path = np.fromfile(img_path, np.uint8)
     
     guide_img = cv2.imdecode(img_path, cv2.IMREAD_COLOR)
-    guide_img = cv2.resize(guide_img, (720,1280))
+    # guide_img = cv2.resize(guide_img, (720,1280))
     corner_list = list()
     for key, value in guide.items():
         corner_list.append(value)

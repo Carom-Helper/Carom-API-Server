@@ -26,7 +26,7 @@ if str(tmp) not in sys.path and os.path.isabs(tmp):
 #     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
 
 from pipe_cls import One2OnePipe, ConvertToxywhPipe, IObserverPipe, SplitCls, ResourceOne, ResourceBag
-from pipe_utills import SaveBallCoordPipe
+from DjangoSaveBall import SaveBallCoordPipe
 from Singleton import PIPE_Singleton
 from ProjectionPipe import ProjectionCoordPipe
 from CoordFilterPipe import CoordFilterPipe
@@ -96,17 +96,20 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         width = im0.shape[1]
         hight = im0.shape[0]
         #point 위치 확인
-        points = [[549,109],[942,111],[1270,580],[180,565]]
+        # points = [[549,109],[942,111],[1270,580],[180,565]] # sample
+        # points = [[549,109],[942,111],[1270,580],[180,565]]
         # points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
         
-        points.sort(key=lambda x:x[0] + x[1]*width)
-
-        topLeft = points[0]
-        topRight = points[1]
-        bottomLeft = points[2]
-        bottomRight = points[3]
+        points = [[57, 147], [662, 452], [662, 752], [57, 1057]] # CAP3825091495947943655.jpg
+        sorted_point = points.copy()
+        sorted_point.sort(key=lambda x:x[0] + x[1]*width)
+        
+        topLeft = sorted_point[0]
+        topRight = sorted_point[1]
+        bottomLeft = sorted_point[2]
+        bottomRight = sorted_point[3]
         test_print(f'topLeft({type(topLeft)}):{topLeft} | ({type(bottomRight)}):{bottomRight} | ({type(topRight)}):{topRight} | ({type(bottomLeft)}):{bottomLeft}')
-        points = [topLeft, topRight, bottomRight, bottomLeft]
+        
 
         metadata = {"path": path, "carom_id":1, "TL":topLeft, "BR":bottomRight, "TR":topRight, "BL":bottomLeft, "WIDTH":width, "HIGHT":hight}
         images = {"origin":im0}
@@ -124,6 +127,7 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
                         (int(points[(i+1)%4][0]), int(points[(i+1)%4][1])), 
                         (0, 255, 0), 2)
             result.imshow_table()
+            
             cv2.imshow("origin", origin)
             cv2.waitKey(9000)
     return ball_bag
@@ -146,7 +150,7 @@ def runner(args):
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "test2" / "sample.jpg")
+    parser.add_argument('--src', default=CAROM_BASE_DIR / "media"/ "carom" / "CAP3825091495947943655.jpg") # /'test2'/'sample.jpg' )
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--no_display', default=False, action="store_true")
     args = parser.parse_args()
