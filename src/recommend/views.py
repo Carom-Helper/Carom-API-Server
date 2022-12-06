@@ -95,7 +95,7 @@ class Simulate_route(metaclass=Make_Coordinate_Singleton):
     
     def RUN_THREAD(issue_id, display=False):
         simlate = Simulate_route()
-        simlate.run(issue_id, display)
+        simlate.run(issue_id=issue_id, display=display)
         
 
     def run(self, issue_id, display=False):
@@ -148,7 +148,7 @@ class RouteRequestAPIView(APIView):
         #detect PIPE
         try:
             import threading
-            thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(id, False))
+            thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(issue_id, False))
             thrd.start()
         except Exception as ex:
             print("make_route ex : "+ str(ex))
@@ -160,7 +160,7 @@ class RouteRequestAPIView(APIView):
         if state == "N":
             self.make_route(issue_id, usr)
             # return Response({"state":"Accepted"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
-        state = get_ball_state(issue_id=issue_id)
+            return Response({"state":"Accept"}, status=status.HTTP_202_ACCEPTED) #기다리라고 한다.
         
         #   Done - solution_route issue_id로 검색하여 결과반환 && 요청로그 남기기
         if state == "D":
