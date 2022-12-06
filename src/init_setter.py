@@ -6,6 +6,7 @@ print("==== Start ====")
 
 #Create projection_method
 print("===== Create sample Image ====")
+view="B"
 guide =  {
             "TL": [
                 549,
@@ -28,7 +29,7 @@ guide =  {
 
 img = carom_img(img='carom/sample.jpg')
 img.save()
-data = carom_data(img=img, guide=guide)
+data = carom_data(img=img, guide=guide, view=view)
 data.save()
 
 print("==== Create init position ===")

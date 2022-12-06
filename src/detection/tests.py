@@ -10,6 +10,7 @@ import cv2
 class DetectTestClass(LiveServerTestCase):
     def setUp(self):
         #DB에 이미지 삽입
+        view = "B"
         guide =  {
             "TL": [
                 549,
@@ -32,7 +33,7 @@ class DetectTestClass(LiveServerTestCase):
         #C:/Users/qjrm6/inte/Carom-API-Server/src/media/carom/2022/11/15/
         img = carom_img(img='carom/sample.jpg')
         img.save()
-        data = carom_data(img=img, guide=guide)
+        data = carom_data(img=img, guide=guide, view=view)
         data.save()
         self.img_id = img.id
 

@@ -95,7 +95,7 @@ class WallObject(IObserver, ICrashableSubject):
         elif degree < 45:
             bias_table[bias_level] = [0, 3.380000019, 4.300000095, 5.240000057, 6.599999905, 
                 6.599999905, 7.259999847, 8.460000038, 10.26000023, 12.89999962]
-        elif degree < 60:
+        elif degree < 60: 
             bias_table[bias_level] = [-23.77999954, -19.70000076, -10.16000042, -3.080000114,
             -2.099999905, 1.7, 7.259999943, 9.719999886, 13.72000027, 23]
         elif degree <= 90.2:

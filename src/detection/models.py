@@ -12,6 +12,7 @@ from carom_api.settings import BASE_DIR, MEDIA_ROOT
 class balls_coord(Model):
     carom = models.ForeignKey(to="u_img.carom_img", on_delete=CASCADE, verbose_name="Carom Image ID")
     coord = models.JSONField(default=dict, verbose_name="COORDINATE JSON")
+    
     class Meta:
         constraints = [
             models.UniqueConstraint(

@@ -34,6 +34,8 @@ def test_make_coord(carom_id, usr="tglee", t=1, display = False):
     img_data.detect_state="P"
     img_data.save()
     
+    # set view
+    view = img_data.view
     # set PipeResource
     topLeft = img_data.guide["TL"]
     bottomRight = img_data.guide["BR"]

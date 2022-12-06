@@ -16,8 +16,14 @@ class carom_data(Model):
         ('P', "Progress"),
         ('D', "Done"),
     ]
+    VIEW_TYPE = [
+        ("B","Bird-View"),
+        ("T","Top-View"),
+        ("S","Side-View")
+    ]
     img = models.ForeignKey(to="carom_img", on_delete=CASCADE, verbose_name="Image ID")
     guide = models.JSONField(default=dict, verbose_name="Guide JSON")
+    view = models.CharField(max_length=1, choices=VIEW_TYPE, verbose_name="View Type")
     detect_state = models.CharField(max_length=1, choices=WORK_STATE, verbose_name="Work State", default="N")
     class Meta:
         constraints = [
