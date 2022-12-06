@@ -86,6 +86,15 @@ class WallObject(IObserver, ICrashableSubject):
         radian = angle(direct_vec, normal_vec)
         direct_normal_degree = radian2degree(radian)
         degree = 90.0 - direct_normal_degree
+
+        
+        def none_reflect(data : dict):
+            reflect_vec = - direct_vec
+            return reflect_vec, data
+
+        if degree > 90 or np.isnan(degree):
+            return none_reflect
+
         bias_table = {"key":[0.5, 4, 7, 11, 1000]}
         #if power < 0.5:
         bias_level = str(bias_table["key"][0]) #"0.5"

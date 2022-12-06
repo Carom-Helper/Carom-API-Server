@@ -41,7 +41,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
         self.new_power = 0
         self.data = None
         self.wall_v = None
-        self.rotate = 0
     def __str__(self) -> str:
         return f"[{self.name}]"+super().__str__()
     def start_param(self, power = 50, clock = 12, tip = 0):
@@ -99,7 +98,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             if self.data is not None:
                 self.vector['x'] += self.data["vector"][0] + self.new_v[0]
                 self.vector['y'] += self.data["vector"][1] + self.new_v[1]
-                x,y = self.rotate_vector(self.rotate, self.vector['x'], self.vector['y'])
+                x,y = self.rotate_vector(self.data["rotate"], self.vector['x'], self.vector['y'])
                 self.vector['x'], self.vector['y'] = x, y
 
                 self.data["vector"] = [0, 0]
@@ -265,6 +264,13 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             data["vector"][0] += reflect_vec[0]
             data["vector"][1] += reflect_vec[1]
 
+            upspin = data["upspin"]
+            upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
+            if upspin_lv == 10:
+                upspin_lv = 9
+            bias_degree = bias_table[9-upspin_lv]
+            data["rotate"] = bias_degree * dir
+
             #cue to tar
             crash_vec = -normal_vec
             crash_vec[0] = crash_vec[0] * separ * (0.6) * data["power"] / 50
@@ -276,12 +282,6 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             data["power"] *= separ
             self.new_power = prev_power - data["power"]
 
-            upspin = data["upspin"]
-            upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
-            if upspin_lv == 10:
-                upspin_lv = 9
-            bias_degree = bias_table[9-upspin_lv]
-            self.rotate = bias_degree * dir
 
             return None, data
 
@@ -289,9 +289,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             power = self.power - self.data['power']
             data["power"] = power
             data['upspin'] = (upspinmax + upspinmin)/2
-            reflect_vec = []
-            reflect_vec.append(normal_vec[0])
-            reflect_vec.append(normal_vec[1])
+            data['rotate'] = 0
 
 
             return None, data
@@ -316,9 +314,13 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
             self.last_crashable = crashable
             self.crash_list.append(crashable.name)
+
+            if self.wall_v is not None:
+                if self.wall_v[0] == v[0] and self.wall_v[1] == v[1]:
+                    self.crash_list.remove(crashable.name)
             if isinstance(crashable, IMoveableSubject):
                 crashable.set_mover(crashable.move_by_time)
-            self.remove_observer(crashable)
+                self.remove_observer(crashable)
         
     def set_colpoint(self, x:float, y:float):
         if len(self.colpoint) > 0:

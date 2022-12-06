@@ -15,7 +15,14 @@ class BallGeneratePipe(One2OnePipe):
         t1 = time.time()
         output = PipeResource()
         while len(input.dets) < 3:
-            input.dets.append(self.generate())
+            new_ball = self.generate()
+            check = True
+            for ball in input.dets:
+                if not self.check_dist(ball, new_ball):
+                    check = False
+                    break
+            if check:
+                input.dets.append(new_ball)
 
         t2 = time.time()
         output = input
@@ -28,6 +35,10 @@ class BallGeneratePipe(One2OnePipe):
         x = randint(20, 380)
         new_ball['x'] = x
         return new_ball
+
+    def check_dist(self, b1, b2) -> bool:
+        dist = ((b1['x']-b2['x'])**2 + (b1['y'] - b2['y'])**2)**0.5
+        return True if dist >= 10 else False
 
 
     def get_regist_type(self, idx=0) -> str:

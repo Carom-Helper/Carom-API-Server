@@ -233,7 +233,7 @@ def simulate_thread(
                                         "tar1": tar1,
                                         "tar2": tar2}
                             success_list.append(result)
-                            print("\nsimulate_thread : ",success_list)
+                            print("\nsimulate_thread : ",result)
                             return
                         else:
                             temp = tar1_coord
@@ -252,6 +252,7 @@ def simulation(
     success_clock = []
     thread_list = []
     clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8]
+    # clock_sequence = [3]
     for c in clock_sequence:
         thread = threading.Thread(target=simulate_thread, args=(
             cue_coord,
