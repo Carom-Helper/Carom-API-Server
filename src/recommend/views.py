@@ -112,7 +112,7 @@ class Simulate_route(metaclass=Make_Coordinate_Singleton):
             pos.state="P"
             if not display:
                 pos.save()
-            Simulate_route.make_cord(issue_id, display)
+        Simulate_route.make_cord(issue_id, display)
     
     def make_cord(issue_id, display=False):
         postion = position.objects.get(id=issue_id)
@@ -138,7 +138,20 @@ class Simulate_route(metaclass=Make_Coordinate_Singleton):
             if not display:
                 route.save()
                 print(f'add route',end=', ')
-        
+        # for i in range(3 - len(soultion_list)):
+        #     route = soultion_route(
+        #         issue_id=issue_id, 
+        #         route={
+        #                 "power": 0,
+        #                 "clock": 0,
+        #                 "tip": 1,
+        #                 "thick": 0,
+        #                 "cue": [[cue[0], cue[1]]],
+        #                 "tar1": [obj1[0],obj1[1]],
+        #                 "tar2": [obj2[0],obj2[1]]
+        #             }, 
+        #         algorithm_ver=ROUTE_ALGORITHM_VERSION
+        #         )
         postion.state="D"
         if not display:
             postion.save()
