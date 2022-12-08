@@ -4,7 +4,7 @@ from pipe_cls import One2OnePipe, ResourceOne
 from detect_utills import PipeResource, line_show, is_test
 
 def is_test_image_rotate()->bool:
-    return True and is_test()
+    return True or is_test()
 
 # set path
 import os
@@ -53,22 +53,49 @@ def rotate_origin_90(xy, shift_len, right_direct=False):
 
     return int(xx), int(yy)
 
-class Resizeing_1080_1920(One2OnePipe):
-    def __init__(self) -> None:
+class ResizeingPipe(One2OnePipe):
+    def __init__(self, target_size = (1080,1920)) -> None:
         super().__init__()
+        self.size = target_size
         
     def exe(self, input: PipeResource) -> PipeResource:
         output = input
-        output.im = cv2.resize(output.im, (1080,1920))
+        size = self.size
+        
+        
+        if is_test_image_rotate():
+                conners = [output.metadata["TL"],
+                           output.metadata["TR"],
+                           output.metadata["BL"],
+                           output.metadata["BR"]]
+                line_show(output.im, conners, f"ResizeingPipe{size}")
+                cv2.waitKey(10000)
+        
+        # 홀수 회전시 size를 바꿔준다.
+        if "rotation_num" in output.metadata.keys():
+            rotation_num = int(output.metadata["rotation_num"])
+            if rotation_num % 2 == 1:
+                size = (size[1], size[0])
+        
+        output.im = cv2.resize(output.im, size)
         output.images["origin"] = output.im
-        [ output.metadata["WIDTH"], output.metadata["HEIGHT"] ]= [1080,1920]
+        [ output.metadata["WIDTH"], output.metadata["HEIGHT"] ]= [size[0],size[1]]
+        
+        if is_test_image_rotate():
+                conners = [output.metadata["TL"],
+                           output.metadata["TR"],
+                           output.metadata["BL"],
+                           output.metadata["BR"]]
+                line_show(output.im, conners, f"ResizeingPipe{size}")
+                cv2.waitKey(10000)
         return output
     
     def get_regist_type(self, idx=0) -> str:
-        return "Resizeing_720_1280"
+        return f"Resizeing{self.size}"
 class ImageRotationPipe(One2OnePipe):
-    def __init__(self) -> None:
+    def __init__(self, table_size = None) -> None:
         super().__init__()
+        self.table_size = table_size
     
     def exe(self, input: PipeResource) -> PipeResource:
         max = 4
@@ -80,7 +107,7 @@ class ImageRotationPipe(One2OnePipe):
         except:
             print("not a key ['TL','TR','BL','BR']ImageRotationPipe.+ input.metadata") 
             conner_list[0,0,0,0]
-        wh = [output.im.shape[1], output.im.shape[0]]
+        wh = [output.im.shape[1], output.im.shape[0]] if self.table_size is None else[self.table_size[0], self.table_size[1]]
         direct = False
         img_direct = cv2.ROTATE_90_CLOCKWISE if direct else cv2.ROTATE_90_COUNTERCLOCKWISE
         now_conners = conner_list.copy()
@@ -120,7 +147,6 @@ class ImageRotationPipe(One2OnePipe):
             
             # image rotation
             rotated_img = cv2.rotate(rotated_img, img_direct)
-            
 
         if not max > count:
             print(count)
@@ -129,6 +155,7 @@ class ImageRotationPipe(One2OnePipe):
         # reset corner
         [ output.metadata["TL"], output.metadata["TR"], output.metadata["BL"], output.metadata["BR"] ] = now_conners
         [ output.metadata["WIDTH"], output.metadata["HEIGHT"] ]= wh
+        output.metadata["rotation_num"] = count
         
         # reset image
         output.images["origin"] = rotated_img
@@ -258,7 +285,7 @@ def test_pipe(src, top_left, top_right, bottom_left, bottom_right, display=True)
 
 def test_connect_pipe(src, top_left, top_right, bottom_left, bottom_right, display=True):
     rotation_pipe = ImageRotationPipe()
-    size_pipe = Resizeing_1080_1920()
+    size_pipe = ResizeingPipe()
     bag = ResourceOne()
     
     pipe = size_pipe
@@ -307,11 +334,12 @@ def runner(args):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
+    
     parser.add_argument('--src', default=CAROM_BASE_DIR / "media" / "carom" / "CAP3825091495947943655.jpg")
-    parser.add_argument('--top_left', default='57_147', help='input x,y coord [format : x_y]')
-    parser.add_argument('--top_right', default='662_452', help='input x,y coord [format : x_y]')
-    parser.add_argument('--bottom_left', default='57_1057', help='input x,y coord [format : x_y]')
-    parser.add_argument('--bottom_right', default='662_752', help='input x,y coord [format : x_y]')
+    parser.add_argument('--top_left', default='662_452', help='input x,y coord [format : x_y]')
+    parser.add_argument('--top_right', default='662_752', help='input x,y coord [format : x_y]')
+    parser.add_argument('--bottom_left', default='57_147', help='input x,y coord [format : x_y]')
+    parser.add_argument('--bottom_right', default='57_1057', help='input x,y coord [format : x_y]')
     parser.add_argument('--no_display', default=False, action="store_true")
     args = parser.parse_args()
     runner(args)

@@ -32,7 +32,7 @@ from ProjectionPipe import ProjectionCoordPipe
 from CoordFilterPipe import CoordFilterPipe
 from BallGeneratePipe import BallGeneratePipe
 from DetectObjectPipe import DetectObjectPipe # ,NPU_YOLO_DIR, GPU_YOLO_DIR
-from ImageRotationPipe import ImageRotationPipe, Resizeing_1080_1920
+from ImageRotationPipe import ImageRotationPipe, ResizeingPipe
 from detect_utills import (PipeResource, LoadImages,
                            aline_corner_in_dict, is_test, cv2, print_args)
 
@@ -48,7 +48,7 @@ class PipeFactory(metaclass=PIPE_Singleton):
         if display: print("PipeFactory Init", device)
         self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
 
-def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
+def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), display=True, inDB=True):
     if display:
         print("initialize weights", device)
     #detect class and split class
@@ -63,11 +63,11 @@ def pipe_factory(start_pipe=None, device='furiosa',  display=True, inDB=True):
     
     
     ###################### change###############################
-    rotation_pipe = ImageRotationPipe()
-    resize_pipe = Resizeing_1080_1920()
+    rotation_pipe = ImageRotationPipe(image_size)
+    resize_pipe = ResizeingPipe(image_size)
     
-    pipe = resize_pipe
-    next_pipe = rotation_pipe
+    pipe = rotation_pipe
+    next_pipe = resize_pipe
     
     pipe.connect_pipe(next_pipe)
     if next_pipe == rotation_pipe:
@@ -118,7 +118,7 @@ def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
         # points = [[549,109],[942,111],[1270,580],[180,565]]
         # points = [[256, 330],[880, 1580],[880, 330],[256, 1580]]
         
-        points = [[57, 147], [662, 452], [57, 1057], [662, 752]] # CAP3825091495947943655.jpg
+        points = [[662, 452],[662, 752], [57, 147], [57, 1057]] # CAP3825091495947943655.jpg
         sorted_point = points.copy()
         
         topLeft = sorted_point[0]
