@@ -19,7 +19,8 @@ def run_carom_simulate(
     tip = 1,
     thick = 0,
     display=True,
-    save=False
+    save=False,
+    debuging=False
     ):
     cue = CaromBall("cue")
     tar1 = CaromBall("tar1")
@@ -141,7 +142,7 @@ def run_carom_simulate(
         if success:
             print(success, cue.colpoint)
     name = f"({cue_coord[0]}cue{cue_coord[1]})({tar1_coord[0]}tar{tar1_coord[1]})({tar2_coord[0]}tar{tar2_coord[1]})(P{power}C{clock}T{tip})(thick{thick}).jpg"
-    show(cue, tar1, tar2, name, display=display, save = success and save)
+    show(cue, tar1, tar2, name, display=display, save = debuging or (success and save))
 
     return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
@@ -200,6 +201,7 @@ def simulate_thread(
     tar2_coord=(300,300),
     display=True,
     save=False,
+    debuging=False,
     clock = 0,
     success_list = [],
     tip_sequence = [3],
@@ -221,7 +223,8 @@ def simulate_thread(
                                                         tip=t,
                                                         thick=th,
                                                         display=display,
-                                                        save=save)
+                                                        save=save,
+                                                        debuging=debuging)
                         if len(success_list) >= DETECT_ROUTE_NUM:
                             return
                         if success:
@@ -246,6 +249,7 @@ def simulation(
     tar2_coord=(300,300),
     display=True,
     save=False,
+    debuging=False,
     clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8],
     tip_sequence = [3],
     power_sequence = [40, 50],
@@ -263,6 +267,7 @@ def simulation(
             tar2_coord,
             display,
             save,
+            debuging,
             c,
             success_list,
             tip_sequence,
@@ -313,6 +318,7 @@ def runner(args):
                tar2_coord=tar2_xy,
                display=False,
                save=not args.no_save,
+               debuging=args.debug,
                clock_sequence = clock_sequence,
                tip_sequence = tip_sequence,
                power_sequence = power_sequence,
@@ -326,10 +332,11 @@ if __name__ == '__main__':
     parser.add_argument('--cue', nargs="+", default="300 400", help="--cue x y")
     parser.add_argument('--tar1', nargs="+", default="100 750", help="--tar1 x y")
     parser.add_argument('--tar2', nargs="+", default="300 300", help="--tar2 x y")
-    parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
+    parser.add_argument('--clock', nargs="+", default="0 1 11", help="--clock 1 11 2 10") 
     parser.add_argument('--tip', nargs="+", default="3", help="--tip 3 1")
-    parser.add_argument('--power', nargs="+", default="40 50", help="--power 20 30")
-    parser.add_argument('--think', nargs="+", default="-4 4 -3 3 -2 2 -5 5 -6 6 -7 7 -1 1", help="--thick '-4 4'")
+    parser.add_argument('--power', nargs="+", default="40", help="--power 20 30")
+    parser.add_argument('--think', nargs="+", default="-6 6", help="--thick '-4 4'")
+    parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--no_save', default=False, action="store_true")
     
     # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
