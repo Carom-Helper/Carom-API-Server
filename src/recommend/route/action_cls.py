@@ -96,7 +96,7 @@ class ICrashable(metaclass=ABCMeta):
     
     # 점에 대한 법선 벡트를 반환하는 클로저를 반환한다.
     @abstractclassmethod
-    def get_reflect_closure(self, direct_vec, normal_vec, power):
+    def get_reflect_closure(self, direct_vec, normal_vec):
         pass
     
 class ICrashAction(metaclass=ABCMeta):

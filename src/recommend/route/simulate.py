@@ -10,7 +10,6 @@ from WallObject import WallObject
 
 DETECT_ROUTE_NUM=3
 
-
 def run_carom_simulate(
     cue_coord=(300,400), 
     tar1_coord=(100,750),
@@ -99,20 +98,18 @@ def run_carom_simulate(
     wall_count = 0
     is_tar1_hit = False
     is_tar2_hit = False
+    
+    ball_list = [cue, tar1, tar2]
     while True:
     # for _ in range(10000):
         cue_dist, _ = cue.move(elapsed)
         tar1_dist, _ = tar1.move(elapsed)
         tar2_dist, _ = tar2.move(elapsed)
 
-        for observer in cue.observer_list:
-            cue.notify_filltered_observer(observer)
-            
-        for observer in tar1.observer_list:
-            tar1.notify_filltered_observer(observer)
-            
-        for observer in tar2.observer_list:
-            tar2.notify_filltered_observer(observer)
+        cue.notify_observers()
+        tar1.notify_observers()
+        tar2.notify_observers()
+        
         
         cue_elapsed = cue.update()
         tar1_elapsed = tar1.update()
@@ -204,12 +201,15 @@ def simulate_thread(
     display=True,
     save=False,
     clock = 0,
-    success_list = []
+    success_list = [],
+    tip_sequence = [3],
+    power_sequence = [40, 50],
+    think_sequence = [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]
     ):
 
-    for t in [3]:
-        for p in [40, 50]:
-            for th in [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]:
+    for t in tip_sequence:
+        for p in power_sequence:
+            for th in think_sequence:
                     for _ in range(2):
                         if len(success_list) >= DETECT_ROUTE_NUM:
                             return success_list
@@ -245,13 +245,16 @@ def simulation(
     tar1_coord=(100,750),
     tar2_coord=(300,300),
     display=True,
-    save=False
+    save=False,
+    clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8],
+    tip_sequence = [3],
+    power_sequence = [40, 50],
+    think_sequence = [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]
     ):
 
     success_list = []
     success_clock = []
     thread_list = []
-    clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8]
     # clock_sequence = [3]
     for c in clock_sequence:
         thread = threading.Thread(target=simulate_thread, args=(
@@ -261,7 +264,10 @@ def simulation(
             display,
             save,
             c,
-            success_list))
+            success_list,
+            tip_sequence,
+            power_sequence,
+            think_sequence))
         thread.start()
         thread_list.append(thread)
 
@@ -270,143 +276,61 @@ def simulation(
         
     print("\nsimulation : ",success_list)
     return success_list
-    
-    """
-    #test area ###################################################################################
-    p, c, t, th = 50, 2, 3, 0
-    success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
-                                                            tar1_coord=tar1_coord,
-                                                            tar2_coord=tar2_coord,
-                                                            power=p,
-                                                            clock=c,
-                                                            tip=t,
-                                                            thick=th,
-                                                            display=display)
-    if success:
-        result = {"power": p,
-                    "clock": c,
-                    "tip": t,
-                    "thick": th,
-                    "cue": cue, 
-                    "tar1": tar1,
-                    "tar2": tar2}
-        success_list.append(result)
-        success_clock.append(c)
-        if len(success_list) >= DETECT_ROUTE_NUM:
-            return success_list
-    #test area ###################################################################################
-    """
-    for c in clock_sequence:
-        for t in [3]:
-            for p in [40, 50]:
-                for th in [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]:
-                    for _ in range(2):
-                        success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
-                                                        tar1_coord=tar1_coord,
-                                                        tar2_coord=tar2_coord,
-                                                        power=p,
-                                                        clock=c,
-                                                        tip=t,
-                                                        thick=th,
-                                                        display=display,
-                                                        save=save)
-                        if success:
-                            result = {"power": p,
-                                        "clock": c,
-                                        "tip": t,
-                                        "thick": th,
-                                        "cue": cue, 
-                                        "tar1": tar1,
-                                        "tar2": tar2}
-                            success_list.append(result)
-                            success_clock.append(c)
-                            if len(success_list) >= DETECT_ROUTE_NUM:
-                                return success_list
-                        
-                        temp = tar1_coord
-                        tar1_coord = tar2_coord
-                        tar2_coord = temp
 
-                    if c in success_clock:
-                        break
-                if c in success_clock:
-                    break
-            if c in success_clock:
-                break
 
-    for c in [x for x in clock_sequence if x not in success_clock]:
-        for t in [2, 3]:
-            for th in [-5, 5, -6, 6, -7, 7, -4, 4, -3, 3, -2, 2]:
-                if t == 3 and abs(th) < 5:
-                    pass
-                for _ in range(2):
-                    success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
-                                                        tar1_coord=tar1_coord,
-                                                        tar2_coord=tar2_coord,
-                                                        power=40,
-                                                        clock=c,
-                                                        tip=t,
-                                                        thick=th,
-                                                        display=display,
-                                                        save=save)
-                    if success:
-                        result = {"power": p,
-                                    "clock": c,
-                                    "tip": t,
-                                    "thick": th,
-                                    "cue": cue, 
-                                    "tar1": tar1,
-                                    "tar2": tar2}
-                        success_list.append(result)
-                        success_clock.append(c)
-                        if len(success_list) >= DETECT_ROUTE_NUM:
-                            if display: print(success_list)
-                            return success_list
-                    
-                    temp = tar1_coord
-                    tar1_coord = tar2_coord
-                    tar2_coord = temp
-
-                    if c in success_clock:
-                        break
-                if c in success_clock:
-                    break
-    
-
-    if display: print(success_list)
-    return success_list
-
-def get_ball_coord(ball):
+def tolist_by_int(values)-> list:
     from ast import literal_eval
-    if isinstance(ball, str):
-        x,y=map(int, ball.split(','))
-        ball = (x,y)
-    
-    
-    if isinstance(ball, tuple):
-        pass
-    elif isinstance(ball, list):
-        x,y = ball
-        ball = (x,y)
+    if isinstance(values, str):
+        values=list(map(int, values.split(' ')))
+        
+    if isinstance(values, tuple):
+        values = list(map(int, values))
+    elif isinstance(values, list):
+        values = list(map(int, values))
     else:
         raise TypeError
-    return ball
+    return values
+
+
 def runner(args):
     print_args(vars(args))
-    cue_xy = get_ball_coord(args.cue)
-    tar1_xy = get_ball_coord(args.tar1)
-    tar2_xy = get_ball_coord(args.tar2)
-    simulation(cue_coord=cue_xy, tar1_coord=tar1_xy, tar2_coord=tar2_xy, display=False, save=args.save)
+    cue_xy = tuple(tolist_by_int(args.cue))
+    tar1_xy = tuple(tolist_by_int(args.tar1))
+    tar2_xy = tuple(tolist_by_int(args.tar2))
+    
+    clock_sequence = tolist_by_int(args.clock)
+    tip_sequence = tolist_by_int(args.tip)
+    power_sequence = tolist_by_int(args.power)
+    think_sequence = tolist_by_int(args.think)
+    
+    print("Start Simulate : ", f"[ cue:{cue_xy} | tar1:{tar1_xy} | tar2:{tar2_xy} ]")
+    print(f"Clock = {clock_sequence}")
+    print(f"Tip = {tip_sequence}")
+    print(f"Power = {power_sequence}")
+    print(f"Think = {think_sequence}")
+    simulation(cue_coord=cue_xy,
+               tar1_coord=tar1_xy,
+               tar2_coord=tar2_xy,
+               display=False,
+               save=not args.no_save,
+               clock_sequence = clock_sequence,
+               tip_sequence = tip_sequence,
+               power_sequence = power_sequence,
+               think_sequence = think_sequence)
 
     #run(args.src, args.device)
     # detect(args.src, args.device)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cue', default=(300,400))
-    parser.add_argument('--tar1', default=(100,750))
-    parser.add_argument('--tar2', default=(300,300))
-    parser.add_argument('--save', default=False, action="store_true")
+    parser.add_argument('--cue', nargs="+", default="300 400", help="--cue x y")
+    parser.add_argument('--tar1', nargs="+", default="100 750", help="--tar1 x y")
+    parser.add_argument('--tar2', nargs="+", default="300 300", help="--tar2 x y")
+    parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
+    parser.add_argument('--tip', nargs="+", default="3", help="--tip 3 1")
+    parser.add_argument('--power', nargs="+", default="40 50", help="--power 20 30")
+    parser.add_argument('--think', nargs="+", default="-4 4 -3 3 -2 2 -5 5 -6 6 -7 7 -1 1", help="--thick '-4 4'")
+    parser.add_argument('--no_save', default=False, action="store_true")
     
     # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     # parser.add_argument('--display', action="store_true")

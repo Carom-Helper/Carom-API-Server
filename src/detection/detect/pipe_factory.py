@@ -68,12 +68,6 @@ def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), disp
     
     pipe = rotation_pipe
     next_pipe = resize_pipe
-    
-    pipe.connect_pipe(next_pipe)
-    if next_pipe == rotation_pipe:
-        print("================== Error ======================")
-        print("Delete Resizeing_1080_1920 pipe in pipe_factory")
-        print("===============================================")
     ############################################################
         
     # - connect
