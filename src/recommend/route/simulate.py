@@ -149,18 +149,18 @@ def run_carom_simulate(
 def show(cue, tar1, tar2, name, display=True, save=False):
     img = np.zeros((800,400,3), np.uint8)
     clist = cue.xy
-    img = cv2.line(img, (int(clist[0]['x']), int(clist[0]['y'])), (int(clist[0]['x']), int(clist[0]['y'])), (255, 255, 255), 3)
+    img = cv2.line(img, (int(clist[0]['x']), int(clist[0]['y'])), (int(clist[0]['x']), int(clist[0]['y'])), (0, 255, 255), 6)
     t1list = tar1.xy
-    img = cv2.line(img, (int(t1list[0]['x']), int(t1list[0]['y'])), (int(t1list[0]['x']), int(t1list[0]['y'])), (0, 0, 255), 3)
+    img = cv2.line(img, (int(t1list[0]['x']), int(t1list[0]['y'])), (int(t1list[0]['x']), int(t1list[0]['y'])), (0, 0, 255), 6)
     t2list = tar2.xy
-    img = cv2.line(img, (int(t2list[0]['x']), int(t2list[0]['y'])), (int(t2list[0]['x']), int(t2list[0]['y'])), (0, 255, 0), 3)
+    img = cv2.line(img, (int(t2list[0]['x']), int(t2list[0]['y'])), (int(t2list[0]['x']), int(t2list[0]['y'])), (0, 255, 0), 6)
 
     for c in clist:
-        img = cv2.line(img, (int(c['x']), int(c['y'])), (int(c['x']), int(c['y'])), (255, 255, 255), 1)
+        img = cv2.line(img, (int(c['x']), int(c['y'])), (int(c['x']), int(c['y'])), (0, 255, 255), 2)
     for t in t1list:
-        img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 0, 255), 1)
+        img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 0, 255), 2)
     for t in t2list:
-        img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 1)
+        img = cv2.line(img, (int(t['x']), int(t['y'])), (int(t['x']), int(t['y'])), (0, 255, 0), 2)
     
     if save:
         print("save : ", name)
@@ -202,46 +202,41 @@ def simulate_thread(
     display=True,
     save=False,
     debuging=False,
-    clock = 0,
     success_list = [],
+    clock = [0],
     tip_sequence = [3],
     power_sequence = [40, 50],
     think_sequence = [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]
     ):
-
-    for t in tip_sequence:
-        for p in power_sequence:
-            for th in think_sequence:
-                    for _ in range(2):
-                        if len(success_list) >= DETECT_ROUTE_NUM:
-                            return success_list
-                        success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
-                                                        tar1_coord=tar1_coord,
-                                                        tar2_coord=tar2_coord,
-                                                        power=p,
-                                                        clock=clock,
-                                                        tip=t,
-                                                        thick=th,
-                                                        display=display,
-                                                        save=save,
-                                                        debuging=debuging)
-                        if len(success_list) >= DETECT_ROUTE_NUM:
-                            return
-                        if success:
-                            result = {"power": p,
-                                        "clock": clock,
-                                        "tip": t,
-                                        "thick": th,
-                                        "cue": cue, 
-                                        "tar1": tar1,
-                                        "tar2": tar2}
-                            success_list.append(result)
-                            print("\nsimulate_thread : ",result)
-                            return
-                        else:
-                            temp = tar1_coord
-                            tar1_coord = tar2_coord
-                            tar2_coord = temp
+    for th in think_sequence: # think 단위로 하나씩 결과를 뽑는다
+        for t in tip_sequence:
+            for p in power_sequence:
+                for c in clock:
+                    if len(success_list) >= DETECT_ROUTE_NUM:
+                        return success_list
+                    success, cue, tar1, tar2 = run_carom_simulate(cue_coord=cue_coord,
+                                                    tar1_coord=tar1_coord,
+                                                    tar2_coord=tar2_coord,
+                                                    power=p,
+                                                    clock=c,
+                                                    tip=t,
+                                                    thick=th,
+                                                    display=display,
+                                                    save=save,
+                                                    debuging=debuging)
+                    if len(success_list) >= DETECT_ROUTE_NUM:
+                        return
+                    if success:
+                        result = {"power": p,
+                                    "clock": c,
+                                    "tip": t,
+                                    "thick": th,
+                                    "cue": cue, 
+                                    "tar1": tar1,
+                                    "tar2": tar2}
+                        success_list.append(result)
+                        print("\nsimulate_thread : ",result)
+                        return
 
 def simulation(
     cue_coord=(300,400), 
@@ -260,21 +255,25 @@ def simulation(
     success_clock = []
     thread_list = []
     # clock_sequence = [3]
-    for c in clock_sequence:
-        thread = threading.Thread(target=simulate_thread, args=(
-            cue_coord,
-            tar1_coord,
-            tar2_coord,
-            display,
-            save,
-            debuging,
-            c,
-            success_list,
-            tip_sequence,
-            power_sequence,
-            think_sequence))
-        thread.start()
-        thread_list.append(thread)
+    # for c in clock_sequence:
+    
+    tar_ball = [tar1_coord, tar2_coord]
+    for th in think_sequence:
+        for tar1_idx in range(2):
+            thread = threading.Thread(target=simulate_thread, args=(
+                cue_coord,
+                tar_ball[tar1_idx],
+                tar_ball[1-tar1_idx],
+                display,
+                save,
+                debuging,
+                success_list,
+                clock_sequence,
+                tip_sequence,
+                power_sequence,
+                [th]))
+            thread.start()
+            thread_list.append(thread)
 
     for thr in thread_list:
         thr.join()
@@ -296,7 +295,7 @@ def tolist_by_int(values)-> list:
         raise TypeError
     return values
 
-
+ 
 def runner(args):
     print_args(vars(args))
     cue_xy = tuple(tolist_by_int(args.cue))
