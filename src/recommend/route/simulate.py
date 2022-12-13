@@ -246,8 +246,8 @@ def simulation(
     save=False,
     debuging=False,
     clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8],
-    tip_sequence = [3],
-    power_sequence = [40, 50],
+    tip_sequence = [3,2],
+    power_sequence = [30, 40, 50],
     think_sequence = [-4, 4, -3, 3, -2, 2, -5, 5, -6, 6, -7, 7, -1, 1]
     ):
 
@@ -331,10 +331,10 @@ if __name__ == '__main__':
     parser.add_argument('--cue', nargs="+", default="300 400", help="--cue x y")
     parser.add_argument('--tar1', nargs="+", default="100 750", help="--tar1 x y")
     parser.add_argument('--tar2', nargs="+", default="300 300", help="--tar2 x y")
-    parser.add_argument('--clock', nargs="+", default="2 0 1 11", help="--clock 1 11 2 10") 
+    parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
     parser.add_argument('--tip', nargs="+", default="3 2", help="--tip 3 1")
-    parser.add_argument('--power', nargs="+", default="50 40 30", help="--power 20 30")
-    parser.add_argument('--think', nargs="+", default="-6 6 -7 7", help="--thick '-4 4'")
+    parser.add_argument('--power', nargs="+", default="30 40 50", help="--power 20 30")
+    parser.add_argument('--think', nargs="+", default="-4 4 -5 5 -6 6 -3 3 -2 2 -1 1 -7 7", help="--thick '-4 4'")
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--no_save', default=False, action="store_true")
     

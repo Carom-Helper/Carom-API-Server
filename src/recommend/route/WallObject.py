@@ -80,6 +80,14 @@ class WallObject(IObserver, ICrashableSubject):
     # closure는 방향벡터와 노멀벡터를 입력으로 받는다.
     def get_reflect_closure(self, direct_vec, normal_vec):
         # 정방향 좌우회전 구하기
+        #   서로 크로스 해서 곱하면, 정방향 회전과 관련된 일정한 패턴이 나온다.
+        #   좌우스핀이 +일때 정방향인 경우는
+        #   노멀 벡터의 영향력이 X:+ Y:- 로 나온다.
+        #   이 규칙을 사용해서 정방향 좌우스핀을 구한다.
+        right_side = (direct_vec[0] * normal_vec[1] + direct_vec[1] * normal_vec[0])
+        if normal_vec[1] != 0:#Y방향 영향력 일때
+            right_side = right_side * -1
+        
         right_side = direct_vec[0] * (normal_vec.sum())
         # 입사각을 구한다.
         direct_vec = - direct_vec
@@ -380,6 +388,12 @@ class WallObject(IObserver, ICrashableSubject):
             # set new vector
             cos = np.cos(radian)
             sin = np.sin(radian)
+            
+            # 좌우 회전의 따른 편이각을 막 적용하면,
+            # 노멀벡터를 기준으로 만들었던 degree와 맞지 않는다. 
+            # 그렇기 때문에 반사벡터가 노멀벡터 방향에 맞게 나오도록 조정해야한다.
+            if right_side  > 0: #정회전
+                sin = -sin
             
             x = reflect_vec[0]
             y = reflect_vec[1]
