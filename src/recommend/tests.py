@@ -32,7 +32,7 @@ class RouteTestClass(LiveServerTestCase):
         pos = position.objects.last()
         id = pos.id
         
-        thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(id, False))
+        thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(id, False, True))
         #                                       make_coord.run(id, display= False)#False if FRAME_WORK=='furiosa' else True)
         thrd.start()
         

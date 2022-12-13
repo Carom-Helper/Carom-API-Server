@@ -93,12 +93,12 @@ class Simulate_route(metaclass=Make_Coordinate_Singleton):
         import threading
         self.lock = threading.Lock()
     
-    def RUN_THREAD(issue_id, display=False):
+    def RUN_THREAD(issue_id, display=False, save=False):
         simlate = Simulate_route()
-        simlate.run(issue_id=issue_id, display=display)
+        simlate.run(issue_id=issue_id, display=display, save=save)
         
 
-    def run(self, issue_id, display=False):
+    def run(self, issue_id, display=False, save=False):
         with self.lock:
             # 연산 중인지 확인
             state = get_ball_state(issue_id)
@@ -112,9 +112,9 @@ class Simulate_route(metaclass=Make_Coordinate_Singleton):
             pos.state="P"
             if not display:
                 pos.save()
-        Simulate_route.make_cord(issue_id, display)
+        Simulate_route.make_cord(issue_id, display, save=save)
     
-    def make_cord(issue_id, display=False):
+    def make_cord(issue_id, display=False, save=False):
         postion = position.objects.get(id=issue_id)
         
         #좌표 받아오기 cue, 목적구, 목적구2
@@ -124,7 +124,7 @@ class Simulate_route(metaclass=Make_Coordinate_Singleton):
         cue = (cue[0], cue[1])
         obj1 = (obj1[0],obj1[1])
         obj2 = (obj2[0],obj2[1])
-        soultion_list = simulation(cue, obj1, obj2, display=display, save=is_debug())
+        soultion_list = simulation(cue, obj1, obj2, display=display, save=save)
         for soultion in soultion_list:
             if display:
                 print("=============== add route =======================")
@@ -161,7 +161,7 @@ class RouteRequestAPIView(APIView):
         #detect PIPE
         try:
             import threading
-            thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(issue_id, False))
+            thrd = threading.Thread(target=Simulate_route.RUN_THREAD, args=(issue_id, False, False))
             thrd.start()
         except Exception as ex:
             print("make_route ex : "+ str(ex))
