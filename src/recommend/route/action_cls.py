@@ -186,20 +186,6 @@ class ICrashChecker(ICrashAction, metaclass=ABCMeta):
         # # 나중에 super를 사용한 뒤에 알아서 구현해라
 
 
-
-class IMoveableSubject(IMoveable, IFitteringSubject, metaclass=ABCMeta):
-    def __init__(self) -> None:
-        IMoveable.__init__(self)
-        IFitteringSubject.__init__(self)
-    
-    @abstractclassmethod
-    def get_xy(self)->list:
-        pass
-    
-    @abstractclassmethod
-    def notify_filltered_observer(self, observer:IObserver)->None:
-        pass
-    
 class ICrashableSubject(ICrashable, IFitteringSubject, metaclass=ABCMeta):
     def __init__(self) -> None:
         ICrashable.__init__(self)
@@ -245,14 +231,4 @@ class ICrashObserver(ICrash, IObserver, metaclass=ABCMeta):
     # crasher is closure
     @abstractclassmethod
     def crash(self, crashable:ICrashable):
-        pass
-
-class IMovableObserver(IMoveable, IObserver, metaclass=ABCMeta):
-    def __init__(self) -> None:
-        super().__init__()
-    @abstractclassmethod
-    def get_xy(self)->list:
-        pass
-    @abstractclassmethod
-    def update(self, event:dict=None) -> None:
         pass

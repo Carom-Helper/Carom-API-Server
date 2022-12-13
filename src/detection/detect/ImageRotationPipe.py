@@ -4,7 +4,7 @@ from pipe_cls import One2OnePipe, ResourceOne
 from detect_utills import PipeResource, line_show, is_test
 
 def is_test_image_rotate()->bool:
-    return True or is_test()
+    return True and is_test()
 
 # set path
 import os

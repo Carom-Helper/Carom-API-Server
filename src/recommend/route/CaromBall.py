@@ -22,10 +22,10 @@ sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
 
 
-class CaromBall(IObserver, ICrash, IMoveableSubject):
+class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
     elapse = 0
     def __init__(self, name="cue") -> None:
-        IMoveableSubject.__init__(self)
+        IFitteringSubject.__init__(self)
         self.name=f'{name}'
         self.xy = []
         self.vector = {"x": 0, "y": 0}
@@ -318,7 +318,7 @@ class CaromBall(IObserver, ICrash, IMoveableSubject):
             if self.wall_v is not None:
                 if self.wall_v[0] == v[0] and self.wall_v[1] == v[1]:
                     self.crash_list.remove(crashable.name)
-            if isinstance(crashable, IMoveableSubject):
+            if isinstance(crashable, IMoveable):
                 crashable.set_mover(crashable.move_by_time)
                 self.remove_observer(crashable)
         
