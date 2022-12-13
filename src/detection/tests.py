@@ -8,30 +8,19 @@ import cv2
 
 # Create your tests here.
 class DetectTestClass(LiveServerTestCase):
+    image_size=(720, 1280)
+    
     def setUp(self):
         #DB에 이미지 삽입
         view = "B"
         guide =  {
-            "TL": [
-                549,
-                109
-            ],
-            
-            "TR": [
-                942,
-                112
-            ],
-            "BL": [
-                180,
-                565
-            ],
-            "BR": [
-                1270,
-                580
-            ]
+            "TL": [662, 452],
+            "TR": [662, 752],
+            "BL": [57, 147],
+            "BR": [57, 1057]
         }
         #C:/Users/qjrm6/inte/Carom-API-Server/src/media/carom/2022/11/15/
-        img = carom_img(img='carom/sample.jpg')
+        img = carom_img(img='carom/CAP3825091495947943655.jpg')
         img.save()
         data = carom_data(img=img, guide=guide, view=view)
         data.save()
@@ -42,23 +31,23 @@ class DetectTestClass(LiveServerTestCase):
         
     def test_singleton(self):
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size,inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
         print()
     
     def test_detect(self):
         self.assertEqual(len(balls_coord.objects.all()), 0)
         img = carom_img.objects.last()
-        test_make_coord(img.id, display=False if FRAME_WORK=='furiosa' else True)
+        test_make_coord(img.id, image_size=self.image_size, display=False if FRAME_WORK=='furiosa' else True)
         self.assertEqual(len(balls_coord.objects.all()), 1)
         ball = balls_coord.objects.last()
         print("=========== detect ball ==================")

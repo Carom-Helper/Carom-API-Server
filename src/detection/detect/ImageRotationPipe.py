@@ -54,7 +54,7 @@ def rotate_origin_90(xy, shift_len, right_direct=False):
     return int(xx), int(yy)
 
 class ResizeingPipe(One2OnePipe):
-    def __init__(self, target_size = (1080,1920)) -> None:
+    def __init__(self, target_size=(1080,1920)) -> None:
         super().__init__()
         self.size = target_size
         

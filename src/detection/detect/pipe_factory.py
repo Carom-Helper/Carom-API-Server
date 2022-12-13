@@ -44,9 +44,9 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
         print("factory pipe test : ", s, s1, s2, s3, s4, s5, end=end)
 
 class PipeFactory(metaclass=PIPE_Singleton):
-    def __init__(self, start_pipe=None, device='furiosa', display = True, inDB=True):
+    def __init__(self, start_pipe=None, device='furiosa', image_size=(1080,1920), display = True, inDB=True):
         if display: print("PipeFactory Init", device)
-        self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, display=display, inDB=inDB)
+        self.pipe, _ = pipe_factory(start_pipe=start_pipe, device=device, image_size=image_size, display=display, inDB=inDB)
 
 def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), display=True, inDB=True):
     if display:
@@ -71,7 +71,7 @@ def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), disp
     ############################################################
         
     # - connect
-    pipe.next_pipe(next_pipe)
+    pipe.connect_pipe(next_pipe)
     next_pipe.connect_pipe(detect_cls_pipe)
     detect_cls_pipe.connect_pipe(xyxy2xywh)     #detect class - split_cls
     xyxy2xywh.connect_pipe(projection_coord_pipe)     #detect class - split_cls
@@ -99,7 +99,7 @@ def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), disp
 
 def detect(src, device='cpu', MIN_DETS= 10, display=False, inDB=False):
     # # set pipe
-    pipe, ball_bag = pipe_factory(device=device, display=display, inDB=inDB)
+    pipe, ball_bag = pipe_factory(device=device, display=display, image_size=(720, 1280),inDB=inDB)
     
     ### Dataloader ###
     dataset = LoadImages(src)
