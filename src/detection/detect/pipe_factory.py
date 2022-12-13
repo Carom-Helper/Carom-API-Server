@@ -71,7 +71,7 @@ def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), disp
     ############################################################
         
     # - connect
-    
+    pipe.next_pipe(next_pipe)
     next_pipe.connect_pipe(detect_cls_pipe)
     detect_cls_pipe.connect_pipe(xyxy2xywh)     #detect class - split_cls
     xyxy2xywh.connect_pipe(projection_coord_pipe)     #detect class - split_cls
