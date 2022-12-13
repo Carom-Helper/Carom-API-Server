@@ -245,6 +245,7 @@ def simulation(
     display=True,
     save=False,
     debuging=False,
+    is_thread = True,
     clock_sequence = [1, 11, 2, 10, 0, 3, 9, 4, 8],
     tip_sequence = [3,2],
     power_sequence = [30, 40, 50],
@@ -260,23 +261,37 @@ def simulation(
     tar_ball = [tar1_coord, tar2_coord]
     for th in think_sequence:
         for tar1_idx in range(2):
-            thread = threading.Thread(target=simulate_thread, args=(
-                cue_coord,
-                tar_ball[tar1_idx],
-                tar_ball[1-tar1_idx],
-                display,
-                save,
-                debuging,
-                success_list,
-                clock_sequence,
-                tip_sequence,
-                power_sequence,
-                [th]))
-            thread.start()
-            thread_list.append(thread)
-
-    for thr in thread_list:
-        thr.join()
+            if is_thread:
+                thread = threading.Thread(target=simulate_thread, args=(
+                    cue_coord,
+                    tar_ball[tar1_idx],
+                    tar_ball[1-tar1_idx],
+                    display,
+                    save,
+                    debuging,
+                    success_list,
+                    clock_sequence,
+                    tip_sequence,
+                    power_sequence,
+                    [th]))
+                thread.start()
+                thread_list.append(thread)
+            else :
+                simulate_thread(
+                    cue_coord,
+                    tar_ball[tar1_idx],
+                    tar_ball[1-tar1_idx],
+                    display,
+                    save,
+                    debuging,
+                    success_list,
+                    clock_sequence,
+                    tip_sequence,
+                    power_sequence,
+                    [th])
+    if is_thread:
+        for thr in thread_list:
+            thr.join()
         
     print("\nsimulation : ",success_list)
     return success_list
@@ -318,6 +333,7 @@ def runner(args):
                display=False,
                save=not args.no_save,
                debuging=args.debug,
+               is_thread = not args.no_thread,
                clock_sequence = clock_sequence,
                tip_sequence = tip_sequence,
                power_sequence = power_sequence,
@@ -336,6 +352,7 @@ if __name__ == '__main__':
     parser.add_argument('--power', nargs="+", default="30 40 50", help="--power 20 30")
     parser.add_argument('--think', nargs="+", default="-4 4 -5 5 -6 6 -3 3 -2 2 -1 1 -7 7", help="--thick '-4 4'")
     parser.add_argument('--debug', default=False, action="store_true")
+    parser.add_argument('--no_thread', default=False, action="store_true")
     parser.add_argument('--no_save', default=False, action="store_true")
     
     # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')

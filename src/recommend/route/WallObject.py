@@ -82,25 +82,28 @@ class WallObject(IObserver, ICrashableSubject):
         # 정방향 좌우회전 구하기
         #   서로 크로스 해서 곱하면, 정방향 회전과 관련된 일정한 패턴이 나온다.
         #   좌우스핀이 +일때 정방향인 경우는
-        #   노멀 벡터의 영향력이 X:+ Y:- 로 나온다.
+        #   노멀 벡터의 영향력이 Y:+ X:- 로 나온다.
         #   이 규칙을 사용해서 정방향 좌우스핀을 구한다.
+        #   해당 값에서 양수가 나오면 sidespin이 양수가 나와야 정방향 스핀이고,
+        #   해당 값에서 음수가 나오면 sidespin이 음수가 나와야 정방향 스핀이다.
         right_side = (direct_vec[0] * normal_vec[1] + direct_vec[1] * normal_vec[0])
-        if normal_vec[1] != 0:#Y방향 영향력 일때
+        if normal_vec[0] != 0:#X방향 영향력 일때
             right_side = right_side * -1
         
-        right_side = direct_vec[0] * (normal_vec.sum())
         # 입사각을 구한다.
-        direct_vec = - direct_vec
-        radian = angle(direct_vec, normal_vec)
+        reverse_direct_vec = - direct_vec
+        radian = angle(reverse_direct_vec, normal_vec)
         direct_normal_degree = radian2degree(radian)
         degree = 90.0 - direct_normal_degree
 
-        
-        def none_reflect(data : dict):
-            reflect_vec = - direct_vec
-            return reflect_vec, data
-
+        # 진행 방향을 그대로 진행해야하는 경우 반환하는 벡터
         if degree > 90 or np.isnan(degree):
+            #   노멀벡터와 방향벡터의 각이 90도가 넘었을 때는 
+            #   공이 벽과 너무 가까워서 샷이 되자마자 충돌 판정이 났을 경우이다.
+            #   이때 튕기면 매우 곤란하다.
+            def none_reflect(data : dict):
+                reflect_vec = direct_vec
+                return reflect_vec, data
             return none_reflect
 
         bias_table = {"key":[0.5, 4, 7, 11, 1000]}
@@ -347,21 +350,21 @@ class WallObject(IObserver, ICrashableSubject):
         
         def simple_reflect_ball2wall(data:dict):
             # reflect vec 구하기
+            #   방향벡터를 반대로 한 벡터에서 노멀벡터를 기준으로 반전한 벡터가 기본적인 반사 벡터이다.
             x , y = normal_vec.tolist()
-            reflect_vec = direct_vec.copy()
+            reflect_vec = reverse_direct_vec.copy()
             if x==0:
-                reflect_vec[0] = -direct_vec[0]
+                reflect_vec[0] = -reverse_direct_vec[0]
             else:
-                reflect_vec[1] = -direct_vec[1]
+                reflect_vec[1] = -reverse_direct_vec[1]
             
             # power, sidespin 힘
             power = data["power"]
             sidespin = data["sidespin"]
-            
             # upspin = data["upspin"]
             # upspin_lv = int((upspin - upspinmin) / (upsinrange) * 10)
             
-            #power 선택
+            #power에 따른 좌우스핀에 따른 반사각 편이의 정도를 담은 테이블 선택
             for speed_guide in bias_table["key"]:
                 if float(power) < float(speed_guide):
                     test_print("speed_guide",power,speed_guide)
@@ -372,29 +375,36 @@ class WallObject(IObserver, ICrashableSubject):
                 print("error degree : ",degree, str(pick_key))
             # test_print("===============table=============\n", table)
             
-            # sidespin 선택
-            #   역회전 확인
-            if sidespin * right_side > 0: #정회전
-                sidespin_lv = int((sidespin - sidespinmin) / (sidespinrange) * 10)
-                if sidespin_lv >= 10:
-                    sidespin_lv = 9 
-            else:#역회전
-                sidespin_lv = int(1)
             
-            # set new degree
-            theta = table[sidespin_lv]
+            # sidespin level에 따른 반사각의 편이 정도 선택
+            if sidespin == 0.0:
+                theta = 0
+            #   부딪치는 방향에 따라 정회전인지 역회전인지 확인
+            else : 
+                #정회전인 경우
+                if sidespin * right_side > 0: # right_side에서는 정방향이 어느 방향인지 담고 있다. 같은 부호를 가르킨다면 정수가 나올 것이다.
+                    sidespin_lv = int((sidespin - sidespinmin) / (sidespinrange) * 10)
+                    if sidespin_lv >= 10:
+                        sidespin_lv = 9 
+                else:#역회전
+                    sidespin_lv = int(0)
+                # set new degree
+                theta = table[sidespin_lv]
+            
+            
+            # set new vector (반사각의 편이각을 구하기 위해서)
             radian = np.deg2rad(theta)
             
-            # set new vector
             cos = np.cos(radian)
             sin = np.sin(radian)
             
-            # 좌우 회전의 따른 편이각을 막 적용하면,
-            # 노멀벡터를 기준으로 만들었던 degree와 맞지 않는다. 
-            # 그렇기 때문에 반사벡터가 노멀벡터 방향에 맞게 나오도록 조정해야한다.
+            #   좌우 회전의 따른 편이각을 막 적용하면,
+            #   노멀벡터를 기준으로 만들었던 degree와 맞지 않는다. 
+            #   그렇기 때문에 반사벡터가 노멀벡터 방향에 맞게 나오도록 조정해야한다.
             if right_side  > 0: #정회전
                 sin = -sin
             
+            # 기본 반사각에서 좌우스핀에 따른 편이각 적용
             x = reflect_vec[0]
             y = reflect_vec[1]
             reflect_vec[0] = x * cos - y * sin
