@@ -14,9 +14,16 @@ cd ../../../../../../
 ```
 #### Next Step. Set {$ROOT}/src/secrets.json && {$ROOT}/src/settings.json
 ```bash
-# set +H
+# For Linux
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
 echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"118.36.223.138", "PORT_NUM":"7576"}' > settings.json
+echo '{json contents}' > secrets.json
+cd ..
+```
+```bash
+# For Window
+# FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
+echo {"FRAME_WORK":"furiosa" ,"HOST_NAME":"118.36.223.138", "PORT_NUM":"7576"} > settings.json
 echo '{json contents}' > secrets.json
 cd ..
 ```
