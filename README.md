@@ -40,6 +40,7 @@ conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11
 # How to initialize ENV with Anaconda(or PIP)
 ```bash
 pip install -r requirements.txt
+# conda install django -y
 ```
 
 # How to run with Anaconda(or PIP)
