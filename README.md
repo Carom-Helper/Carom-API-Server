@@ -7,10 +7,7 @@ git clone https://github.com/Carom-Helper/Carom-API-Server.git
 cd Carom-API-Server
 # git submodule update --init --recursive --remote
 git submodule update --init --recursive
-cd src/detection/detect/npu_yolov5/utils/box_decode/cbox_decode
-python setup.py build_ext --inplace
-cd ../../../../../../
-
+cd src
 ```
 #### Next Step. Set {$ROOT}/src/secrets.json && {$ROOT}/src/settings.json
 ```bash
@@ -48,6 +45,9 @@ conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11
 ```bash
 pip install -r requirements.txt
 # conda install django -y
+cd detection/detect/npu_yolov5/utils/box_decode/cbox_decode
+python setup.py build_ext --inplace
+cd ../../../../../../
 ```
 
 # How to run with Anaconda(or PIP)
@@ -82,11 +82,18 @@ make run
 ```
 
 # How to setting In Docker Container (attach shell)
+#### setting box_decode for npu yolo
+```bash
+cd detection/detect/npu_yolov5/utils/box_decode/cbox_decode
+python setup.py build_ext --inplace
+cd ../../../../../../
+```
+
 #### For Window
 ```bash
 python clear_migrate.py & python manage.py makemigrations & python manage.py makeviewmigrations & python manage.py migrate & echo import init_setter | python manage.py shell_plus
 ```
-#### Fro Linux
+#### For Linux
 ```bash
 python clear_migrate.py && python manage.py makemigrations && python manage.py makeviewmigrations && python manage.py migrate && echo "import init_setter" | python manage.py shell_plus
 ```
