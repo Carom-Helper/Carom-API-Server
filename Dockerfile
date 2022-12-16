@@ -1,5 +1,5 @@
 # FROM nvcr.io/nvidia/tensorrt:22.05-py3 #cuda 11.6
-FROM nvcr.io/nvidia/tensorrt:19.02-py3 #cuda 10.0 / python 3.5
+FROM nvcr.io/nvidia/tensorrt:19.02-py3 # cuda 10.0 / python 3.5
 # FROM 31f3b6f28041 #furiosa-sdk 0.8.0
 
 SHELL ["/bin/bash", "-c"]
