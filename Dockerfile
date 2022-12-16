@@ -26,8 +26,8 @@ RUN pip install --upgrade pip
 
 # cuda 10.0
 # RUN pip install torch==1.2.0 torchvision==0.4.0
-RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
-# RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
+# RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
 
 # 프로젝트 필요 소스 다운로드
 RUN mkdir -p /${fname}
