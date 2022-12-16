@@ -7,12 +7,12 @@ git clone https://github.com/Carom-Helper/Carom-API-Server.git
 cd Carom-API-Server
 # git submodule update --init --recursive --remote
 git submodule update --init --recursive
-cd src
 ```
 #### Next Step. Set {$ROOT}/src/secrets.json && {$ROOT}/src/settings.json
 ```bash
 # For Linux
 # FRAME_WORK('furiosa', '0', 'cpu', 'onnx')
+cd src
 echo '{"FRAME_WORK":"furiosa" ,"HOST_NAME":"118.36.223.138", "PORT_NUM":"7576"}' > settings.json
 echo '{json contents}' > secrets.json
 cd ..
