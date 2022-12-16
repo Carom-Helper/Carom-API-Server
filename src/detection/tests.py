@@ -47,7 +47,7 @@ class DetectTestClass(LiveServerTestCase):
     def test_detect(self):
         self.assertEqual(len(balls_coord.objects.all()), 0)
         img = carom_img.objects.last()
-        test_make_coord(img.id, image_size=self.image_size, display=False if FRAME_WORK=='furiosa' else True)
+        test_make_coord(img.id, image_size=self.image_size, display=True)
         self.assertEqual(len(balls_coord.objects.all()), 1)
         ball = balls_coord.objects.last()
         print("=========== detect ball ==================")
