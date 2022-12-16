@@ -82,7 +82,7 @@ make build
 make run
 ```
 
-# How to setting In Docker Container (attach shell)
+# How to setting In Docker Container (make exec)
 #### setting box_decode for npu yolo
 ```bash
 cd detection/detect/npu_yolov5/utils/box_decode/cbox_decode
