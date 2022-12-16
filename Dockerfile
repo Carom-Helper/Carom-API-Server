@@ -1,7 +1,7 @@
 # cuda 11.6
-# FROM nvcr.io/nvidia/tensorrt:22.05-py3
+FROM nvcr.io/nvidia/tensorrt:22.05-py3
 # cuda 10.0 / python 3.5
-FROM nvcr.io/nvidia/tensorrt:19.02-py3
+# FROM nvcr.io/nvidia/tensorrt:19.02-py3
 # furiosa-sdk 0.8.0
 # FROM 31f3b6f28041
 
@@ -25,8 +25,8 @@ ENV LC_ALL ko_KR.UTF-8
 RUN pip install --upgrade pip
 
 # cuda 10.0
-RUN pip install torch==1.2.0 torchvision==0.4.0
-# RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+# RUN pip install torch==1.2.0 torchvision==0.4.0
+RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 # RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
 
 # 프로젝트 필요 소스 다운로드
