@@ -31,23 +31,23 @@ class DetectTestClass(LiveServerTestCase):
         
     def test_singleton(self):
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=False, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=False, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=False, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=False, image_size=self.image_size, inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size,inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=False, image_size=self.image_size,inDB=True).pipe
         print("Call PipeFactory ",end="|")
-        pipe = PipeFactory(device=FRAME_WORK, display=True, image_size=self.image_size, inDB=True).pipe
+        pipe = PipeFactory(device=FRAME_WORK, display=False, image_size=self.image_size, inDB=True).pipe
         print()
     
     def test_detect(self):
         self.assertEqual(len(balls_coord.objects.all()), 0)
         img = carom_img.objects.last()
-        test_make_coord(img.id, image_size=self.image_size, display=True)
+        test_make_coord(img.id, image_size=self.image_size, display=False)
         self.assertEqual(len(balls_coord.objects.all()), 1)
         ball = balls_coord.objects.last()
         print("=========== detect ball ==================")
