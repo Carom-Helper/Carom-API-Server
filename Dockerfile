@@ -24,7 +24,8 @@ RUN apt-get install libglib2.0-0 -y
 ENV LC_ALL ko_KR.UTF-8
 RUN pip install --upgrade pip
 
-RUN pip install torch==1.2.0 torchvision==0.4.0 # cuda 10.0
+# cuda 10.0
+RUN pip install torch==1.2.0 torchvision==0.4.0
 # RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 # RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
 
