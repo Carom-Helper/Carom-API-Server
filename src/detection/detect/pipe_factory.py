@@ -15,16 +15,6 @@ tmp = ROOT
 if str(tmp) not in sys.path and os.path.isabs(tmp):
     sys.path.append(str(tmp))  # add ROOT to PATH
 
-# tmp = ROOT / "gpu_yolov5"
-# if str(tmp) not in sys.path and os.path.isabs(tmp):
-#     sys.path.append(str(tmp))  # add ROOT to PATH
-
-
-# # ADD gpu_yolov5 to env list
-# tmp = ROOT / 'gpu_yolov5'
-# if str(tmp) not in sys.path and os.path.isabs(tmp):
-#     sys.path.append(str(tmp))  # add yolov5 ROOT to PATH
-
 from pipe_cls import One2OnePipe, ConvertToxywhPipe, IObserverPipe, SplitCls, ResourceOne, ResourceBag
 from DjangoSaveBall import SaveBallCoordPipe
 from Singleton import PIPE_Singleton
@@ -60,7 +50,6 @@ def pipe_factory(start_pipe=None, device='furiosa', image_size=(1080,1920), disp
     projection_coord_pipe = ProjectionCoordPipe(display = display)
     coord_filter_pipe = CoordFilterPipe()
     ball_generate_pipe = BallGeneratePipe()
-    
     
     ###################### change###############################
     rotation_pipe = ImageRotationPipe(image_size)

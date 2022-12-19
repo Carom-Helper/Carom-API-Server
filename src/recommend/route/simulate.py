@@ -22,6 +22,8 @@ def run_carom_simulate(
     save=False,
     debuging=False
     ):
+    
+    # create object(ball, wall)
     cue = CaromBall("cue")
     tar1 = CaromBall("tar1")
     tar2 = CaromBall("tar2")
@@ -47,46 +49,25 @@ def run_carom_simulate(
             pos2={"x":0.0, "y":0.0},
             name="left"
         ))
-    w1 = wall_list[0]
-    w2 = wall_list[1]
-    w3 = wall_list[2]
-    w4 = wall_list[3]
 
+    # ball init
     cue.start_param(power = power, clock = clock, tip = tip)
-    #cue.print_param()
-
     cue.set_xy(*cue_coord)
     tar1.set_xy(*tar1_coord)
     tar2.set_xy(*tar2_coord)
-
-    #cue.register_observer(tar1)
-    #cue.register_observer(tar2)
-
-    cue.register_observer(w1)
-    cue.register_observer(w2)
-    cue.register_observer(w3)
-    cue.register_observer(w4)
-    cue.register_observer(tar1)
-    cue.register_observer(tar2)
-
-    tar1.register_observer(w1)
-    tar1.register_observer(w2)
-    tar1.register_observer(w3)
-    tar1.register_observer(w4)
-    tar1.register_observer(cue)
-    tar1.register_observer(tar2)
     
-    tar2.register_observer(w1)
-    tar2.register_observer(w2)
-    tar2.register_observer(w3)
-    tar2.register_observer(w4)
-    tar2.register_observer(cue)
-    tar2.register_observer(tar1)
-
-    w1.register_observer(cue)
-    w2.register_observer(cue)
-    w3.register_observer(cue)
-    w4.register_observer(cue)
+    
+    # 충돌객체 추가
+    #   공 <- 벽 객체 추가
+    for wall in wall_list:
+        cue.add_crash_object(wall)
+        tar1.add_crash_object(wall)
+        tar2.add_crash_object(wall)
+    
+    #   공 <- 다른 공 객체 추가
+    cue.add_crash_object(tar1)
+    cue.add_crash_object(tar2)
+    tar1.add_crash_object(tar2)
     
     set_vec(cue, tar1, thick)
     cue.set_mover(cue.move_by_time)
@@ -103,13 +84,17 @@ def run_carom_simulate(
     ball_list = [cue, tar1, tar2]
     while True:
     # for _ in range(10000):
-        cue_dist, _ = cue.move(elapsed)
-        tar1_dist, _ = tar1.move(elapsed)
-        tar2_dist, _ = tar2.move(elapsed)
-
-        cue.notify_observers()
-        tar1.notify_observers()
-        tar2.notify_observers()
+        def move_ball():
+            cue_dist, _ = cue.move(elapsed)
+            tar1_dist, _ = tar1.move(elapsed)
+            tar2_dist, _ = tar2.move(elapsed)
+        move_ball()
+        
+        def lazy_set_crash_action():
+            cue.check_crash_event_and_notify_event_to_observers()
+            tar1.check_crash_event_and_notify_event_to_observers()
+            tar2.check_crash_event_and_notify_event_to_observers()
+        lazy_set_crash_action()
         
         
         cue_elapsed = cue.update()
@@ -347,10 +332,14 @@ if __name__ == '__main__':
     parser.add_argument('--cue', nargs="+", default="300 400", help="--cue x y")
     parser.add_argument('--tar1', nargs="+", default="100 750", help="--tar1 x y")
     parser.add_argument('--tar2', nargs="+", default="300 300", help="--tar2 x y")
-    parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
+    parser.add_argument('--clock', nargs="+", default="0", help="--clock 1 11 2 10") 
     parser.add_argument('--tip', nargs="+", default="3 2", help="--tip 3 1")
-    parser.add_argument('--power', nargs="+", default="30 40 50", help="--power 20 30")
-    parser.add_argument('--think', nargs="+", default="-4 4 -5 5 -6 6 -3 3 -2 2 -1 1 -7 7", help="--thick '-4 4'")
+    parser.add_argument('--power', nargs="+", default="40", help="--power 20 30")
+    parser.add_argument('--think', nargs="+", default="-6 -7", help="--thick '-4 4'")
+    # parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
+    # parser.add_argument('--tip', nargs="+", default="3 2", help="--tip 3 1")
+    # parser.add_argument('--power', nargs="+", default="30 40 50", help="--power 20 30")
+    # parser.add_argument('--think', nargs="+", default="-4 4 -5 5 -6 6 -3 3 -2 2 -1 1 -7 7", help="--thick '-4 4'")
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--no_thread', default=False, action="store_true")
     parser.add_argument('--no_save', default=False, action="store_true")

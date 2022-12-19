@@ -22,7 +22,7 @@ sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
 
 
-class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
+class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubject):
     elapse = 0
     def __init__(self, name="cue") -> None:
         IFitteringSubject.__init__(self)
@@ -63,66 +63,20 @@ class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
         print(f'theta: {self.theta}, tip: {self.tip}/3, thick: {self.thick}')
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
         print(f'upspin_lv: {self.upspin_lv}, sidespin_lv: {self.sidespin_lv}\n')
-    
+        
+    def add_crash_object(self, crash_object:ICrashable)->None:
+        self.register_observer(crash_object)
+        
+    def check_crash_event_and_notify_event_to_observers(self)->None:
+        self.notify_observers()
+        
     def update(self, event:dict=None) -> None:
-        # test_print("update move", self.get_xy())
-        # if "elapsed" in event: # 움직인다.
-        #     self.move(event["elapsed"]) # elapsed = t(float)
-        # if "crashable" in event: # crash 를 일으킨다
-        #     self.crash(event["crashable"])        
-        """
-        if self.new_v is not None:
-            self.vector['x'] = self.new_v[0] * (0.6) * self.data["power"] / 50
-            self.vector['y'] = self.new_v[1] * (0.6) * self.data["power"] / 50
-            self.new_v = None
-        """
-        if self.wall_v is not None:
-            self.vector['x'] = self.wall_v[0] * (0.6) * self.data["power"] / 50
-            self.vector['y'] = self.wall_v[1] * (0.6) * self.data["power"] / 50
-            self.wall_v = None
-
-            self.power = self.data['power']
-
-            self.upspin = self.data['upspin']
-            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
-            if self.upspin_lv == 10:
-                self.upspin_lv = 9
-
-            self.sidespin = self.data['sidespin']
-            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-            if self.sidespin_lv == 10:
-                self.sidespin_lv = 9
-            self.data = None
-
-        else:
-            if self.data is not None:
-                self.vector['x'] += self.data["vector"][0] + self.new_v[0]
-                self.vector['y'] += self.data["vector"][1] + self.new_v[1]
-                x,y = self.rotate_vector(self.data["rotate"], self.vector['x'], self.vector['y'])
-                self.vector['x'], self.vector['y'] = x, y
-
-                self.data["vector"] = [0, 0]
-                self.new_v = [0, 0]
-
-                self.power = self.data['power'] + self.new_power
-                self.new_power = 0
-
-                self.upspin = self.data['upspin']
-                self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
-                if self.upspin_lv == 10:
-                    self.upspin_lv = 9
-
-                self.sidespin = self.data['sidespin']
-                self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-                if self.sidespin_lv == 10:
-                    self.sidespin_lv = 9
-                self.data = None
-        dist = (self.vector['x']**2 + self.vector['y']**2)**0.5
-        next_elapsed = 10000
-        if dist > 0:
-            next_elapsed = 0.6 / dist
-        return next_elapsed
-
+       event_keys = event.keys()
+       
+       if "crash" in event_keys:
+           crash_object = event["crash"]
+           self.crash(crash_object)
+        
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
@@ -141,17 +95,16 @@ class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
         if isinstance(observer,ICrashable):
-        #   1. ICrashObserver가 들어오면,
-            #if observer is ICrashable:
+        #   1. ICrashable observer가 들어오면,
         #       충돌을 확인하고,
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
-        
-                self.crash(observer)
+                self.update({"crash":observer}) # 해당 객체와 업데이트
                 test_print("notify_filltered_observer", f"====== {str(observer)} ======")
-                event["crashable"] = self
-            
+                event["crash"] = self
+        observer.update(event)           
+
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
         x0, y0 = self.get_xy()
@@ -194,7 +147,7 @@ class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
             bias_table = [-1.001932144, 3.712745857, 5.213981628, 6.175741959, 7.22426033,
                 8.593474197, 9.567179108, 10.51088638, 11.51598625, 28.40719414]
         else:
-            raise TypeError("get_reflect_closure+Ball")
+            raise TypeError("get_reflect_closure+ball")
         
         split_table = {
             "key":[20, 21, 25,30,35,40,45,50,55,60,65,70,75],
@@ -301,10 +254,15 @@ class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
             #return simple_reflect_ball2ball
             return complex_reflect_ball2ball
         
-
+    def set_action(self, vector, power:float, spin:dict)->None:
+        raise NotImplementedError
+    
+    def apply_action(self)->None:
+        raise NotImplementedError
+    
     def crash(self, crashable:ICrashable):
         if self.last_crashable is not crashable:
-            test_print("Cue crachable : ", str(crashable), self.power)
+            test_print("cue crachable : ", str(crashable), self.power)
             v = np.array([self.vector['x'], self.vector['y']])
             #x, y = self.get_xy()
             closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
@@ -315,13 +273,64 @@ class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
             self.last_crashable = crashable
             self.crash_list.append(crashable.name)
 
+            # 같은 위치에서 부딪치는 경우 제거
             if self.wall_v is not None:
                 if self.wall_v[0] == v[0] and self.wall_v[1] == v[1]:
                     self.crash_list.remove(crashable.name)
+            
+            
             if isinstance(crashable, IMoveable):
                 crashable.set_mover(crashable.move_by_time)
                 self.remove_observer(crashable)
-        
+     # 
+        if self.wall_v is not None:
+            self.vector['x'] = self.wall_v[0] * (0.6) * self.data["power"] / 50
+            self.vector['y'] = self.wall_v[1] * (0.6) * self.data["power"] / 50
+            self.wall_v = None
+
+            self.power = self.data['power']
+
+            self.upspin = self.data['upspin']
+            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+            if self.upspin_lv == 10:
+                self.upspin_lv = 9
+
+            self.sidespin = self.data['sidespin']
+            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+            if self.sidespin_lv == 10:
+                self.sidespin_lv = 9
+            self.data = None
+
+        else:
+            if self.data is not None:
+                self.vector['x'] += self.data["vector"][0] + self.new_v[0]
+                self.vector['y'] += self.data["vector"][1] + self.new_v[1]
+                x,y = self.rotate_vector(self.data["rotate"], self.vector['x'], self.vector['y'])
+                self.vector['x'], self.vector['y'] = x, y
+
+                self.data["vector"] = [0, 0]
+                self.new_v = [0, 0]
+
+                self.power = self.data['power'] + self.new_power
+                self.new_power = 0
+
+                self.upspin = self.data['upspin']
+                self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+                if self.upspin_lv == 10:
+                    self.upspin_lv = 9
+
+                self.sidespin = self.data['sidespin']
+                self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+                if self.sidespin_lv == 10:
+                    self.sidespin_lv = 9
+                self.data = None
+        dist = (self.vector['x']**2 + self.vector['y']**2)**0.5
+        next_elapsed = 10000
+        if dist > 0:
+            next_elapsed = 0.6 / dist
+        return next_elapsed
+
+   
     def set_colpoint(self, x:float, y:float):
         if len(self.colpoint) > 0:
             px, py = self.colpoint[-1]

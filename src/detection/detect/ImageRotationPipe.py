@@ -64,12 +64,12 @@ class ResizeingPipe(One2OnePipe):
         
         
         if is_test_image_rotate():
-                conners = [output.metadata["TL"],
-                           output.metadata["TR"],
-                           output.metadata["BL"],
-                           output.metadata["BR"]]
-                line_show(output.im, conners, f"ResizeingPipe{size}")
-                cv2.waitKey(10000)
+            conners = [output.metadata["TL"],
+                        output.metadata["TR"],
+                        output.metadata["BL"],
+                        output.metadata["BR"]]
+            line_show(output.im, conners, f"ResizeingPipe{size}")
+            cv2.waitKey(10000)
         
         # 홀수 회전시 size를 바꿔준다.
         if "rotation_num" in output.metadata.keys():
