@@ -74,17 +74,18 @@ class IMoveable(metaclass=ABCMeta):
 
 # 공이 충돌하면, 운동이 변경된다.
 # 하지만 해당 운동을 바로 적용시키는 것보다는
-# 다음 운동상태로 초기화 시키고,
+# 다음 운동상태로 변경값을 저장해 놓고,
 # 의도적으로 호출하여 적용시키는 것이 더 상황을 컨트롤하기 좋았다.
 # 해당 행동을 통일하기 위해서 의도적으로 만든 인터페이스 이다.
 class LAZY_ACTION_SETTER(metaclass=ABCMeta):
-    
+    def __init__(self) -> None:
+        self.next_action=dict()
     @abstractclassmethod
-    def set_action(vector, power:float, spin:dict)->None:
+    def set_next_action(self, vector:dict, power:float, spin:dict)->None:
         pass
     
     @abstractclassmethod
-    def apply_action()->None:
+    def apply_next_action(self)->None:
         pass
 
 

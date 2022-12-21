@@ -60,14 +60,14 @@ def run_carom_simulate(
     # 충돌객체 추가
     #   공 <- 벽 객체 추가
     for wall in wall_list:
-        cue.add_crash_object(wall)
-        tar1.add_crash_object(wall)
-        tar2.add_crash_object(wall)
+        cue.add_crashable_object(wall)
+        tar1.add_crashable_object(wall)
+        tar2.add_crashable_object(wall)
     
     #   공 <- 다른 공 객체 추가
-    cue.add_crash_object(tar1)
-    cue.add_crash_object(tar2)
-    tar1.add_crash_object(tar2)
+    cue.add_crashable_object(tar1)
+    cue.add_crashable_object(tar2)
+    tar1.add_crashable_object(tar2)
     
     set_vec(cue, tar1, thick)
     cue.set_mover(cue.move_by_time)
@@ -83,12 +83,10 @@ def run_carom_simulate(
     
     ball_list = [cue, tar1, tar2]
     while True:
-    # for _ in range(10000):
-        def move_ball():
-            cue_dist, _ = cue.move(elapsed)
-            tar1_dist, _ = tar1.move(elapsed)
-            tar2_dist, _ = tar2.move(elapsed)
-        move_ball()
+        # ball move
+        cue_dist, _ = cue.move(elapsed)
+        tar1_dist, _ = tar1.move(elapsed)
+        tar2_dist, _ = tar2.move(elapsed)
         
         def lazy_set_crash_action():
             cue.check_crash_event_and_notify_event_to_observers()
@@ -96,14 +94,14 @@ def run_carom_simulate(
             tar2.check_crash_event_and_notify_event_to_observers()
         lazy_set_crash_action()
         
+        cue.apply_next_action()
+        tar1.apply_next_action()
+        tar2.apply_next_action()
         
-        cue_elapsed = cue.update()
-        tar1_elapsed = tar1.update()
-        tar2_elapsed = tar2.update()
 
         elapsed = min(cue_elapsed, tar1_elapsed, tar2_elapsed)
 
-        cue_hit = cue.crash_list
+        cue_hit = cue.crash_objects
         if cue_hit is not None:
             for hit in cue_hit:
                 if hit == 'tar1':
@@ -125,11 +123,11 @@ def run_carom_simulate(
             break
     if display:
         if success:
-            print(success, cue.colpoint)
+            print(success, cue.crash_points)
     name = f"({cue_coord[0]}cue{cue_coord[1]})({tar1_coord[0]}tar{tar1_coord[1]})({tar2_coord[0]}tar{tar2_coord[1]})(P{power}C{clock}T{tip})(thick{thick}).jpg"
     show(cue, tar1, tar2, name, display=display, save = debuging or (success and save))
 
-    return success, cue.colpoint, tar1.colpoint, tar2.colpoint
+    return success, cue.crash_points, tar1.crash_points, tar2.crash_points
 
 def show(cue, tar1, tar2, name, display=True, save=False):
     img = np.zeros((800,400,3), np.uint8)

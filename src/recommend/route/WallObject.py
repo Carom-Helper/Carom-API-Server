@@ -1,4 +1,4 @@
-from route_utills import angle, radian2degree
+from route_utills import angle, radian2degree, rotate_vector
 from action_cls import *
 import numpy as np
 from CaromBall import (
@@ -361,30 +361,18 @@ class WallObject(IObserver, ICrashable):
                 # set new degree
                 theta = table[sidespin_lv]
             
-            
-            # set new vector (반사각의 편이각을 구하기 위해서)
-            radian = np.deg2rad(theta)
-            
-            cos = np.cos(radian)
-            sin = np.sin(radian)
-            
-            #   좌우 회전의 따른 편이각을 막 적용하면,
-            #   노멀벡터를 기준으로 만들었던 degree와 맞지 않는다. 
-            #   그렇기 때문에 반사벡터가 노멀벡터 방향에 맞게 나오도록 조정해야한다.
-            if right_side  > 0: #정회전
-                sin = -sin
-            
-            # 기본 반사각에서 좌우스핀에 따른 편이각 적용
-            x = reflect_vec[0]
-            y = reflect_vec[1]
-            reflect_vec[0] = x * cos - y * sin
-            reflect_vec[1] = x * sin + y * cos
+            # right_side는 입사하는 방향벡터와 노멀벡터와의 사이와 같다.
+            # 노멀벡터를 기준으로 방향벡터는 대칭하여 같은 값을 가진다.
+            # 하지만 회전연산은 서로 다르다.
+            # right_side를 통해서 방향벡터의 입사방향을 판단할 수 있도록 한다.
+            # 입사 방향이 반대라면, 회전연산이 역으로 걸릴 수 있도록 해준다.
+            reflect_vec = rotate_vector(reflect_vec, theta, reverse_rotate=(right_side > 0))
             
             return (reflect_vec, data)
         return simple_reflect_ball2wall
     
-def update(self, event:dict=None) -> None:
-    pass
+    def update(self, event:dict=None) -> None:
+        pass
 def test_get_distance_from_point():
     from random import randint
     wall_list = list()

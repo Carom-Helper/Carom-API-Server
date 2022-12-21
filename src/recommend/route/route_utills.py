@@ -81,7 +81,26 @@ def thickness_prediction(cue, tar, thickness = 0):
     new_t['y'] = x * sin + y * cos + tar['y']
 
     return new_t
-
+def rotate_vector(vector:np.array, degree:float, reverse_rotate:bool)->np.array:
+    # set new vector (반사각의 편이각을 구하기 위해서)
+    radian = np.deg2rad(degree)
+    
+    cos = np.cos(radian)
+    sin = np.sin(radian)
+    
+    #   좌우 회전의 따른 편이각을 막 적용하면,
+    #   노멀벡터를 기준으로 만들었던 degree와 맞지 않는다. 
+    #   그렇기 때문에 반사벡터가 노멀벡터 방향에 맞게 나오도록 조정해야한다.
+    if reverse_rotate:
+        sin = -sin
+    
+    # 기본 반사각에서 좌우스핀에 따른 편이각 적용
+    x = vector[0]
+    y = vector[1]
+    vector[0] = x * cos - y * sin
+    vector[1] = x * sin + y * cos
+       
+    return vector
 # input x,y는 2차원 벡터
 # return 되는 각도는 radian
 def angle(x,y):
