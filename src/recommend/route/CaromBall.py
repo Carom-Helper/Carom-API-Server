@@ -22,18 +22,17 @@ sidespinmin = 3 * math.cos(math.pi * (-180 / 180)) * 50 * radius
 sidespinrange = sidespinmax - sidespinmin
 
 
-class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubject):
+class CaromBall(IObserver, ICrash, IMoveable, IFitteringSubject):
     elapse = 0
     def __init__(self, name="cue") -> None:
         IFitteringSubject.__init__(self)
-        LAZY_ACTION_SETTER.__init__(self)
         self.name=f'{name}'
         self.xy = []
         self.vector = {"x": 0, "y": 0}
         self.moved = 0
-        self.crash_points = []
+        self.colpoint = []
         self.last_crashable = None
-        self.crash_objects = []
+        self.crash_list = []
         self.thick = 0
         self.power=0
         self.upspin=0
@@ -59,32 +58,79 @@ class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubj
         if self.sidespin_lv == 10:
             self.sidespin_lv = 9
             
-        self.set_next_action(vector=self.vector, power=self.power, spin={"up":self.upspin, "side":self.sidespin})
         
 
     def print_param(self):
         print(f'theta: {self.theta}, tip: {self.tip}/3, thick: {self.thick}')
         print(f'upspin: {self.upspin:0.2f}, sidespin: {self.sidespin:0.2f}')
         print(f'upspin_lv: {self.upspin_lv}, sidespin_lv: {self.sidespin_lv}\n')
-        
-    def add_crashable_object(self, crash_object:ICrashable)->None:
-        self.register_observer(crash_object)
-        
-    def check_crash_event_and_notify_event_to_observers(self)->None:
-        self.notify_observers()
-        
+    
     def update(self, event:dict=None) -> None:
-       if "crash" in event:
-           crash_object = event["crash"]
-           self.crash(crash_object)
-        
+        # test_print("update move", self.get_xy())
+        # if "elapsed" in event: # 움직인다.
+        #     self.move(event["elapsed"]) # elapsed = t(float)
+        # if "crashable" in event: # crash 를 일으킨다
+        #     self.crash(event["crashable"])        
+        """
+        if self.new_v is not None:
+            self.vector['x'] = self.new_v[0] * (0.6) * self.data["power"] / 50
+            self.vector['y'] = self.new_v[1] * (0.6) * self.data["power"] / 50
+            self.new_v = None
+        """
+        if self.wall_v is not None:
+            self.vector['x'] = self.wall_v[0] * (0.6) * self.data["power"] / 50
+            self.vector['y'] = self.wall_v[1] * (0.6) * self.data["power"] / 50
+            self.wall_v = None
+
+            self.power = self.data['power']
+
+            self.upspin = self.data['upspin']
+            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+            if self.upspin_lv == 10:
+                self.upspin_lv = 9
+
+            self.sidespin = self.data['sidespin']
+            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+            if self.sidespin_lv == 10:
+                self.sidespin_lv = 9
+            self.data = None
+
+        else:
+            if self.data is not None:
+                self.vector['x'] += self.data["vector"][0] + self.new_v[0]
+                self.vector['y'] += self.data["vector"][1] + self.new_v[1]
+                x,y = self.rotate_vector(self.data["rotate"], self.vector['x'], self.vector['y'])
+                self.vector['x'], self.vector['y'] = x, y
+
+                self.data["vector"] = [0, 0]
+                self.new_v = [0, 0]
+
+                self.power = self.data['power'] + self.new_power
+                self.new_power = 0
+
+                self.upspin = self.data['upspin']
+                self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
+                if self.upspin_lv == 10:
+                    self.upspin_lv = 9
+
+                self.sidespin = self.data['sidespin']
+                self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
+                if self.sidespin_lv == 10:
+                    self.sidespin_lv = 9
+                self.data = None
+        dist = (self.vector['x']**2 + self.vector['y']**2)**0.5
+        next_elapsed = 10000
+        if dist > 0:
+            next_elapsed = 0.6 / dist
+        return next_elapsed
+
     def get_distance_from_point(self, x:float, y:float)-> float:
         curr_pos = self.xy[-1]
         dist = ((curr_pos['x'] - x)**2 + (curr_pos['y'] - y)**2)**0.5 - radius
         return dist
     
     def move(self, elapsed:float)->float:
-        self.crash_objects.clear()
+        self.crash_list.clear()
         dist, next_elapsed = self.mover(elapsed)
         return dist, next_elapsed
         
@@ -96,16 +142,17 @@ class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubj
         # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
         # 움직임을 확인하고
         if isinstance(observer,ICrashable):
-        #   1. ICrashable observer가 들어오면,
+        #   1. ICrashObserver가 들어오면,
+            #if observer is ICrashable:
         #       충돌을 확인하고,
             distance = observer.get_distance_from_point(*self.get_xy())
             if (distance - radius < self.elapse): # 충돌
         #       충돌을 전파한다.
-                self.update({"crash":observer}) # 해당 객체와 업데이트
+        
+                self.crash(observer)
                 test_print("notify_filltered_observer", f"====== {str(observer)} ======")
-                event["crash"] = self
-        observer.update(event)           
-
+                event["crashable"] = self
+            
 
     def get_normal_vector(self, x:float, y:float)-> np.array:
         x0, y0 = self.get_xy()
@@ -148,7 +195,7 @@ class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubj
             bias_table = [-1.001932144, 3.712745857, 5.213981628, 6.175741959, 7.22426033,
                 8.593474197, 9.567179108, 10.51088638, 11.51598625, 28.40719414]
         else:
-            raise TypeError("get_reflect_closure+ball")
+            raise TypeError("get_reflect_closure+Ball")
         
         split_table = {
             "key":[20, 21, 25,30,35,40,45,50,55,60,65,70,75],
@@ -254,66 +301,23 @@ class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubj
         else:
             #return simple_reflect_ball2ball
             return complex_reflect_ball2ball
-    def set_next_action(self, vector:dict, power:float, spin:dict)->None:
-        """
-        set_action은 lazy하다.
-        그 이유는 lazy한것이 개발자가 상황을 컨트롤하기 더 유용하기 때문이다.
-        그렇기 때문에 set_action 이후에 반드시 apply_action이 들어가야 action 값이 적용된다.
-        next_action Arg
-        'vector' : {'x':float ,'y':float }
-        'power' : float
-        'spin' : {'up':float, 'side':float}
-        """
-        self.next_action['vector'] = vector
-        self.next_action['power'] = power
-        self.next_action['spin'] = spin
-    
-    def apply_next_action(self)->None:
-        """
-        next_action Arg
-        'vector' : {'x':float ,'y':float }
-        'power' : float
-        'spin' : {'up':float, 'side':float}
-        """
-        self.vector = self.next_action['vector']
-        self.power = self.next_action['power']
-        self.upspin = self.next_action['spin']['up']
-        self.sidespin = self.next_action['spin']['side']
-        
 
-    
     def crash(self, crashable:ICrashable):
-        """_summary_
-        입력으로 받은 객체와 충돌할 경우에 발생하는 일들을 기술한다.
-        1. 충돌객제의 충돌정책에 따라 반사백터, 힘, 스핀 계산
-        2. 충돌 세팅 설정(충돌행동,충돌객체) *참고로 충돌행동을 설정하는 것 lazy하기 때문에 나중에 apply_action을 해야한다.
-        Args:
-            crashable (ICrashable): 공, 벽 등 self 객체가 충돌하는 객체
-        """
-        # 충분히 이동하지 못하고 같은 객체에 연속해서 충돌하는 것 방지
-        if self.last_crashable is not crashable: # 이전에 충돌한 객체와 다른 객체일 경우만 판별
-            test_print("cue crachable : ", str(crashable), self.power)
-            current_vector = np.array([self.vector['x'], self.vector['y']])
-            
-            reflect_policy = crashable.get_reflect_closure(current_vector, crashable.get_normal_vector(*self.get_xy()))
-            next_vector, next_action_energy = reflect_policy({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin, "vector": [0, 0]})
-            
-           # 부딪치지 않은 경우,
-           # 시작할때 떨어지는 방향으로 이동하는데,
-           # 너무 가까이 있어서 충돌로 판정된 경우에 해당된다.
-           # 이런 경우 충돌로 판정하지 않고 함수를 마무리 한다.
-            if next_vector is not None:
-                if next_vector[0] == current_vector[0] and next_vector[1] == current_vector[1]:
-                    return
-            
-            #lazy
-            self.set_next_action(
-                        vector={"x":next_vector[0], "y":next_vector[1]},
-                        power=next_action_energy["power"],
-                        spin={'up':next_action_energy["upspin"], 'side':next_action_energy["sidespin"]}
-                    )
-            self.set_crash_point(self.xy[-1]['x'], self.xy[-1]['y'])
-            self.set_crash_object(crashable)
+        if self.last_crashable is not crashable:
+            test_print("Cue crachable : ", str(crashable), self.power)
+            v = np.array([self.vector['x'], self.vector['y']])
+            #x, y = self.get_xy()
+            closure = crashable.get_reflect_closure(v, crashable.get_normal_vector(*self.get_xy()))
+            #self.new_v, self.data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin, "vector": [0, 0]})
+            self.wall_v, self.data = closure({"power": self.power, "upspin": self.upspin, "sidespin": self.sidespin, "vector": [0, 0]})
+
+            self.colpoint.append([int(self.xy[-1]['x']), int(self.xy[-1]['y'])])
+            self.last_crashable = crashable
+            self.crash_list.append(crashable.name)
+
+            if self.wall_v is not None:
+                if self.wall_v[0] == v[0] and self.wall_v[1] == v[1]:
+                    self.crash_list.remove(crashable.name)
             if isinstance(crashable, IMoveable):
                 # 안 움경이던 공을 움직일 수 있도록 움직이는 mover로 클로져 변경
                 crashable.set_mover(crashable.move_by_time)
@@ -321,72 +325,21 @@ class CaromBall(IObserver, ICrash, IMoveable, LAZY_ACTION_SETTER, IFitteringSubj
                 # 같은 공에 두번 부딪치는 경우 너무 경로가 너무 기괴하게 나온다.
                 # 같은 공에 두번 부딪치지 않게 충돌를 때 준다.     
                 self.remove_observer(crashable)
-     # 
-        if self.wall_v is not None:
-            self.vector['x'] = self.wall_v[0] * (0.6) * self.data["power"] / 50
-            self.vector['y'] = self.wall_v[1] * (0.6) * self.data["power"] / 50
-            self.wall_v = None
-
-            self.power = self.data['power']
-
-            self.upspin = self.data['upspin']
-            self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
-            if self.upspin_lv == 10:
-                self.upspin_lv = 9
-
-            self.sidespin = self.data['sidespin']
-            self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-            if self.sidespin_lv == 10:
-                self.sidespin_lv = 9
-            self.data = None
-
-        else:
-            if self.data is not None:
-                self.vector['x'] += self.data["vector"][0] + self.new_v[0]
-                self.vector['y'] += self.data["vector"][1] + self.new_v[1]
-                x,y = self.rotate_vector(self.data["rotate"], self.vector['x'], self.vector['y'])
-                self.vector['x'], self.vector['y'] = x, y
-
-                self.data["vector"] = [0, 0]
-                self.new_v = [0, 0]
-
-                self.power = self.data['power'] + self.new_power
-                self.new_power = 0
-
-                self.upspin = self.data['upspin']
-                self.upspin_lv = int((self.upspin - upspinmin) / (upsinrange) * 10)
-                if self.upspin_lv == 10:
-                    self.upspin_lv = 9
-
-                self.sidespin = self.data['sidespin']
-                self.sidespin_lv = int((self.sidespin - sidespinmin) / (sidespinrange) * 10)
-                if self.sidespin_lv == 10:
-                    self.sidespin_lv = 9
-                self.data = None
-        dist = (self.vector['x']**2 + self.vector['y']**2)**0.5
-        next_elapsed = 10000
-        if dist > 0:
-            next_elapsed = 0.6 / dist
-        return next_elapsed
-
-    def set_crash_object(self, crash_object:ICrashable)->None:
-        self.last_crashable = crash_object
-        self.crash_objects.append(crash_object.name)
-   
-    def set_crash_point(self, x:float, y:float):
-        if len(self.crash_points) > 0:
-            px, py = self.crash_points[-1]
+        
+    def set_colpoint(self, x:float, y:float):
+        if len(self.colpoint) > 0:
+            px, py = self.colpoint[-1]
             if px != int(x) or py != int(y):
-                self.crash_points.append([int(x), int(y)])
+                self.colpoint.append([int(x), int(y)])
         else:
-            self.crash_points.append([int(x), int(y)])
+            self.colpoint.append([int(x), int(y)])
         
     def get_xy(self)->list:
         return self.xy[-1]['x'], self.xy[-1]['y']
 
     def set_xy(self, x:float, y:float):
         temp = {"x": x, "y": y, "elapsed": 0}
-        self.set_crash_point(x,y)
+        self.set_colpoint(x,y)
         self.xy.append(temp)
 
     def add_xy(self, xy:dict):

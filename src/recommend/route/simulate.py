@@ -22,8 +22,6 @@ def run_carom_simulate(
     save=False,
     debuging=False
     ):
-    
-    # create object(ball, wall)
     cue = CaromBall("cue")
     tar1 = CaromBall("tar1")
     tar2 = CaromBall("tar2")
@@ -49,25 +47,46 @@ def run_carom_simulate(
             pos2={"x":0.0, "y":0.0},
             name="left"
         ))
+    w1 = wall_list[0]
+    w2 = wall_list[1]
+    w3 = wall_list[2]
+    w4 = wall_list[3]
 
-    # ball init
     cue.start_param(power = power, clock = clock, tip = tip)
+    #cue.print_param()
+
     cue.set_xy(*cue_coord)
     tar1.set_xy(*tar1_coord)
     tar2.set_xy(*tar2_coord)
+
+    #cue.register_observer(tar1)
+    #cue.register_observer(tar2)
+
+    cue.register_observer(w1)
+    cue.register_observer(w2)
+    cue.register_observer(w3)
+    cue.register_observer(w4)
+    cue.register_observer(tar1)
+    cue.register_observer(tar2)
+
+    tar1.register_observer(w1)
+    tar1.register_observer(w2)
+    tar1.register_observer(w3)
+    tar1.register_observer(w4)
+    tar1.register_observer(cue)
+    tar1.register_observer(tar2)
     
-    
-    # 충돌객체 추가
-    #   공 <- 벽 객체 추가
-    for wall in wall_list:
-        cue.add_crashable_object(wall)
-        tar1.add_crashable_object(wall)
-        tar2.add_crashable_object(wall)
-    
-    #   공 <- 다른 공 객체 추가
-    cue.add_crashable_object(tar1)
-    cue.add_crashable_object(tar2)
-    tar1.add_crashable_object(tar2)
+    tar2.register_observer(w1)
+    tar2.register_observer(w2)
+    tar2.register_observer(w3)
+    tar2.register_observer(w4)
+    tar2.register_observer(cue)
+    tar2.register_observer(tar1)
+
+    w1.register_observer(cue)
+    w2.register_observer(cue)
+    w3.register_observer(cue)
+    w4.register_observer(cue)
     
     set_vec(cue, tar1, thick)
     cue.set_mover(cue.move_by_time)
@@ -83,25 +102,22 @@ def run_carom_simulate(
     
     ball_list = [cue, tar1, tar2]
     while True:
-        # ball move
+    # for _ in range(10000):
         cue_dist, _ = cue.move(elapsed)
         tar1_dist, _ = tar1.move(elapsed)
         tar2_dist, _ = tar2.move(elapsed)
+
+        cue.notify_observers()
+        tar1.notify_observers()
+        tar2.notify_observers()
         
-        def lazy_set_crash_action():
-            cue.check_crash_event_and_notify_event_to_observers()
-            tar1.check_crash_event_and_notify_event_to_observers()
-            tar2.check_crash_event_and_notify_event_to_observers()
-        lazy_set_crash_action()
-        
-        cue.apply_next_action()
-        tar1.apply_next_action()
-        tar2.apply_next_action()
-        
+        cue_elapsed = cue.update()
+        tar1_elapsed = tar1.update()
+        tar2_elapsed = tar2.update()
 
         elapsed = min(cue_elapsed, tar1_elapsed, tar2_elapsed)
 
-        cue_hit = cue.crash_objects
+        cue_hit = cue.crash_list
         if cue_hit is not None:
             for hit in cue_hit:
                 if hit == 'tar1':
@@ -123,11 +139,11 @@ def run_carom_simulate(
             break
     if display:
         if success:
-            print(success, cue.crash_points)
+            print(success, cue.colpoint)
     name = f"({cue_coord[0]}cue{cue_coord[1]})({tar1_coord[0]}tar{tar1_coord[1]})({tar2_coord[0]}tar{tar2_coord[1]})(P{power}C{clock}T{tip})(thick{thick}).jpg"
     show(cue, tar1, tar2, name, display=display, save = debuging or (success and save))
 
-    return success, cue.crash_points, tar1.crash_points, tar2.crash_points
+    return success, cue.colpoint, tar1.colpoint, tar2.colpoint
 
 def show(cue, tar1, tar2, name, display=True, save=False):
     img = np.zeros((800,400,3), np.uint8)
@@ -330,14 +346,10 @@ if __name__ == '__main__':
     parser.add_argument('--cue', nargs="+", default="300 400", help="--cue x y")
     parser.add_argument('--tar1', nargs="+", default="100 750", help="--tar1 x y")
     parser.add_argument('--tar2', nargs="+", default="300 300", help="--tar2 x y")
-    parser.add_argument('--clock', nargs="+", default="0", help="--clock 1 11 2 10") 
+    parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
     parser.add_argument('--tip', nargs="+", default="3 2", help="--tip 3 1")
-    parser.add_argument('--power', nargs="+", default="40", help="--power 20 30")
-    parser.add_argument('--think', nargs="+", default="-6 -7", help="--thick '-4 4'")
-    # parser.add_argument('--clock', nargs="+", default="1 11 2 10 0 3 9 4 8", help="--clock 1 11 2 10") 
-    # parser.add_argument('--tip', nargs="+", default="3 2", help="--tip 3 1")
-    # parser.add_argument('--power', nargs="+", default="30 40 50", help="--power 20 30")
-    # parser.add_argument('--think', nargs="+", default="-4 4 -5 5 -6 6 -3 3 -2 2 -1 1 -7 7", help="--thick '-4 4'")
+    parser.add_argument('--power', nargs="+", default="30 40 50", help="--power 20 30")
+    parser.add_argument('--think', nargs="+", default="-4 4 -5 5 -6 6 -3 3 -2 2 -1 1 -7 7", help="--thick '-4 4'")
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--no_thread', default=False, action="store_true")
     parser.add_argument('--no_save', default=False, action="store_true")

@@ -70,25 +70,7 @@ class IMoveable(metaclass=ABCMeta):
     @abstractclassmethod
     def get_xy(self)->list:
         pass
-
-
-# 공이 충돌하면, 운동이 변경된다.
-# 하지만 해당 운동을 바로 적용시키는 것보다는
-# 다음 운동상태로 변경값을 저장해 놓고,
-# 의도적으로 호출하여 적용시키는 것이 더 상황을 컨트롤하기 좋았다.
-# 해당 행동을 통일하기 위해서 의도적으로 만든 인터페이스 이다.
-class LAZY_ACTION_SETTER(metaclass=ABCMeta):
-    def __init__(self) -> None:
-        self.next_action=dict()
-    @abstractclassmethod
-    def set_next_action(self, vector:dict, power:float, spin:dict)->None:
-        pass
     
-    @abstractclassmethod
-    def apply_next_action(self)->None:
-        pass
-
-
 # class SaveDistanceMoveAble(IMoveable):
 #     def __init__(self) -> None:
 #         super().__init__()
@@ -166,6 +148,42 @@ class ICrashObserver(ICrashAction, ICrashable, IObserver, metaclass=ABCMeta):
     @abstractclassmethod
     def update(self, event:dict=None) -> None:
         pass
+
+class ICrashChecker(ICrashAction, metaclass=ABCMeta):
+    elapse = 0.0001
+    def __init__(self) -> None:
+        super().__init__()
+        
+    # 자신과 충돌한 것이 있는지 없는지 확인한다. 
+    def check_crash(self, observer:ICrash, x, y)-> bool:
+        if observer is not ICrash: raise TypeError()
+        distance = observer.get_distance_from_point(x,y)
+        return ((distance - self.get_range()) < self.elapse)
+    
+    @abstractclassmethod
+    def get_range(self, data=dict())->float:
+        pass
+    @abstractclassmethod
+    def crash(self, crashable:ICrashable):
+        pass
+        # # observer들을 하나씩 방문하면서
+        # target_observer = None
+        # for idx, observer in enumerate(self.observer_list):
+        #     # 충돌 인지를 판정한다.
+        #     if self.check_crash(idx):
+        #         # 충돌 했다면, 타겟 지정
+        #         target_observer = observer
+        #         break
+        # # 아무것도 없으면, 종류
+        # if target_observer is None: return None
+        
+        # # 충돌 확인
+        # if self.crashable is None: raise TypeError(f"{str(self)}.+ plz set_crashable(self, crashable:ICrashable)")
+        
+        # # 충돌 했다면, 충돌을 전파한다.
+        # observer.crash(self.crashable)
+        # # 그리고 자기도 충돌 행동을 한다. 하지만 안한다.
+        # # 나중에 super를 사용한 뒤에 알아서 구현해라
 
 
 class ICrashableSubject(ICrashable, IFitteringSubject, metaclass=ABCMeta):

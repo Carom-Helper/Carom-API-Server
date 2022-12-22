@@ -12,7 +12,7 @@ def test_print(s, s1="", s2="", s3="", s4="", s5="", end="\n"):
     if is_test_wallobject():
         print("wall object exe : ", s, s1, s2, s3, s4, s5, end=end)
         
-class WallObject(IObserver, ICrashable):
+class WallObject(IObserver, ICrashableSubject):
     elapse = 1.0
     def __init__(
             self,
@@ -31,6 +31,36 @@ class WallObject(IObserver, ICrashable):
         temp = self.wall_direct.tolist()
         temp = [-temp[1], -temp[0]]
         self.orth_vec = np.array(temp)
+        # test_print("init", "vector",self.wall_direct)
+        # test_print("init", "orth vector",self.orth_vec)
+        # test_print("init", "vec X orth_vec", self.wall_direct * self.orth_vec)
+    
+    # 특정 옵져버에 대해서 해야할 행동을 정의한다.
+    def notify_filltered_observer(self, observer:IObserver)->None:
+        if not isinstance(observer, IObserver):
+            print("Not in IObserver")
+            return
+        event = dict()
+        # 들어오는 옵져버는 Crashable 옵져버가 들어온다.
+        # 움직임을 확인하고
+        if isinstance(observer,ICrashable):
+        #   1. ICrashObserver가 들어오면,
+            #if observer is ICrashable:
+        #       충돌을 확인하고,
+            xy = observer.get_xy()
+            x, y = xy
+            # test_print("notify_filltered_observer",x,y)
+            if self.orth_vec[0] == 0:
+                x = self.pos1[0]
+            else :
+                y = self.pos1[1]
+            distance = observer.get_distance_from_point(x,y)
+            if (distance < self.elapse): # 충돌
+        #       충돌을 전파한다.
+                if isinstance(observer, ICrashAction):
+                    event["crashable"] = self
+        
+        observer.update(event)
 
     def get_distance_from_point(self, x:float, y:float)-> float:
         # test_print("get_distance_from_point")
@@ -372,7 +402,9 @@ class WallObject(IObserver, ICrashable):
         return simple_reflect_ball2wall
     
     def update(self, event:dict=None) -> None:
-        pass
+        # crash 이벤트를 전파해야한다.
+        self.notify_observers()
+
 def test_get_distance_from_point():
     from random import randint
     wall_list = list()
